@@ -98,7 +98,7 @@ Because this is a web technologies application, there are certain things that it
 
 ## Installation
 
-This project is a [Wails 2](https://wails.io/) project. You therefore need to have Wails, and [Node](https://nodejs.org/en/) installed on your computer. I've currently only build this using macOS, but it should build as is on Linux as well. I'm working on making this available for Windows, Linux, and macOS.
+This project is a [Wails 2](https://wails.io/) project. You therefore need to have Wails, [go](https://go.dev/) language from Google, and [Node](https://nodejs.org/en/) installed on your computer. I've currently only build this using macOS, but it should build as is on Linux as well. I'm working on making this available for Windows, Linux, and macOS.
 
 To build the program, simply type:
 
@@ -410,8 +410,8 @@ These tutorials are based on using my original, NW.js version of the Modal File 
 
 ## Icon
 
-I finally made my first attempt at an icon for Modal File Manager. The files are in the `icons` directory. Any constructive criticizm is welcome.
+I finally made my first attempt at an icon for Modal File Manager. The files are in the `frontend/icons` directory. Any constructive criticizm is welcome.
 
-![Icon](icons/mfm-icon.svg)
+![Icon](https://github.com/raguay/ModalFileManager/blob/main/appicon.png)
 
 
