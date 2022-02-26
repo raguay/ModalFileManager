@@ -1,4 +1,4 @@
-![ModalFileManager](https://socialify.git.ci/raguay/ModalFileManager/image?description=1&descriptionEditable=A%20file%20manager%20build%20using%20Svelte%20and%20Wails.%20It%20has%20hotkeys%20that%20are%20modal%20just%20like%20Vim%20and%20NeoVim.&font=Source%20Code%20Pro&forks=1&issues=1&language=1&name=1&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Dark)
+![ModalFileManager](https://socialify.git.ci/raguay/ModalFileManager/image?description=1&descriptionEditable=A%20file%20manager%20built%20using%20Svelte%20and%20Wails.%20It%20uses%20a%20modal%20hotkeys%20just%20like%20Vim%20and%20NeoVim.&font=Source%20Code%20Pro&forks=1&issues=1&language=1&name=1&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Dark)rgazers=1&theme=Dark)
 
 [![Richard's GitHub stats](https://github-readme-stats.vercel.app/api?username=raguay)](https://github.com/anuraghazra/github-readme-stats)
 
