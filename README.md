@@ -1,4 +1,4 @@
-![ModalFileManager](https://socialify.git.ci/raguay/ModalFileManager/image?description=1&descriptionEditable=A%20web%20technology%20based%20file%20manager%20built%20with%20NW.js%2C%20Svelte%2C%20and%20Node.js.%20It%27s%20keyboard%20command%20layout%20is%20taken%20from%20Vim.&forks=1&issues=1&language=1&owner=1&pattern=Floating%20Cogs&pulls=1&stargazers=1&theme=Light)
+![ModalFileManager](https://socialify.git.ci/raguay/ModalFileManager/image?description=1&descriptionEditable=A%20file%20manager%20build%20using%20Svelte%20and%20Wails.%20It%20has%20hotkeys%20that%20are%20modal%20just%20like%20Vim%20and%20NeoVim.&font=Source%20Code%20Pro&forks=1&issues=1&language=1&name=1&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Dark)
 
 [![Richard's GitHub stats](https://github-readme-stats.vercel.app/api?username=raguay)](https://github.com/anuraghazra/github-readme-stats)
 
