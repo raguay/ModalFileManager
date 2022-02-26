@@ -1,0 +1,60 @@
+{
+  "items" : [
+    {
+      "path" : "bundle.js",
+      "mimeType" : "text/javascript",
+      "lastUpdated" : 1641629103,
+      "checksum" : "7ac33225756429ec4714232c0b7b4870",
+      "fileSize" : 211774
+    },
+    {
+      "path" : "bundle.css.map",
+      "mimeType" : "application/octet-stream",
+      "lastUpdated" : 1641629103,
+      "checksum" : "16ee03137d7bf10dcd6e7f5a3c7ff14c",
+      "fileSize" : 199908
+    },
+    {
+      "path" : "index.html",
+      "mimeType" : "text/html",
+      "lastUpdated" : 1641621751,
+      "checksum" : "ce7f29726a1c53b193d820177279a38a",
+      "fileSize" : 376
+    },
+    {
+      "path" : "package.json",
+      "mimeType" : "application/json",
+      "lastUpdated" : 1634118016,
+      "checksum" : "7f1c3740417030d66c2eec646fcac2cd",
+      "fileSize" : 435
+    },
+    {
+      "path" : "bundle.js.map",
+      "mimeType" : "application/octet-stream",
+      "lastUpdated" : 1641629103,
+      "checksum" : "32cb2d285ce6dddaeb3e5c75dac5d40e",
+      "fileSize" : 582005
+    },
+    {
+      "path" : "favicon.ico",
+      "mimeType" : "image/vnd.microsoft.icon",
+      "lastUpdated" : 1641619849,
+      "checksum" : "3041dd4aa65f73358fe0a75f3e2d0be9",
+      "fileSize" : 1386
+    },
+    {
+      "path" : "_site.json",
+      "mimeType" : "application/json",
+      "lastUpdated" : 1641571375,
+      "checksum" : "5cf2ba5e825eac0779725b1e0be62e6d",
+      "fileSize" : 1391
+    },
+    {
+      "path" : "bundle.css",
+      "mimeType" : "text/css",
+      "lastUpdated" : 1641629103,
+      "checksum" : "0166be73527ed6b696e576b8118d7117",
+      "fileSize" : 13906
+    }
+  ]
+}

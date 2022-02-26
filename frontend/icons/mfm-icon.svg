@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="_x33_">
+        <path id="icon_6_" d="M125.183,7.511L113.9,10.631L113.9,4.275C113.9,2.975 113.293,1.761 112.253,0.967C111.213,0.172 109.884,-0.088 108.627,0.245L55.577,14.648L41.289,3.653L4.218,14.517C2.441,15.037 1.242,16.626 1.213,18.476L0,116.21C0,122.653 5.259,127.898 11.702,127.898C14.1,127.898 123.34,95.363 123.34,95.363C124.265,95.089 124.9,94.236 124.9,93.268L128,9.606C128,8.146 126.584,7.106 125.183,7.511ZM19.186,116.21L19.07,116.21C19.07,118.435 18.059,120.515 16.296,121.931C14.981,123 13.392,123.564 11.702,123.564C7.642,123.564 4.334,120.27 4.334,116.239L5.548,18.65L40.394,8.435L54.639,19.386L109.566,4.491L109.566,11.816L24.109,35.404C21.622,36.09 19.891,38.342 19.868,40.922L19.186,116.21Z" style="fill:rgb(84,65,88);fill-rule:nonzero;stroke:black;stroke-width:1px;"/>
+        <g transform="matrix(0.960305,-0.278952,-0.0393465,1.05277,2.79225,22.8921)">
+            <text x="42.415px" y="71.718px" style="font-family:'MarkerFelt-Wide', 'Marker Felt';font-weight:700;font-size:36px;fill:rgb(128,255,234);">m<tspan x="71.899px 86.803px " y="71.718px 71.718px ">fm</tspan></text>
+        </g>
+    </g>
+</svg>

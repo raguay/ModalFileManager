@@ -1,0 +1,20 @@
+{
+  "name": "mfm",
+  "frontend:build": "npm run build",
+  "frontend:install": "npm install",
+  "frontend:dev": "",
+  "wailsjsdir": "./frontend",
+  "version": "2",
+  "Path": "",
+  "BuildDir": "",
+  "outputfilename": "mfm",
+  "OutputType": "",
+  "Platform": "",
+  "Author": {
+    "name": "Richard Guay",
+    "email": "raguay@customct.com"
+  },
+  "debounceMS": 100,
+  "devserverurl": "http://localhost:34115",
+  "appargs": ""
+}
