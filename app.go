@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 	cp "github.com/otiai10/copy"
 )
 
@@ -95,7 +96,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 		fileInfo.Name = file.Name()
 		fileInfo.Size = file.Size()
 		fileInfo.IsDir = file.IsDir()
-		fileInfo.Modtime = file.ModTime().String()
+		fileInfo.Modtime = file.ModTime().Format(time.Stamp)
 		fileInfo.Dir = path
 		fileInfo.Extension = filepath.Ext(file.Name())
 		result = append(result, fileInfo)

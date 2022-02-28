@@ -24,9 +24,9 @@
   </span>
   <span class='file customdata'
         style='color: {$theme.Orange}; background-color: {$theme.backgroundColor};'
-        data-tooltip='{localCurrentCursor.entry.datetime}' 
+        data-tooltip='{DT}' 
   >
-    {localCurrentCursor.entry.datetime}
+    {DT}
   </span>
   <span class='file'
         style='color: {$theme.Green}; 
@@ -110,6 +110,7 @@
   let localStateMapColors = [];
   let stateColor = "#6fb1e9";
   let size = 0;
+  let DT;
 
   onMount(() => {
     //
@@ -134,6 +135,8 @@
         size = '';
       } else {
         size = util.readableSize(localCurrentCursor.entry.size);
+        DT = (new Date(localCurrentCursor.entry.datetime)).toLocaleString();
+        if(DT === 'Invalid Date') DT = '';
       }
     });
     var unSubscribeStateMapColors = stateMapColors.subscribe( value => {
