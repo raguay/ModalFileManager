@@ -135,6 +135,11 @@
         size = '';
       } else {
         size = util.readableSize(localCurrentCursor.entry.size);
+
+        //
+        // Setup a locale dependent way to show date and time. 
+        // #TODO: make more programmable?
+        //
         DT = (new Date(localCurrentCursor.entry.datetime)).toLocaleString();
         if(DT === 'Invalid Date') DT = '';
       }

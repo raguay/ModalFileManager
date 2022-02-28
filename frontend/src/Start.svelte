@@ -18,7 +18,7 @@
     $metaKey = e.metaKey;
   }}
   on:resize={(e) => {
-    midSize = window.innerHeight - 68;
+    midSize = window.innerHeight - 75;
   }}
 />
 
@@ -82,7 +82,7 @@
   let midSize = null;
 
   onMount(() => {
-    midSize = window.innerHeight - 68;
+    midSize = window.innerHeight - 75;
   });
 
   function switchView(v) {
