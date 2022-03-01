@@ -11,6 +11,17 @@
     id='spacer'
   >
   </div>
+
+  <div
+    id='title'
+  >
+    <p>Modal File Manager</p>
+  </div>
+
+  <div 
+    id='spacer2'
+  >
+  </div>
 </div>
 
 <style>
@@ -25,6 +36,25 @@
   #spacer {
     min-height: 37px; 
     width: 76px;
+    flex-grow: 0;
+  }
+  
+  #spacer2 {
+    min-height: 37px; 
+    width: 76px;
+    flex-grow: 0;
+  }
+
+  #title {
+    flex-grow: 1;
+    padding: 0px;
+    margin: 0px;
+  }
+
+  #title p {
+    padding: 0px;
+    margin: 10px auto;
+    text-align: center;
   }
 </style>
 
