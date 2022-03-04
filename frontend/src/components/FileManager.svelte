@@ -506,7 +506,7 @@ commands={commands}
     extensions.setExtensionDir(extDir);
     extensions.setCommands(commands);
     extensions.setFileSystems(filesystems);
-    extensions.load(localConfig, OS);
+    await extensions.load(localConfig, OS);
     installDefaultExtCommands();
     extensions.init();
   }

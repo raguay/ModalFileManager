@@ -34,44 +34,36 @@ var extensions = {
     //
     extensions.config = confg;
     extensions.localFS = LFS;
-    try{
-      var items = await extensions.localFS.readDir(extensions.extensionDir);
-      var stats = [];
-      for (var i=0; i<items.length; i++) {
-        const extsDir = await extensions.localFS.appendPath(extensions.extensionDir,items[i]);
-        try {
-          if(await extensions.localFS.dirExists(extsDir)) {
-            //
-            // An extension directory. Load it!
-            //
-            const paramfile = await extensions.localFS.appendPath(extsDir, 'package.json');
-            if(await extensions.localFS.fileExists(paramfile)) {
-              const parms = JSON.parse(await extensions.localFS.readFile(paramfile).toString());
-              if(typeof parms.mfmextension !== 'undefined') {
-                const extFile = await extensions.localFS.appendPath(extsDir, parms.mfmextension.main);
-                const extension = await extensions.localFS.loadJavaScript(extFile);
-                if(extension !== null) {
-                  extensions.addExtension(parms.mfmextension.name, parms.mfmextension.description, extension, parms.mfmextension.type, parms.mfmextension.github);
-                } else {
-                  console.log("Extension didn't load.");
-                }
-              } else {
-                console.log("Extension: " + extsDir + " isn't configured correctly.");
-              }
+    var items = await extensions.localFS.readDir(extensions.extensionDir);
+    for (var i=0; i<items.length; i++) {
+      const extsDir = await extensions.localFS.appendPath(extensions.extensionDir,items[i].Name);
+      try {
+        //
+        // an extension directory. load it!
+        //
+        const paramfile = await extensions.localFS.appendPath(extsDir, 'package.json');
+        if(await extensions.localFS.fileExists(paramfile)) {
+          var parms = await extensions.localFS.readFile(paramfile);
+          parms = JSON.parse(parms.toString());
+          if(typeof parms.mfmextension !== 'undefined') {
+            const extfile = await extensions.localFS.appendPath(extsDir, parms.mfmextension.main);
+            const extension = await extensions.localFS.loadJavaScript(extfile);
+            if(extension !== null) {
+              extensions.addExtension(parms.mfmextension.name, parms.mfmextension.description, extension, parms.mfmextension.type, parms.mfmextension.github);
+            } else {
+              console.log(`extension ${items[i].Name} didn't load.`);
             }
-          } 
-        } catch(e) {
-            //
-            // There was a problem getting the stats. Therefore, it's not a file or 
-            // directory we need.
-            //
-            console.log(e);
+          } else {
+            console.log("extension: " + extsDir + " isn't configured correctly.");
+          }
         }
+      } catch(e) {
+          //
+          // There was a problem getting the stats. Therefore, it's not a file or 
+          // directory we need.
+          //
+          console.log(e);
       }
-    } catch(e) {
-      //
-      // Something went wrong.
-      //
     }
   },
   setExtensionDir: function(dir) {

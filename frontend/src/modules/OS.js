@@ -18,26 +18,26 @@ var OS = {
   sep: "/",
   localHomeDir: null,
   localConfigDir: null,
-  setConfig: function (cfg) {
+  setConfig: function(cfg) {
     this.config = cfg;
   },
-  getExtension: async function (file) {
+  getExtension: async function(file) {
     var ext = '';
     var match = file.match(/\.(.*)$/);
-    if(match !== null) {
+    if (match !== null) {
       ext = match[1];
     }
     return ext;
   },
-  getConfigDir: async function () {
-    if(this.localConfigDir === null) {
+  getConfigDir: async function() {
+    if (this.localConfigDir === null) {
       const hdir = await this.getHomeDir();
       this.localConfigDir = await this.appendPath(hdir, ".config/modalfilemanager");
     }
     return this.localConfigDir;
   },
   terminalScript: "bin/openTerminal.scpt",
-  init: function () {
+  init: function() {
     //
     // Set the defaults
     //
@@ -49,34 +49,34 @@ var OS = {
     //
     this.sep = '/';
   },
-  getDirFirst: function () {
+  getDirFirst: function() {
     return this.dirFirst;
   },
-  setDirFirst: function (flag) {
+  setDirFirst: function(flag) {
     if (typeof flag === "boolean") {
       this.dirFirst = flag;
     }
   },
-  setDirSort: function (sortFunction) {
+  setDirSort: function(sortFunction) {
     this.sortFunction = sortFunction;
   },
-  setFilter: function (flt) {
+  setFilter: function(flt) {
     this.filterFunction = flt;
   },
-  getTerminalScript: async function () {
+  getTerminalScript: async function() {
     return await this.appendPath(await this.getHomeDir(), this.terminalScript);
   },
-  setTerminalScript: function (scrpt) {
+  setTerminalScript: function(scrpt) {
     this.terminalScript = scrpt;
   },
-  getHomeDir: async function () {
-    if(this.localHomeDir === null) {
+  getHomeDir: async function() {
+    if (this.localHomeDir === null) {
       this.localHomeDir = await window.go.main.App.GetHomeDir();
       this.localHomeDir = (new String(this.localHomeDir)).toString();
     }
     return this.localHomeDir;
   },
-  readDir: async function (dir) {
+  readDir: async function(dir) {
     if (typeof dir.dir !== 'undefined') {
       dir = await this.appendPath(dir.dir, dir.name);
     }
@@ -86,17 +86,17 @@ var OS = {
     var result = await window.go.main.App.ReadDir(dir);
     return result
   },
-  normalize: async function (dir) {
+  normalize: async function(dir) {
     if (dir[0] === "~") {
       dir = await this.appendPath(await this.getHomeDir(), dir.slice(1, dir.length));
     }
     return dir;
   },
-  dirExists: async function (dir) {
+  dirExists: async function(dir) {
     if (typeof dir.name !== 'undefined') dir = await this.appendPath(dir.dir, dir.name);
     return await this.fileExists(dir);
   },
-  fileExists: async function (file) {
+  fileExists: async function(file) {
     var result = true;
     if (typeof file.name !== 'undefined') {
       file = await this.appendPath(file.dir, file.name);
@@ -104,7 +104,7 @@ var OS = {
     result = window.go.main.App.FileExists(file);
     return result;
   },
-  makeDir: async function (dir) {
+  makeDir: async function(dir) {
     if (typeof dir.name !== "undefined") {
       dir = await this.appendpath(dir.dir, dir.name);
     }
@@ -113,27 +113,27 @@ var OS = {
     //
     await window.go.main.App.MakeDir(dir);
   },
-  moveEntries: async function (from, to, callback) {
+  moveEntries: async function(from, to, callback) {
     var fromName;
-    var toName; 
+    var toName;
 
     //
     // It can receive an object or string. Check to see which it is
     // to get the proper path.
     //
-    if(typeof from.dir !== 'undefined') {
+    if (typeof from.dir !== 'undefined') {
       fromName = await this.appendPath(from.dir, from.name);
     } else {
       fromName = from;
     }
-    if(typeof to.dir !== 'undefined') {
+    if (typeof to.dir !== 'undefined') {
       toName = to.dir
     } else {
       toName = to;
     }
 
     const parts = fromName.split(this.sep);
-    toName = await this.appendPath(toName, parts[parts.length-1]);
+    toName = await this.appendPath(toName, parts[parts.length - 1]);
 
     //
     // Move the entries.
@@ -148,27 +148,27 @@ var OS = {
       callback(err);
     }
   },
-  copyEntries: async function (from, to, callback) {
+  copyEntries: async function(from, to, callback) {
     var fromName;
-    var toName; 
+    var toName;
 
     //
     // It can receive an object or string. Check to see which it is
     // to get the proper path.
     //
-    if(typeof from.dir !== 'undefined') {
+    if (typeof from.dir !== 'undefined') {
       fromName = await this.appendPath(from.dir, from.name);
     } else {
       fromName = from;
     }
-    if(typeof to.dir !== 'undefined') {
+    if (typeof to.dir !== 'undefined') {
       toName = to.dir
     } else {
       toName = to;
     }
 
     const parts = fromName.split(this.sep);
-    toName = await this.appendPath(toName, parts[parts.length-1]);
+    toName = await this.appendPath(toName, parts[parts.length - 1]);
 
     //
     // Copy the entries.
@@ -183,7 +183,7 @@ var OS = {
       callback(err);
     }
   },
-  deleteEntries: async function (entry, callback) {
+  deleteEntries: async function(entry, callback) {
     var item = await this.appendPath(entry.dir, entry.name);
     var that = this;
     if (this.config !== null) {
@@ -210,12 +210,12 @@ var OS = {
         var err = await window.go.main.App.GetError();
 
         if (typeof callback !== "undefined") {
-            callback(err)
+          callback(err)
         }
       }
     }
   },
-  getDirList: async function (dir) {
+  getDirList: async function(dir) {
     //
     // A directory list is provided giving an array of entry object. Each
     // entry object has:
@@ -285,21 +285,31 @@ var OS = {
     //
     return entries;
   },
-  defaultFilter: function (item) {
+  defaultFilter: function(item) {
     return item.name[0] !== "." && !item.name.includes("Icon");
   },
-  allFilter: function (item) {
+  allFilter: function(item) {
     //
     // Still, don't show the Icon and DS_Store files.
     //
     return !item.name.includes("Icon") && !item.name.includes(".DS_Store");
   },
-  alphaSort: function (item1, item2) {
+  alphaSort: function(item1, item2) {
     const a = item1.name.toLowerCase();
     const b = item2.name.toLowerCase();
     return a === b ? 0 : a > b ? 1 : -1;
   },
-  openFile: async function (dir, file) {
+  openFile: async function(pdir, file) {
+    //
+    // For macOS, open with the open command line command.
+    //
+    //
+    // TODO
+    //
+    pdir = pdir;
+    file = file;
+  },
+  openFileWithProgram: async function(prog, file) {
     //
     // For macOS, open with the open command line command.
     //
@@ -307,20 +317,12 @@ var OS = {
     // TODO
     //
   },
-  openFileWithProgram: async function (prog, file) {
-    //
-    // For macOS, open with the open command line command.
-    //
+  openInTerminal: async function(prog, file) {
     //
     // TODO
     //
   },
-  openInTerminal: async function (prog, file) {
-    //
-    // TODO
-    //
-  },
-  getConfig: async function () {
+  getConfig: async function() {
     if (this.config === null) {
       //
       // Create the minimum config and then add to the path as needed. The path from process
@@ -343,7 +345,7 @@ var OS = {
       // Add directories that the user's system should have.
       //
       var hdir = await this.getHomeDir();
-      if (await this.dirExists( + "/bin")) {
+      if (await this.dirExists(+ "/bin")) {
         this.config.env.PATH = hdir + "/bin:" + this.config.env.PATH;
       }
       if (await this.dirExists("/opt/homebrew/bin")) {
@@ -367,7 +369,7 @@ var OS = {
     }
     return this.config;
   },
-  runCommandLine: async function (line, callback, rEnv, rOpt) {
+  runCommandLine: async function(line, callback, rEnv, rOpt) {
     //
     // Get the environment to use.
     //
@@ -394,7 +396,7 @@ var OS = {
     if (typeof callback !== 'undefined') {
     }
   },
-  appendPath: async function (dir, name) {
+  appendPath: async function(dir, name) {
     //
     // dir can be an entry or a path string. name is always a string.
     //
@@ -409,12 +411,12 @@ var OS = {
       }
     }
   },
-  readFile: async function (file) {
+  readFile: async function(file) {
     var contents = "";
     if (typeof file.name !== 'undefined') {
       file = await this.appendPath(file.dir, file.name);
     }
-    
+
     //
     // Read the file from the backend.
     //
@@ -425,20 +427,20 @@ var OS = {
     //
     return contents;
   },
-  writeFile: async function (file, data) {
+  writeFile: async function(file, data) {
     if (typeof file === "object") file = await this.appendPath(file.dir, file.name);
     //
     // Write the file to the os.
     //
     await window.go.main.App.WriteFile(file, data);
   },
-  renameEntry: async function (oldE, newE) {
+  renameEntry: async function(oldE, newE) {
     var fromName = oldE;
-    if(typeof oldE.dir !== 'undefined') {
+    if (typeof oldE.dir !== 'undefined') {
       fromName = await this.appendPath(oldE.dir, oldE.name);
     }
     var toName = newE;
-    if(typeof newE.dir !== 'undefined') {
+    if (typeof newE.dir !== 'undefined') {
       toName = await this.appendPath(newE.dir, newE.name);
     }
     //
@@ -446,9 +448,9 @@ var OS = {
     //
     await window.go.main.App.RenameEntry(fromName, toName);
   },
-  createFile: async function (file) {
+  createFile: async function(file) {
     var fnm = file;
-    if(typeof file.dir !== 'undefined') {
+    if (typeof file.dir !== 'undefined') {
       var fnm = await this.appendPath(file.dir, file.name);
     }
     //
@@ -456,7 +458,7 @@ var OS = {
     //
     await window.go.main.App.MakeFile(fnm);
   },
-  createDir: async function (dir) {
+  createDir: async function(dir) {
     var dnm = dir;
     if (typeof dir.dir !== 'undefined') {
       dnm = await this.appendPath(dir.dir, dir.name);
@@ -466,13 +468,14 @@ var OS = {
     //
     await window.go.main.App.MakeDir(dnm);
   },
-  loadJavaScript: async function (file) {
+  loadJavaScript: async function(file) {
     var result = "";
 
     //
     // Read in the JavaScript file and run it. It should return an extension object.
     //
-    var jfile = await this.readFile(file).toString();
+    var jfile = await this.readFile(file);
+    jfile = jfile.toString();
     try {
       var scriptFunction = new Function("", jfile);
       result = scriptFunction();
@@ -483,18 +486,18 @@ var OS = {
     }
     return result;
   },
-  searchDir: async function (pat, dir, numEntries, returnFunction) {
+  searchDir: async function(pat, dir, numEntries, returnFunction) {
     try {
       if (dir === "") dir = this.path;
       if (pat !== "") {
         this.runCommandLine(
           "fd -i --max-results " +
-            numEntries +
-            ' -t d "' +
-            pat +
-            '" "' +
-            dir +
-            '"',
+          numEntries +
+          ' -t d "' +
+          pat +
+          '" "' +
+          dir +
+          '"',
           (err, data) => {
             if (err) {
               console.log(err);
@@ -510,9 +513,9 @@ var OS = {
       this.lastError = e.toString();
     }
   },
-  splitFilePath: async function (filePath) {
+  splitFilePath: async function(filePath) {
     const parts = await window.go.main.App.SplitFile(filePath);
-    return(parts);
+    return (parts);
   },
 };
 
