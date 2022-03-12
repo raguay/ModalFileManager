@@ -12,6 +12,7 @@ interface go {
 		ReadDir(arg1:string):Promise<Array<FileInfo>>
 		ReadFile(arg1:string):Promise<string>
 		RenameEntry(arg1:string,arg2:string):Promise<void>
+		RunCommandLine(arg1:string,arg2:string,arg3:Array<string>,arg4:string):Promise<string>
 		SplitFile(arg1:string):Promise<FileParts>
 		WriteFile(arg1:string,arg2:string):Promise<void>
     },

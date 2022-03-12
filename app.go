@@ -3,18 +3,21 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	cp "github.com/otiai10/copy"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
-	cp "github.com/otiai10/copy"
 )
 
 // App application struct and other structs
 type App struct {
-	ctx context.Context
-	err string
+	ctx  context.Context
+	err  string
+	proc *os.Process
 }
 
 type FileParts struct {
@@ -119,7 +122,7 @@ func (b *App) MakeFile(path string) {
 func (b *App) MoveEntries(from string, to string) {
 	b.err = ""
 	err := os.Rename(from, to)
-	if err != nil { 
+	if err != nil {
 		b.err = err.Error()
 	}
 }
@@ -127,7 +130,7 @@ func (b *App) MoveEntries(from string, to string) {
 func (b *App) RenameEntry(from string, to string) {
 	b.err = ""
 	err := os.Rename(from, to)
-	if err != nil { 
+	if err != nil {
 		b.err = err.Error()
 	}
 }
@@ -147,7 +150,7 @@ func (b *App) CopyEntries(from string, to string) {
 		//
 		// It's a directory! Do a deap copy.
 		//
-		err := cp.Copy(from,to)
+		err := cp.Copy(from, to)
 		if err != nil {
 			b.err = err.Error()
 			return
@@ -183,4 +186,21 @@ func (b *App) DeleteEntries(path string) {
 	if err != nil {
 		b.err = err.Error()
 	}
+}
+
+func (b *App) RunCommandLine(cmd string, args string, env []string, dir string) string {
+	fmt.Printf("The command is: %s\n", cmd)
+	fmt.Printf("The args are: %s\n", args)
+	fmt.Printf("The env are: %v\n", env)
+	fmt.Printf("The directory is: %s\n", dir)
+	b.err = ""
+	cmdline := exec.Command(cmd, args)
+	cmdline.Env = env
+	cmdline.Dir = dir
+	result, err := cmdline.CombinedOutput();
+	if( err != nil ) {
+		b.err = err.Error()
+	}
+
+	return string(result[:])
 }

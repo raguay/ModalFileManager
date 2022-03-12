@@ -293,7 +293,7 @@ return({{extName}});
             //
             // Open emacs.
             //
-            await localConfig.localFS.runCommandLine('emacsclient -n -q "' + file + '"');
+            await localConfig.localFS.runCommandLine('emacsclient -n -q "' + file + '"', [], (err, result) => {}, '.');
           } else {
             //
             // Open in a terminal program.
@@ -305,7 +305,7 @@ return({{extName}});
         //
         // Open with the system default editor.
         //
-        await localConfig.localFS.runCommandLine('open "' + file + '"');
+        await localConfig.localFS.runCommandLine('open "' + file + '"', [], (err, result) => {}, '.');
       }
 
       //
@@ -328,7 +328,7 @@ return({{extName}});
     extDir = await localConfig.localFS.appendPath(extDir, extensionName);
     if(! await localConfig.localFS.dirExists(extDir)) {
       await localConfig.localFS.createDir(extDir);
-      await localConfig.localFS.runCommandLine('cd "' + extDir + '"; npm init -y;', (err, stdout) => {
+      await localConfig.localFS.runCommandLine('cd "' + extDir + '"; npm init -y;', [], (err, stdout) => {
         if(err) {
           // 
           // An error, show to console.
@@ -338,7 +338,7 @@ return({{extName}});
         } else {
           editPackage();
         }
-      });
+      }, '.');
     } else {
       // 
       // The extension exists. Tell the user to update a theme instead.

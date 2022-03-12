@@ -192,15 +192,15 @@ var OS = {
         // Use the trashcan on the system.
         //
         if (typeof callback === "undefined") {
-          this.runCommandLine("trash '" + item + "'", (err, stdout) => {
+          this.runCommandLine("trash '" + item + "'", [], (err, stdout) => {
             if (err) {
               that.lastError = err;
               console.log(err);
             }
             that.lastOutput = stdout;
-          });
+          }, '.');
         } else {
-          this.runCommandLine("trash '" + item + "'", callback);
+          this.runCommandLine("trash '" + item + "'", [], callback, '.');
         }
       } else {
         //
@@ -239,13 +239,6 @@ var OS = {
       var items = await this.readDir(dir);
       for (var i = 0; i < items.length; i++) {
         if (typeof items[i] !== "undefined") {
-          var file = "";
-          if (items[i][0] == this.sep) items[i] = items[i].slice(1);
-          if (dir != this.sep && dir.length > 1) {
-            file = dir + this.sep + items[i];
-          } else {
-            file = this.sep + items[i];
-          }
           var newEntry;
           newEntry = {
             name: items[i].Name,
@@ -369,7 +362,7 @@ var OS = {
     }
     return this.config;
   },
-  runCommandLine: async function(line, callback, rEnv, rOpt) {
+  runCommandLine: async function(line, rEnv, callback, dir) {
     //
     // Get the environment to use.
     //
@@ -379,25 +372,39 @@ var OS = {
       nEnv = { ...nEnv, ...rEnv };
     }
 
-    var nOpt = {
-      env: nEnv,
-      shell: cnfg.shell,
-    };
-    if (typeof rOpt !== 'undefined') {
-      nOpt = { ...nOpt, ...rOpt };
+    //
+    // Fix the environment from a map to an array of strings.
+    //
+    var penv = [];
+    for (const key in nEnv) {
+      penv.push(`${key}=${nEnv[key]}`)
     }
 
     //
-    // Run with default callback if a callback wasn't given.
+    // Make sure dir has a value.
     //
+    if (typeof dir === 'undefined') dir = '.';
+
     //
-    // TODO
+    // Run the command line in a shell. #TODO make the shell configurable.
+    //
+    var args = `-ic "${line}"`;
+    var cmd = "zsh";
+
+    //
+    // Run the command line.
+    //
+    var result = await window.go.main.App.RunCommandLine(cmd, args, penv, dir);
+    var err = await window.go.main.App.GetError();
+
+    //
+    // If callback is given, call it with the results.
     //
     if (typeof callback !== 'undefined') {
+      callback(err, result);
     }
   },
   appendPath: async function(dir, name) {
-    //
     // dir can be an entry or a path string. name is always a string.
     //
     if (typeof dir === "object") dir = `${dir.dir}${this.sep}${dir.name}`;
@@ -498,6 +505,7 @@ var OS = {
           '" "' +
           dir +
           '"',
+          [],
           (err, data) => {
             if (err) {
               console.log(err);
@@ -505,7 +513,8 @@ var OS = {
             } else {
               returnFunction(data.toString().split("\n"));
             }
-          }
+          },
+          dir
         );
       }
     } catch (e) {

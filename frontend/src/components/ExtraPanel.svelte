@@ -162,7 +162,7 @@
 
   function getDimensions(fileName) {
     var com = 'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' + fileName + '"';
-    localCurrentCursor.entry.fileSystem.runCommandLine(com, (err, stdout) => {
+    localCurrentCursor.entry.fileSystem.runCommandLine(com, [], (err, stdout) => {
       if(err) {
         console.log(err);
       } else {
@@ -171,6 +171,6 @@
         var height = /height=(\d+)/.exec(stdout);
         videoDem = parseInt(width[1]) + "x" + parseInt(height[1]);
       }
-    });
+    }, '.');
   }
 </script>

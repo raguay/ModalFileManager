@@ -297,7 +297,7 @@
     thmDir = await localConfig.localFS.appendPath(thmDir, themeName);
     if(!await localConfig.localFS.dirExists(thmDir)) {
       await localConfig.localFS.createDir(thmDir);
-      await localConfig.localFS.runCommandLine('cd "' + thmDir + '"; npm init -y;', async (err, stdout) => {
+      await localConfig.localFS.runCommandLine('cd "' + thmDir + '"; npm init -y;', [], async (err, stdout) => {
         if(err) {
           // 
           // Something went wrong.
@@ -325,7 +325,7 @@
         var thmFile = await localConfig.localFS.appendPath(thmDir,themeName + '.json');
         await localConfig.localFS.writeFile(thmFile, JSON.stringify(localTheme));
         loadThemeList();
-      });
+      }, '.');
     } else {
       // 
       // The theme exists. Tell the user to update a theme instead.

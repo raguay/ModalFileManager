@@ -94,6 +94,17 @@ const go = {
         return window.go.main.App.RenameEntry(arg1, arg2);
       },
       /**
+       * RunCommandLine
+       * @param {string} arg1 - Go Type: string
+       * @param {string} arg2 - Go Type: string
+       * @param {Array<string>} arg3 - Go Type: []string
+       * @param {string} arg4 - Go Type: string
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      "RunCommandLine": (arg1, arg2, arg3, arg4) => {
+        return window.go.main.App.RunCommandLine(arg1, arg2, arg3, arg4);
+      },
+      /**
        * SplitFile
        * @param {string} arg1 - Go Type: string
        * @returns {Promise<FileParts>}  - Go Type: main.FileParts

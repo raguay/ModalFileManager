@@ -1,180 +1,39 @@
-<div id='container'
-  style="background-color: {$theme.backgroundColor};
-         color: {$theme.textColor};
-         font-family: {$theme.font};
-         font-size: {$theme.fontSize};
-         height: {mid}px;"
-  on:mousemove={mouseMove}
-  on:mouseup={e => {
-    mdown = false;
-  }}
-  bind:this={containerDOM}
->
-
-  {#if showGitHub}
-    <GitHub 
-      on:closeGitHub={(e) => {
-        toggleGitHub();
-      }}
-    />
-  {/if}
-
-  {#if showCommandPrompt}
-    <CommandPrompt 
-
-commands={commands}
-      on:closeCommandPrompt={(e) => {
-        showCommandPrompt = false;
-        if(!showMessageBox) {
-          $keyProcess = true;
-        }
-        if(e.detail.skip) $skipKey = true;
-      }}
-    />
-  {/if}
-
-  {#if showMessageBox}
-    <MessageBox
-      config={msgBoxConfig}
-      spinners={msgBoxSpinners}
-      items={msgBoxItems}
-      on:msgReturn={msgReturn}
-      on:closeMsgBox={(e) => { 
-        showMessageBox = false;
-        $keyProcess = true;
-        if(e.detail.skip) $skipKey = true;
-      }}
-    />
-  {/if}
-
-  {#if showQuickSearch}
-    <QuickSearch
-      leftDOM={leftDOM}
-      rightDOM={rightDOM}
-      leftEntries={leftEntries}
-      rightEntries={rightEntries}
-      on:changeEntries={qsChangeEntries}
-      on:closeQuickSearch={(e) => { 
-        showQuickSearch = false;
-        $keyProcess = true;
-        if(e.detail.skip) $skipKey = true;
-      }}
-    />
-  {/if}
-
-  <div id='leftSide'
-       bind:this={leftDOM}>
-    {#if (localCurrentCursor.pane === 'right')&&(showExtra)}
-      <ExtraPanel
-        side = 'left'
-      />
-    {:else}
-      <DirectoryListing
-        path={localLeftDir}
-        edit={setEditDirFlagLeft}
-        on:dirChange={(e) => { changeDir(e.detail, 'left', ''); setEditDirFlagLeft = false; }}
-        on:updateDir={(e) => { refreshLeftPane(); }}
-      />
-      <Pane 
-        pane='left'
-        entries={leftEntries}
-        utilities={localLeftDir.fileSystem}
-        on:changeDir={(e) => { changeDir(e.detail.dir, e.detail.pane, ''); }}
-        on:openFile={(e) => { openFile(e.detail.entry); }}
-      />
-    {/if}
-  </div>
-  <ResizeBorder 
-    on:mouseDown={(e) => {mdown = e.detail;}}
-  />
-  <div id='rightSide'
-       bind:this={rightDOM}
-  >
-    {#if (localCurrentCursor.pane === 'left')&&(showExtra)}
-      <ExtraPanel
-        side='right'
-      />
-    {:else}
-      <DirectoryListing
-        path={localRightDir}
-        edit={setEditDirFlagRight}
-        on:dirChange={(e) => { changeDir(e.detail, 'right',''); setEditDirFlagRight = false; }}
-        on:updateDir={(e) => { refreshRightPane(); }}
-      />
-      <Pane 
-        pane='right'
-        entries={rightEntries}
-        utilities={localRightDir.fileSystem}
-        on:changeDir={(e) => {changeDir(e.detail.dir, e.detail.pane,''); }}
-        on:openFile={(e) => { openFile(e.detail.entry); }}
-      />
-    {/if}
-  </div>
-</div>
-
-<style>
-  #leftSide {
-    display: flex;
-    flex-direction: column;
-    padding: 0px;
-    margin: 0px;
-    width: 50%;
-  }
-  
-  #rightSide {
-    display: flex;
-    flex-direction: column;
-    padding: 0px;
-    margin: 0px;
-    width: 50%;
-  }
-
-  #container {
-    padding: 0px;
-    margin: 0px;
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    flex-grow: 1;
-  }
-</style>
-
 <script>
-  import { onMount, tick, createEventDispatcher } from 'svelte';
-  import { get } from 'svelte/store';
-  import Pane from '../components/Pane.svelte';
-  import MessageBox from '../components/MessageBox.svelte';
-  import DirectoryListing from '../components/DirectoryListing.svelte';
-  import ResizeBorder from '../components/ResizeBorder.svelte';
-  import QuickSearch from '../components/QuickSearch.svelte';
-  import ExtraPanel from '../components/ExtraPanel.svelte';
-  import CommandPrompt from '../components/CommandPrompt.svelte';
-  import GitHub from '../components/GitHub.svelte';
-  import { currentCursor } from '../stores/currentCursor.js';
-  import { currentLeftFile } from '../stores/currentLeftFile.js';
-  import { currentRightFile } from '../stores/currentRightFile.js';
-  import { theme } from '../stores/theme.js';
-  import { inputState } from '../stores/inputState.js';
-  import { leftDir } from '../stores/leftDir.js';
-  import { rightDir } from '../stores/rightDir.js';
-  import { keyProcess } from '../stores/keyProcess.js';
-  import { config } from '../stores/config.js';
-  import { dirHistory } from '../stores/dirHistory.js';
-  import { directoryListeners } from '../stores/directoryListeners.js';
-  import { stateMapColors } from '../stores/stateMapColors.js';
-  import { extraPanel } from '../stores/extraPanel.js';
-  import commands from '../modules/commands.js';
-  import filesystems from '../modules/filesystems';
-  import extensions from '../modules/extensions.js';
-  import OS from '../modules/OS.js';
-  import { altKey } from '../stores/altKey.js';
-  import { ctrlKey } from '../stores/ctrlKey.js';
-  import { metaKey } from '../stores/metaKey.js';
-  import { skipKey } from '../stores/skipKey.js';
-  import { shiftKey } from '../stores/shiftKey.js';
+  import { onMount, tick, createEventDispatcher } from "svelte";
+  import { get } from "svelte/store";
+  import Pane from "../components/Pane.svelte";
+  import MessageBox from "../components/MessageBox.svelte";
+  import DirectoryListing from "../components/DirectoryListing.svelte";
+  import ResizeBorder from "../components/ResizeBorder.svelte";
+  import QuickSearch from "../components/QuickSearch.svelte";
+  import ExtraPanel from "../components/ExtraPanel.svelte";
+  import CommandPrompt from "../components/CommandPrompt.svelte";
+  import GitHub from "../components/GitHub.svelte";
+  import { currentCursor } from "../stores/currentCursor.js";
+  import { currentLeftFile } from "../stores/currentLeftFile.js";
+  import { currentRightFile } from "../stores/currentRightFile.js";
+  import { theme } from "../stores/theme.js";
+  import { inputState } from "../stores/inputState.js";
+  import { leftDir } from "../stores/leftDir.js";
+  import { rightDir } from "../stores/rightDir.js";
+  import { keyProcess } from "../stores/keyProcess.js";
+  import { config } from "../stores/config.js";
+  import { dirHistory } from "../stores/dirHistory.js";
+  import { directoryListeners } from "../stores/directoryListeners.js";
+  import { stateMapColors } from "../stores/stateMapColors.js";
+  import { extraPanel } from "../stores/extraPanel.js";
+  import commands from "../modules/commands.js";
+  import filesystems from "../modules/filesystems";
+  import extensions from "../modules/extensions.js";
+  import OS from "../modules/OS.js";
+  import { altKey } from "../stores/altKey.js";
+  import { ctrlKey } from "../stores/ctrlKey.js";
+  import { metaKey } from "../stores/metaKey.js";
+  import { skipKey } from "../stores/skipKey.js";
+  import { shiftKey } from "../stores/shiftKey.js";
   import { processKey } from "../stores/processKey.js";
 
-	const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher();
 
   export let mid;
 
@@ -193,35 +52,35 @@ commands={commands}
   let leftEntries = {};
   let rightEntries = {};
   let localCurrentCursor = {
-    pane: 'left',
-    entry: {}
+    pane: "left",
+    entry: {},
   };
   let localCurrentLeftFile = {};
   let localCurrentRightFile = {};
   let localTheme = {};
-  let localState = 'normal';
+  let localState = "normal";
   let localLeftDir = {
-    fileSystemType: 'macOS',
+    fileSystemType: "macOS",
     fileSystem: null,
-    path: ''
+    path: "",
   };
   let localRightDir = {
-    fileSystemType: 'macOS',
+    fileSystemType: "macOS",
     fileSystem: null,
-    path: ''
+    path: "",
   };
   let rightDOM = null;
   let leftDOM = null;
   let containerDOM = null;
   let mdown = false;
   let lastError = null;
-  let userEditor = '.myeditorchoice';
-  let OStype = 'macOS';
+  let userEditor = ".myeditorchoice";
+  let OStype = "macOS";
   let stateMaps = [];
   let localStateMapColors = [];
   let showGitHub = false;
-  let numberAcc = '';
-  let lastCommand = '';
+  let numberAcc = "";
+  let lastCommand = "";
   let flagFilter = 1;
 
   onMount(async () => {
@@ -229,7 +88,7 @@ commands={commands}
     // Initialize all the stores with minimal settings.
     //
     $keyProcess = true;
-    $inputState = 'normal';
+    $inputState = "normal";
     $theme = {};
     $currentCursor = {};
     $currentRightFile = {};
@@ -254,49 +113,49 @@ commands={commands}
     OS.init();
     OS.setDirFirst(true);
 
-    // 
+    //
     // Setup the configuration directory.
     //
     configDir = await OS.getConfigDir();
-    if(! await OS.dirExists(configDir)) {
+    if (!(await OS.dirExists(configDir))) {
       await OS.makeDir(configDir);
       await OS.makeDir({
         dir: configDir,
-        name: 'extensions',
-        fileSystem: OS
+        name: "extensions",
+        fileSystem: OS,
       });
     }
 
-    // 
+    //
     // Load the configuration file.
-    // 
-    if(! await OS.fileExists(await OS.appendPath(configDir,'config.json'))) {
+    //
+    if (!(await OS.fileExists(await OS.appendPath(configDir, "config.json")))) {
       //
       // Create the default configuration and save it.
       //
       localConfig = await OS.getConfig();
-      const cfgFile = await OS.appendPath(configDir,'config.json');
+      const cfgFile = await OS.appendPath(configDir, "config.json");
       await OS.writeFile(cfgFile, JSON.stringify(localConfig));
     } else {
       //
       // Read in the local configuration.
       //
-      var configFile = await OS.appendPath(configDir,'config.json');
+      var configFile = await OS.appendPath(configDir, "config.json");
       localConfig = await OS.readFile(configFile);
       localConfig = JSON.parse(localConfig);
     }
 
     //
-    // Here, we are subscribing to the different stores and setting their 
+    // Here, we are subscribing to the different stores and setting their
     // default values;
     //
-    var unsubscribeLeftDir = leftDir.subscribe(value => {
+    var unsubscribeLeftDir = leftDir.subscribe((value) => {
       localLeftDir = value;
     });
-    var unsubscribeRightDir = rightDir.subscribe(value => {
+    var unsubscribeRightDir = rightDir.subscribe((value) => {
       localRightDir = value;
     });
-    
+
     //
     // Setup the application to be in the user's home directory.
     //
@@ -318,55 +177,55 @@ commands={commands}
     //
     $leftDir = localLeftDir;
     $rightDir = localRightDir;
- 
-    var unsubscribeCurrentCursor = currentCursor.subscribe(value => {
+
+    var unsubscribeCurrentCursor = currentCursor.subscribe((value) => {
       localCurrentCursor = value;
     });
     $currentCursor = {
-      pane: 'left',
-      entry: leftEntries[0]
+      pane: "left",
+      entry: leftEntries[0],
     };
-    var unsubscribeCurrentLeftFile = currentLeftFile.subscribe(value => {
+    var unsubscribeCurrentLeftFile = currentLeftFile.subscribe((value) => {
       localCurrentLeftFile = value;
     });
     $currentLeftFile = {
-      entry: leftEntries[0]
+      entry: leftEntries[0],
     };
-    var unsubscribeCurrentRightFile = currentRightFile.subscribe(value => {
+    var unsubscribeCurrentRightFile = currentRightFile.subscribe((value) => {
       localCurrentRightFile = value;
     });
     $currentRightFile = {
-      entry: rightEntries[0]
+      entry: rightEntries[0],
     };
-    var unsubscribeTheme = theme.subscribe(async value => {
-      // 
+    var unsubscribeTheme = theme.subscribe(async (value) => {
+      //
       // Make sure a proper theme is being set.
-      // 
-      if(typeof value.backgroundColor !== 'undefined') {
+      //
+      if (typeof value.backgroundColor !== "undefined") {
         //
         // Keep a local copy.
-        // 
+        //
         localTheme = value;
- 
-        // 
+
+        //
         // Save the new theme values.
         //
-        const tfile = await OS.appendPath(configDir, 'theme.json');
+        const tfile = await OS.appendPath(configDir, "theme.json");
         await OS.writeFile(tfile, JSON.stringify(value));
 
         //
         // Set the default state map colors.
         //
-        localStateMapColors['normal'] = localTheme.normalbackgroundColor;
-        localStateMapColors['insert'] = localTheme.insertbackgroundColor;
-        localStateMapColors['visual'] = localTheme.visualbackgroundColor;
+        localStateMapColors["normal"] = localTheme.normalbackgroundColor;
+        localStateMapColors["insert"] = localTheme.insertbackgroundColor;
+        localStateMapColors["visual"] = localTheme.visualbackgroundColor;
         $stateMapColors = localStateMapColors;
       }
     });
-    var unsubscriptStateMapColors = stateMapColors.subscribe(value => {
+    var unsubscriptStateMapColors = stateMapColors.subscribe((value) => {
       localStateMapColors = value;
     });
-    var unsubscribeInputState = inputState.subscribe(value => {
+    var unsubscribeInputState = inputState.subscribe((value) => {
       localState = value;
     });
     $inputState = localState;
@@ -375,10 +234,10 @@ commands={commands}
     // Setup the user editor data file.
     //
     const hdir = await OS.getHomeDir();
-    userEditor = await OS.appendPath(hdir, '.myeditorchoice');
-    if(! await OS.fileExists(userEditor)) {
-      const edFile = await OS.appendPath(configDir, '.myeditorchoice');
-      if(! await OS.fileExists(edFile)) {
+    userEditor = await OS.appendPath(hdir, ".myeditorchoice");
+    if (!(await OS.fileExists(userEditor))) {
+      const edFile = await OS.appendPath(configDir, ".myeditorchoice");
+      if (!(await OS.fileExists(edFile))) {
         //
         // They don't have this file setup. TODO: Set it up or not?
         //
@@ -389,8 +248,8 @@ commands={commands}
     // Load the extensions, keyboard, and theme.
     //
     loadExtensionsKeyboard();
-    
-    // 
+
+    //
     // Set the configuration store.
     //
     $config = {
@@ -399,12 +258,12 @@ commands={commands}
       configuration: localConfig,
       commands: commands,
       extensions: extensions,
-      userEditor: userEditor
+      userEditor: userEditor,
     };
     OS.setConfig(localConfig);
     extensions.setConfig(localConfig);
 
-    // 
+    //
     // Setup the directory history.
     //
     var dhist = get(dirHistory);
@@ -414,7 +273,7 @@ commands={commands}
     //
     // return a command to unsubscribe from everything.
     //
-    return(() => {
+    return () => {
       unsubscribeKeyProcess();
       unsubscribeInputState();
       unsubscribeTheme();
@@ -424,10 +283,10 @@ commands={commands}
       unsubscribeRightDir();
       unsubscribeLeftDir();
       unsubscriptStateMapColors();
-    })
+    };
   });
 
- async function loadExtensionsKeyboard() {
+  async function loadExtensionsKeyboard() {
     //
     // Setup the default commands.
     //
@@ -436,19 +295,19 @@ commands={commands}
     //
     // load the theme.
     //
-    const thFile = await OS.appendPath(configDir, 'theme.json');
-    if(! await OS.fileExists(thFile)) {
+    const thFile = await OS.appendPath(configDir, "theme.json");
+    if (!(await OS.fileExists(thFile))) {
       //
       // Setup the Dracula Pro as default theme colors:
       //
       localTheme = {
         font: "Fira Code, Menlo",
         fontSize: "12pt",
-        cursorColor: '#363443',
-        selectedColor: '#454158',
-        backgroundColor: '#22212C',
-        textColor: '#F8F8F2',
-        borderColor: '#1B1A23',
+        cursorColor: "#363443",
+        selectedColor: "#454158",
+        backgroundColor: "#22212C",
+        textColor: "#F8F8F2",
+        borderColor: "#1B1A23",
         normalbackgroundColor: "#80FFEA",
         insertbackgroundColor: "#8AFF80",
         visualbackgroundColor: "#FF80BF",
@@ -459,7 +318,7 @@ commands={commands}
         Pink: "#FF80BF",
         Purple: "#9580FF",
         Red: "#FF9580",
-        Yellow: "#FFFF80"
+        Yellow: "#FFFF80",
       };
 
       //
@@ -477,16 +336,15 @@ commands={commands}
     //
     // Get the stateMapColors setup.
     //
-    localStateMapColors['normal'] = localTheme.normalbackgroundColor;
-    localStateMapColors['insert'] = localTheme.insertbackgroundColor;
-    localStateMapColors['visual'] = localTheme.visualbackgroundColor;
+    localStateMapColors["normal"] = localTheme.normalbackgroundColor;
+    localStateMapColors["insert"] = localTheme.insertbackgroundColor;
+    localStateMapColors["visual"] = localTheme.visualbackgroundColor;
     stateMapColors.set(localStateMapColors);
 
     //
     // Set the theme.
     //
     theme.set(localTheme);
-
 
     //
     // Setup Extensions.
@@ -502,7 +360,7 @@ commands={commands}
   }
 
   async function setUpExt() {
-    const extDir = await OS.appendPath(configDir, 'extensions');
+    const extDir = await OS.appendPath(configDir, "extensions");
     extensions.setExtensionDir(extDir);
     extensions.setCommands(commands);
     extensions.setFileSystems(filesystems);
@@ -521,7 +379,7 @@ commands={commands}
 
   function clearCommands() {
     commands.commandList = [];
-    commands.lastError = '';
+    commands.lastError = "";
   }
 
   function reloadExtensions() {
@@ -531,116 +389,429 @@ commands={commands}
     loadExtensionsKeyboard();
   }
 
- function switchView(view) {
-    dispatch('switchView', {
-      view: view
+  function switchView(view) {
+    dispatch("switchView", {
+      view: view,
     });
   }
 
   function showPreferences() {
-    switchView('preferences');
+    switchView("preferences");
   }
 
   function getOS() {
-    return 'macOS';
+    return "macOS";
   }
 
   function installDefaultExtCommands() {
-    extensions.addExtCommand('setCursor','Set the cursor to the file name given in the current panel.', setCursor);
-    extensions.addExtCommand('cursorToPane', 'Set the cursor to the pane given. Either "left" or "right", cursorToPane');
-    extensions.addExtCommand('changeDir', 'Change the directory of a pane and make it the current.', changeDir);
-    extensions.addExtCommand('getLeftFile', 'Get the current left file information.', getLeftFile);
-    extensions.addExtCommand('getRightFile', 'Get the current right file information.', getRightFile);
-    extensions.addExtCommand('getCursor', 'Get the current cursor.', getCursor);
-    extensions.addExtCommand('addKeyboardShort', 'Add a keyboard shortcut.', addKeyboardShort);
-    extensions.addExtCommand('setTheme', 'Set the theme to the values given.', setTheme);
-    extensions.addExtCommand('getTheme', 'Get the current theme values.', getTheme);
-    extensions.addExtCommand('getOS', 'Get the local OS name.', getOS);
-    extensions.addExtCommand('addDirectoryListener', 'Register a function that will be called with each change in directory.', addDirectoryListener);
-    extensions.addExtCommand('getLastError', 'returns the last error.', getLastError);
-    extensions.addExtCommand('getSelectedFiles', 'Returns a list of Entries that have been selected', getSelectedFiles);
-    extensions.addExtCommand('getCurrentFile', 'Get the current file.', getCurrentFile);
-    extensions.addExtCommand('getCurrentPane', 'Get the pane that is currently active.', getCurrentPane);
-    extensions.addExtCommand('changeDir', 'Change the current directory for a pane.', changeDir);
-    extensions.addExtCommand('addSpinner', 'Add a message box spinner value.', addSpinner);
-    extensions.addExtCommand('updateSpinner', 'Update a message box spinner value.', updateSpinner);
-    extensions.addExtCommand('removeSpinner', 'Remove a message box spinner value.', removeSpinner);
-    extensions.addExtCommand('keyProcessor', 'Send a keystroke to be processed.', keyProcessor);
-    extensions.addExtCommand('stringKeyProcessor', 'Send a string of keystrokes to be processed.', stringKeyProcessor);
-    extensions.addExtCommand('askQuestion', 'Ask a question and get the response.', askQuestion);
-    extensions.addExtCommand('pickItem', 'Choose from a list of items.', pickItem);
-    extensions.addExtCommand('showMessage', 'Show a message to the user.', showMessage);
-    extensions.addExtCommand('createNewMode', 'Allows the creation of a new mode for keyboard commands.', createNewMode);
-    extensions.addExtCommand('changeMode', 'Change to mode given.', changeMode);
-    extensions.addExtCommand('switchView', 'Switch the active program view.', switchView);
-    extensions.addExtCommand('copyEntriesCommand', 'Copy the list of entries to new location.', copyEntriesCommand);
-    extensions.addExtCommand('moveEntriesCommand', 'Move the list of entries to the new location.', moveEntriesCommand);
-    extensions.addExtCommand('deleteEntriesCommand', 'Delete the list of entries.', deleteEntriesCommand);
-    extensions.addExtCommand('editEntryCommand', 'Edit the given entry.', editEntryCommand);
-    extensions.addExtCommand('getRightDir', 'Get the path for the right pane.', getRightDir);
-    extensions.addExtCommand('getLeftDir', 'Get the path for the left pane.', getLeftDir);
-    extensions.addExtCommand('addExtraPanelProcessor', 'Add a processor for creating extra panel html.', addExtraPanelProcessor);
+    extensions.addExtCommand(
+      "setCursor",
+      "Set the cursor to the file name given in the current panel.",
+      setCursor
+    );
+    extensions.addExtCommand(
+      "cursorToPane",
+      'Set the cursor to the pane given. Either "left" or "right", cursorToPane'
+    );
+    extensions.addExtCommand(
+      "changeDir",
+      "Change the directory of a pane and make it the current.",
+      changeDir
+    );
+    extensions.addExtCommand(
+      "getLeftFile",
+      "Get the current left file information.",
+      getLeftFile
+    );
+    extensions.addExtCommand(
+      "getRightFile",
+      "Get the current right file information.",
+      getRightFile
+    );
+    extensions.addExtCommand("getCursor", "Get the current cursor.", getCursor);
+    extensions.addExtCommand(
+      "addKeyboardShort",
+      "Add a keyboard shortcut.",
+      addKeyboardShort
+    );
+    extensions.addExtCommand(
+      "setTheme",
+      "Set the theme to the values given.",
+      setTheme
+    );
+    extensions.addExtCommand(
+      "getTheme",
+      "Get the current theme values.",
+      getTheme
+    );
+    extensions.addExtCommand("getOS", "Get the local OS name.", getOS);
+    extensions.addExtCommand(
+      "addDirectoryListener",
+      "Register a function that will be called with each change in directory.",
+      addDirectoryListener
+    );
+    extensions.addExtCommand(
+      "getLastError",
+      "returns the last error.",
+      getLastError
+    );
+    extensions.addExtCommand(
+      "getSelectedFiles",
+      "Returns a list of Entries that have been selected",
+      getSelectedFiles
+    );
+    extensions.addExtCommand(
+      "getCurrentFile",
+      "Get the current file.",
+      getCurrentFile
+    );
+    extensions.addExtCommand(
+      "getCurrentPane",
+      "Get the pane that is currently active.",
+      getCurrentPane
+    );
+    extensions.addExtCommand(
+      "changeDir",
+      "Change the current directory for a pane.",
+      changeDir
+    );
+    extensions.addExtCommand(
+      "addSpinner",
+      "Add a message box spinner value.",
+      addSpinner
+    );
+    extensions.addExtCommand(
+      "updateSpinner",
+      "Update a message box spinner value.",
+      updateSpinner
+    );
+    extensions.addExtCommand(
+      "removeSpinner",
+      "Remove a message box spinner value.",
+      removeSpinner
+    );
+    extensions.addExtCommand(
+      "keyProcessor",
+      "Send a keystroke to be processed.",
+      keyProcessor
+    );
+    extensions.addExtCommand(
+      "stringKeyProcessor",
+      "Send a string of keystrokes to be processed.",
+      stringKeyProcessor
+    );
+    extensions.addExtCommand(
+      "askQuestion",
+      "Ask a question and get the response.",
+      askQuestion
+    );
+    extensions.addExtCommand(
+      "pickItem",
+      "Choose from a list of items.",
+      pickItem
+    );
+    extensions.addExtCommand(
+      "showMessage",
+      "Show a message to the user.",
+      showMessage
+    );
+    extensions.addExtCommand(
+      "createNewMode",
+      "Allows the creation of a new mode for keyboard commands.",
+      createNewMode
+    );
+    extensions.addExtCommand("changeMode", "Change to mode given.", changeMode);
+    extensions.addExtCommand(
+      "switchView",
+      "Switch the active program view.",
+      switchView
+    );
+    extensions.addExtCommand(
+      "copyEntriesCommand",
+      "Copy the list of entries to new location.",
+      copyEntriesCommand
+    );
+    extensions.addExtCommand(
+      "moveEntriesCommand",
+      "Move the list of entries to the new location.",
+      moveEntriesCommand
+    );
+    extensions.addExtCommand(
+      "deleteEntriesCommand",
+      "Delete the list of entries.",
+      deleteEntriesCommand
+    );
+    extensions.addExtCommand(
+      "editEntryCommand",
+      "Edit the given entry.",
+      editEntryCommand
+    );
+    extensions.addExtCommand(
+      "getRightDir",
+      "Get the path for the right pane.",
+      getRightDir
+    );
+    extensions.addExtCommand(
+      "getLeftDir",
+      "Get the path for the left pane.",
+      getLeftDir
+    );
+    extensions.addExtCommand(
+      "addExtraPanelProcessor",
+      "Add a processor for creating extra panel html.",
+      addExtraPanelProcessor
+    );
   }
 
   function installDefaultCommands() {
     //
     // Add all built in commands to the commands object.
     //
-    commands.addCommand('Move Cursor Down','moveCursorDown','Move the cursor down one line.',moveCursorDown);
-    commands.addCommand('Move Cursor Down with Selection', 'moveCursorDownWithSelect','This will select the current file and move the cursor down one line.',moveCursorDownWithSelect);
-    commands.addCommand('Move Cursor Up','moveCursorUp','This will move the cursor up one line',moveCursorUp);
-    commands.addCommand('Move Cursor Up with Selection','moveCursorUpWithSelect','This will move select the current entry and move the cursor up one line.',moveCursorUpWithSelect);
-    commands.addCommand('Change Mode to Normal','changeModeNormal','Set the normal mode.',changeModeNormal);
-    commands.addCommand('Change Mode to Insert','changeModeInsert','Set the insert mode.',changeModeInsert);
-    commands.addCommand('Change Mode to Visual','changeModeVisual','Set the visual mode.',changeModeVisual);
-    commands.addCommand('Cursor to Next Pane','cursorToNextPane','This will move the cursore to the opposite pane.',cursorToNextPane);
-    commands.addCommand('Action Entry','actionEntry','This will open a file or go into a directory.',actionEntry);
-    commands.addCommand('Go Up a Directory','goUpDir','Go to the parent directory.',goUpDir);
-    commands.addCommand('Go Down a Directory','goDownDir','If the current entry is a directory, go to it.',goDownDir);
-    commands.addCommand('Go to Bottom Entry','goBottomFile','Move the cursor to the bottom most file.',goBottomFile);
-    commands.addCommand('Go to Top Entry','goTopFile','Move the cursor to the top most file.',goTopFile);
-    commands.addCommand('Delete Entries', 'deleteEntries', 'Delete all selected entries or the one under the cursor', deleteEntries);
-    commands.addCommand('Copy Entries', 'copyEntries', 'Copy the selected entries or the one under the cursor to the other pane.', copyEntries);
-    commands.addCommand('Move Entries', 'moveEntries', 'Move the selected entries or the one under the cursor to the other pane.', moveEntries);
-    commands.addCommand('Edit Entry', 'editEntry', 'Opens the file under the cursor in the editor specified. This command assumes using a Text/Code editor on the file.', editEntry);
-    commands.addCommand('Duplicate Entry', 'duplicateEntry', 'Make a copy of the current entry with "_copy" added to it.', duplicateEntry);
-    commands.addCommand('New File', 'newFile', 'Create a new file in the current pane.', newFile);
-    commands.addCommand('New Directory', 'newDirectory', 'Create a new directory in the current pane.', newDirectory);
-    commands.addCommand('Rename Entry', 'renameEntry', 'Rename the current entry.', renameEntry);
-    commands.addCommand('Swap Panels', 'swapPanels', 'Swap the panel contents.', swapPanels);
-    commands.addCommand('Toggle Quick Search', 'toggleQuickSearch', 'Show/Hide the Quick Search panel.', toggleQuickSearch);
-    commands.addCommand('Reload Pane', 'reloadPane', 'Reload the Current Pane.', reloadPane);
-    commands.addCommand('Edit Directory', 'editDirLoc', 'Edit the current panels directory.', editDirLoc);
-    commands.addCommand('Toggle Extra Panel', 'toggleExtraPanel', 'Toggles the showing of the extra panel.', toggleExtraPanel);
-    commands.addCommand('Toggle Command Prompt', 'toggleCommandPrompt', 'Toggles showing the command prompt.', toggleCommandPrompt);
-    commands.addCommand('Toggle GitHub Importer', 'toggleGitHub', 'Toggles the showing of the GitHub importer.', toggleGitHub);
-    commands.addCommand('Refresh Panes', 'refreshPanes', 'Reloads both panes.', refreshPanes);
-    commands.addCommand('Refresh Right Pane', 'refreshRightPane', 'Refresh the Right Pane', refreshRightPane);
-    commands.addCommand('Refresh Left Pane', 'refreshLeftPane', 'Reloads the Left Pane.', refreshLeftPane);
-    commands.addCommand('Rerun Last Command', 'reRunLastCommand', 'Runs the last command with it\'s number.', reRunLastCommand);
-    commands.addCommand('Toggle Filter', 'toggleFilter', 'Toggles the show all and default filters.', toggleFilter );
-    commands.addCommand('Show All Filter', 'setShowAllFilter', 'Sets to show all Entries.', setShowAllFilter);
-    commands.addCommand('Show Only Non-System Files/Folders', 'setDefaultFilter', 'Sets the default filter of not showing system files/folders.', setDefaultFilter);
-    commands.addCommand('Open in Opposite Panel', 'openOppositePanel', 'Set the opposite panel to the directory under the current cursor or the directory of the current cursor.', openOppositePanel);
-    commands.addCommand('Show Preferences', 'showPreferences', 'Show the preferences.', showPreferences);
-    commands.addCommand('Reload Extensions', 'reloadExtensions', 'Reload the extensions, keyboard maps, and theme.', reloadExtensions);
+    commands.addCommand(
+      "Move Cursor Down",
+      "moveCursorDown",
+      "Move the cursor down one line.",
+      moveCursorDown
+    );
+    commands.addCommand(
+      "Move Cursor Down with Selection",
+      "moveCursorDownWithSelect",
+      "This will select the current file and move the cursor down one line.",
+      moveCursorDownWithSelect
+    );
+    commands.addCommand(
+      "Move Cursor Up",
+      "moveCursorUp",
+      "This will move the cursor up one line",
+      moveCursorUp
+    );
+    commands.addCommand(
+      "Move Cursor Up with Selection",
+      "moveCursorUpWithSelect",
+      "This will move select the current entry and move the cursor up one line.",
+      moveCursorUpWithSelect
+    );
+    commands.addCommand(
+      "Change Mode to Normal",
+      "changeModeNormal",
+      "Set the normal mode.",
+      changeModeNormal
+    );
+    commands.addCommand(
+      "Change Mode to Insert",
+      "changeModeInsert",
+      "Set the insert mode.",
+      changeModeInsert
+    );
+    commands.addCommand(
+      "Change Mode to Visual",
+      "changeModeVisual",
+      "Set the visual mode.",
+      changeModeVisual
+    );
+    commands.addCommand(
+      "Cursor to Next Pane",
+      "cursorToNextPane",
+      "This will move the cursore to the opposite pane.",
+      cursorToNextPane
+    );
+    commands.addCommand(
+      "Action Entry",
+      "actionEntry",
+      "This will open a file or go into a directory.",
+      actionEntry
+    );
+    commands.addCommand(
+      "Go Up a Directory",
+      "goUpDir",
+      "Go to the parent directory.",
+      goUpDir
+    );
+    commands.addCommand(
+      "Go Down a Directory",
+      "goDownDir",
+      "If the current entry is a directory, go to it.",
+      goDownDir
+    );
+    commands.addCommand(
+      "Go to Bottom Entry",
+      "goBottomFile",
+      "Move the cursor to the bottom most file.",
+      goBottomFile
+    );
+    commands.addCommand(
+      "Go to Top Entry",
+      "goTopFile",
+      "Move the cursor to the top most file.",
+      goTopFile
+    );
+    commands.addCommand(
+      "Delete Entries",
+      "deleteEntries",
+      "Delete all selected entries or the one under the cursor",
+      deleteEntries
+    );
+    commands.addCommand(
+      "Copy Entries",
+      "copyEntries",
+      "Copy the selected entries or the one under the cursor to the other pane.",
+      copyEntries
+    );
+    commands.addCommand(
+      "Move Entries",
+      "moveEntries",
+      "Move the selected entries or the one under the cursor to the other pane.",
+      moveEntries
+    );
+    commands.addCommand(
+      "Edit Entry",
+      "editEntry",
+      "Opens the file under the cursor in the editor specified. This command assumes using a Text/Code editor on the file.",
+      editEntry
+    );
+    commands.addCommand(
+      "Duplicate Entry",
+      "duplicateEntry",
+      'Make a copy of the current entry with "_copy" added to it.',
+      duplicateEntry
+    );
+    commands.addCommand(
+      "New File",
+      "newFile",
+      "Create a new file in the current pane.",
+      newFile
+    );
+    commands.addCommand(
+      "New Directory",
+      "newDirectory",
+      "Create a new directory in the current pane.",
+      newDirectory
+    );
+    commands.addCommand(
+      "Rename Entry",
+      "renameEntry",
+      "Rename the current entry.",
+      renameEntry
+    );
+    commands.addCommand(
+      "Swap Panels",
+      "swapPanels",
+      "Swap the panel contents.",
+      swapPanels
+    );
+    commands.addCommand(
+      "Toggle Quick Search",
+      "toggleQuickSearch",
+      "Show/Hide the Quick Search panel.",
+      toggleQuickSearch
+    );
+    commands.addCommand(
+      "Reload Pane",
+      "reloadPane",
+      "Reload the Current Pane.",
+      reloadPane
+    );
+    commands.addCommand(
+      "Edit Directory",
+      "editDirLoc",
+      "Edit the current panels directory.",
+      editDirLoc
+    );
+    commands.addCommand(
+      "Toggle Extra Panel",
+      "toggleExtraPanel",
+      "Toggles the showing of the extra panel.",
+      toggleExtraPanel
+    );
+    commands.addCommand(
+      "Toggle Command Prompt",
+      "toggleCommandPrompt",
+      "Toggles showing the command prompt.",
+      toggleCommandPrompt
+    );
+    commands.addCommand(
+      "Toggle GitHub Importer",
+      "toggleGitHub",
+      "Toggles the showing of the GitHub importer.",
+      toggleGitHub
+    );
+    commands.addCommand(
+      "Refresh Panes",
+      "refreshPanes",
+      "Reloads both panes.",
+      refreshPanes
+    );
+    commands.addCommand(
+      "Refresh Right Pane",
+      "refreshRightPane",
+      "Refresh the Right Pane",
+      refreshRightPane
+    );
+    commands.addCommand(
+      "Refresh Left Pane",
+      "refreshLeftPane",
+      "Reloads the Left Pane.",
+      refreshLeftPane
+    );
+    commands.addCommand(
+      "Rerun Last Command",
+      "reRunLastCommand",
+      "Runs the last command with it's number.",
+      reRunLastCommand
+    );
+    commands.addCommand(
+      "Toggle Filter",
+      "toggleFilter",
+      "Toggles the show all and default filters.",
+      toggleFilter
+    );
+    commands.addCommand(
+      "Show All Filter",
+      "setShowAllFilter",
+      "Sets to show all Entries.",
+      setShowAllFilter
+    );
+    commands.addCommand(
+      "Show Only Non-System Files/Folders",
+      "setDefaultFilter",
+      "Sets the default filter of not showing system files/folders.",
+      setDefaultFilter
+    );
+    commands.addCommand(
+      "Open in Opposite Panel",
+      "openOppositePanel",
+      "Set the opposite panel to the directory under the current cursor or the directory of the current cursor.",
+      openOppositePanel
+    );
+    commands.addCommand(
+      "Show Preferences",
+      "showPreferences",
+      "Show the preferences.",
+      showPreferences
+    );
+    commands.addCommand(
+      "Reload Extensions",
+      "reloadExtensions",
+      "Reload the extensions, keyboard maps, and theme.",
+      reloadExtensions
+    );
   }
-  
+
   function processKeyFunction(e) {
     //
     // Stop the system for propgating the keystroke.
     //
     e.preventDefault();
 
-    // 
+    //
     // Send to the processor.
     //
     keyProcessor(e.key, $ctrlKey, $shiftKey, $metaKey);
   }
 
   function stringKeyProcessor(str) {
-    for(var i=0; i < str.length; i++) {
-      if((str[i] >= 'A')&&(str[i] <= 'Z')) {
+    for (var i = 0; i < str.length; i++) {
+      if (str[i] >= "A" && str[i] <= "Z") {
         keyProcessor(str[i], false, true, false);
       } else {
         keyProcessor(str[i], false, false, false);
@@ -653,25 +824,24 @@ commands={commands}
   }
 
   function keyProcessor(key, cKey, sKey, mKey) {
-
-    if((key >= 0)&&(key <=9)) {
-      // 
+    if (key >= 0 && key <= 9) {
+      //
       // It is a number prefixing a command. Get the digits for using in the command.
-      // 
+      //
       numberAcc += key;
     } else {
       //
       // Get the command for the current state in the stateMaps.
       //
-      
+
       const command = getCommand(stateMaps[localState], key, cKey, sKey, mKey);
-      
-      // 
+
+      //
       // Figure the number of times to run the command.
-      // 
-      var num = parseInt(numberAcc,10);
-      if((num === 0)||(isNaN(num))) num = 1;
-      if(command.name !== 'reRunLastCommand') lastCommand = numberAcc + key;
+      //
+      var num = parseInt(numberAcc, 10);
+      if (num === 0 || isNaN(num)) num = 1;
+      if (command.name !== "reRunLastCommand") lastCommand = numberAcc + key;
 
       //
       // Run the command.
@@ -679,89 +849,99 @@ commands={commands}
       try {
         do {
           command.command();
-        } while((num--) > 1);
-      } catch(e) {
+        } while (num-- > 1);
+      } catch (e) {
         //
         // Something happened in the command. Tell about it.
         //
         lastError = e;
         console.log(e);
       }
-      numberAcc = '';
+      numberAcc = "";
     }
   }
 
- function createNewMode(name, color) {
+  function createNewMode(name, color) {
     stateMaps[name] = [];
     localStateMapColors[name] = color;
     stateMapColors.set(localStateMapColors);
- }
+  }
 
- function getCommand(map, key, cKey, sKey, mKey) {
-     var result = {
+  function getCommand(map, key, cKey, sKey, mKey) {
+    var result = {
       command: () => {},
-      name: 'empty'
+      name: "empty",
     };
-    var rmap = map.find(item => ((item.key == key) && (item.meta == mKey) && (item.ctrl == cKey) && (item.shift == sKey)));
-    if(typeof rmap !== 'undefined') {
+    var rmap = map.find(
+      (item) =>
+        item.key == key &&
+        item.meta == mKey &&
+        item.ctrl == cKey &&
+        item.shift == sKey
+    );
+    if (typeof rmap !== "undefined") {
       result = rmap;
     }
     return result;
   }
 
-  function setCursor(fname){
+  function setCursor(fname) {
     var index = 0;
-    if(localCurrentCursor.pane == 'left') {
-      index = leftEntries.findIndex(item => item.name == fname);
-      if(index === -1) index = 0;
+    if (localCurrentCursor.pane == "left") {
+      index = leftEntries.findIndex((item) => item.name == fname);
+      if (index === -1) index = 0;
       currentCursor.set({
-        pane: 'left',
-        entry: leftEntries[index]
+        pane: "left",
+        entry: leftEntries[index],
       });
       currentLeftFile.set({
-        entry: leftEntries[index]
+        entry: leftEntries[index],
       });
     } else {
-      index = rightEntries.findIndex(item => item.name == fname);
-      if(index === -1) index = 0;
+      index = rightEntries.findIndex((item) => item.name == fname);
+      if (index === -1) index = 0;
       currentCursor.set({
-        pane: 'right',
-        entry: rightEntries[index]
+        pane: "right",
+        entry: rightEntries[index],
       });
       currentRightFile.set({
-        entry: rightEntries[index]
+        entry: rightEntries[index],
       });
     }
   }
 
   function moveCursorDown() {
     var index = 0;
-    if(localCurrentCursor.pane.includes('left')) {
-      if(leftEntries.length !== 0) {
-        index = leftEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index < (leftEntries.length-1)) {
+    if (localCurrentCursor.pane.includes("left")) {
+      if (leftEntries.length !== 0) {
+        index = leftEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index < leftEntries.length - 1) {
           index += 1;
         }
         currentCursor.set({
-          pane: 'left',
-          entry: leftEntries[index]
+          pane: "left",
+          entry: leftEntries[index],
         });
         currentLeftFile.set({
-          entry: leftEntries[index]
+          entry: leftEntries[index],
         });
       }
     } else {
-      if(rightEntries.length !== 0) {
-        index = rightEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index < (rightEntries.length-1)) {
+      if (rightEntries.length !== 0) {
+        index = rightEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index < rightEntries.length - 1) {
           index += 1;
         }
         currentCursor.set({
-          pane: 'right',
-          entry: rightEntries[index]
+          pane: "right",
+          entry: rightEntries[index],
         });
         currentRightFile.set({
-          entry: rightEntries[index]
+          entry: rightEntries[index],
         });
       }
     }
@@ -769,42 +949,46 @@ commands={commands}
 
   function moveCursorDownWithSelect() {
     var index = 0;
-    if(localCurrentCursor.pane.includes('left')) {
-      if(leftEntries.length !== 0 ) {
-        index = leftEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index === -1) index = 0;
+    if (localCurrentCursor.pane.includes("left")) {
+      if (leftEntries.length !== 0) {
+        index = leftEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index === -1) index = 0;
         var entry = leftEntries[index];
         entry.selected = !entry.selected;
         leftEntries[index] = entry;
-        if(index < (leftEntries.length-1)) {
+        if (index < leftEntries.length - 1) {
           index += 1;
         }
         entry = leftEntries[index];
         currentCursor.set({
-          pane: 'left',
-          entry: entry
+          pane: "left",
+          entry: entry,
         });
         currentLeftFile.set({
-          entry: entry
+          entry: entry,
         });
       }
     } else {
-      if(rightEntries.length !== 0) {
-        index = rightEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index === -1) index = 0;
+      if (rightEntries.length !== 0) {
+        index = rightEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index === -1) index = 0;
         var entry = rightEntries[index];
         entry.selected = !entry.selected;
         rightEntries[index] = entry;
-        if(index < (rightEntries.length-1)) {
+        if (index < rightEntries.length - 1) {
           index += 1;
         }
         entry = rightEntries[index];
         currentCursor.set({
-          pane: 'right',
-          entry: entry
+          pane: "right",
+          entry: entry,
         });
         currentRightFile.set({
-          entry: entry
+          entry: entry,
         });
       }
     }
@@ -812,34 +996,38 @@ commands={commands}
 
   function moveCursorUp() {
     var index = 0;
-    if(localCurrentCursor.pane.includes('left')) {
-      if(leftEntries.length !== 0) {
-        index = leftEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index > 0) {
+    if (localCurrentCursor.pane.includes("left")) {
+      if (leftEntries.length !== 0) {
+        index = leftEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index > 0) {
           index -= 1;
         }
-        if(index === -1) index = 0;
+        if (index === -1) index = 0;
         currentCursor.set({
-          pane: 'left',
-          entry: leftEntries[index]
+          pane: "left",
+          entry: leftEntries[index],
         });
         currentLeftFile.set({
-          entry: leftEntries[index]
+          entry: leftEntries[index],
         });
       }
     } else {
-      if(rightEntries.length !== 0) {
-        index = rightEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index > 0) {
+      if (rightEntries.length !== 0) {
+        index = rightEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index > 0) {
           index -= 1;
         }
-        if(index === -1) index = 0;
+        if (index === -1) index = 0;
         currentCursor.set({
-          pane: 'right',
-          entry: rightEntries[index]
+          pane: "right",
+          entry: rightEntries[index],
         });
         currentRightFile.set({
-          entry: rightEntries[index]
+          entry: rightEntries[index],
         });
       }
     }
@@ -847,42 +1035,46 @@ commands={commands}
 
   function moveCursorUpWithSelect() {
     var index = 0;
-    if(localCurrentCursor.pane.includes('left')) {
-      if(leftEntries.length !== 0) {
-        index = leftEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index === -1) index = 0;
+    if (localCurrentCursor.pane.includes("left")) {
+      if (leftEntries.length !== 0) {
+        index = leftEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index === -1) index = 0;
         var entry = leftEntries[index];
         entry.selected = !entry.selected;
         leftEntries[index] = entry;
-        if(index > 0) {
+        if (index > 0) {
           index -= 1;
         }
         entry = leftEntries[index];
         currentCursor.set({
-          pane: 'left',
-          entry: entry
+          pane: "left",
+          entry: entry,
         });
         currentLeftFile.set({
-          entry: entry
+          entry: entry,
         });
       }
     } else {
-      if(rightEntries.length !== 0) {
-        index = rightEntries.findIndex(item => item.name == localCurrentCursor.entry.name);
-        if(index === -1) index = 0;
+      if (rightEntries.length !== 0) {
+        index = rightEntries.findIndex(
+          (item) => item.name == localCurrentCursor.entry.name
+        );
+        if (index === -1) index = 0;
         var entry = rightEntries[index];
         entry.selected = !entry.selected;
         rightEntries[index] = entry;
-        if(index > 0) {
+        if (index > 0) {
           index -= 1;
         }
         entry = rightEntries[index];
         currentCursor.set({
-          pane: 'right',
-          entry: entry
+          pane: "right",
+          entry: entry,
         });
         currentRightFile.set({
-          entry: entry
+          entry: entry,
         });
       }
     }
@@ -894,163 +1086,193 @@ commands={commands}
   }
 
   function changeModeNormal() {
-    changeMode('normal');
+    changeMode("normal");
   }
-  
+
   function changeModeInsert() {
-    changeMode('insert');
+    changeMode("insert");
   }
-  
+
   function changeModeVisual() {
-    changeMode('visual');
+    changeMode("visual");
   }
 
   async function openOppositePanel() {
     var nEntry = localCurrentCursor.entry.dir;
-    if(localCurrentCursor.entry.type === 1) {
-      nEntry = await localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
+    if (localCurrentCursor.entry.type === 1) {
+      nEntry = await localCurrentCursor.entry.fileSystem.appendPath(
+        localCurrentCursor.entry.dir,
+        localCurrentCursor.entry.name
+      );
     }
-    if(localCurrentCursor.pane === 'right') {
-      changeDir({
-        path: nEntry,
-        cursor: true
-      },'left','');
+    if (localCurrentCursor.pane === "right") {
+      changeDir(
+        {
+          path: nEntry,
+          cursor: true,
+        },
+        "left",
+        ""
+      );
     } else {
-      changeDir({
-        path: nEntry,
-        cursor: true
-      },'right', '');
+      changeDir(
+        {
+          path: nEntry,
+          cursor: true,
+        },
+        "right",
+        ""
+      );
     }
   }
 
   function cursorToPane(npane) {
-    if(npane == 'right') {
+    if (npane == "right") {
       currentCursor.set({
-        pane: 'right',
-        entry: localCurrentRightFile.entry
-      })
+        pane: "right",
+        entry: localCurrentRightFile.entry,
+      });
     } else {
       currentCursor.set({
-        pane: 'left',
-        entry: localCurrentLeftFile.entry
-      })
+        pane: "left",
+        entry: localCurrentLeftFile.entry,
+      });
     }
   }
 
   function cursorToNextPane() {
-    if(localCurrentCursor.pane == 'left') {
+    if (localCurrentCursor.pane == "left") {
       currentCursor.set({
-        pane: 'right',
-        entry: localCurrentRightFile.entry
-      })
+        pane: "right",
+        entry: localCurrentRightFile.entry,
+      });
     } else {
       currentCursor.set({
-        pane: 'left',
-        entry: localCurrentLeftFile.entry
-      })
+        pane: "left",
+        entry: localCurrentLeftFile.entry,
+      });
     }
   }
 
   function mouseMove(e) {
-    if(mdown) {
-      leftDOM.style.width = e.clientX + 'px';
-      rightDOM.style.width = (containerDOM.clientWidth - (e.clientX+10)) + 'px';
+    if (mdown) {
+      leftDOM.style.width = e.clientX + "px";
+      rightDOM.style.width = containerDOM.clientWidth - (e.clientX + 10) + "px";
     }
   }
 
   function reloadPane() {
-    changeDir({
-      path: localCurrentCursor.entry.dir,
-      cursor: true,
-    }, 
-    localCurrentCursor.pane,
-    localCurrentCursor.entry.name
+    changeDir(
+      {
+        path: localCurrentCursor.entry.dir,
+        cursor: true,
+      },
+      localCurrentCursor.pane,
+      localCurrentCursor.entry.name
     );
   }
 
   async function changeDir(dirOb, npane, name) {
     var ndir = dirOb.path;
-    if(typeof npane === 'undefined') npane = localCurrentCursor.pane;
-    if(typeof dirOb.cursor === 'undefined') dirOb.cursor = true;
-    if(typeof name === 'undefined') name = '';
-    if(npane == 'left') {
-      leftDir.set({path: ndir, fileSystemType: localLeftDir.fileSystemType, fileSystem: localLeftDir.fileSystem});
+    if (typeof npane === "undefined") npane = localCurrentCursor.pane;
+    if (typeof dirOb.cursor === "undefined") dirOb.cursor = true;
+    if (typeof name === "undefined") name = "";
+    if (npane == "left") {
+      leftDir.set({
+        path: ndir,
+        fileSystemType: localLeftDir.fileSystemType,
+        fileSystem: localLeftDir.fileSystem,
+      });
       leftEntries = await localLeftDir.fileSystem.getDirList(ndir);
-      if(leftEntries.length !== 0) {
-        var entry = leftEntries.filter(item => item.name === name);
-        if(entry.length !== 0) {
+      if (leftEntries.length !== 0) {
+        var entry = leftEntries.filter((item) => item.name === name);
+        if (entry.length !== 0) {
           currentLeftFile.set({
             entry: entry[0],
-            pane: npane
+            pane: npane,
           });
           currentCursor.set({
             entry: entry[0],
-            pane: npane
+            pane: npane,
           });
         } else {
-          currentLeftFile.set({ entry: leftEntries[0], pane: npane});
-          currentCursor.set({ entry: leftEntries[0], pane: npane});
+          currentLeftFile.set({ entry: leftEntries[0], pane: npane });
+          currentCursor.set({ entry: leftEntries[0], pane: npane });
         }
       } else {
-        currentLeftFile.set({ entry: {
-          name: '',
-          size: '',
-          type: localLeftDir.fileSystemType,
-          fileSystem: localLeftDir.fileSystem,
-          dir: ndir,
-          datetime: '',
-          selected: false
-        }});
-        if(dirOb.cursor) {
-          currentCursor.set({ entry: {
-            name: '',
-            size: '',
+        currentLeftFile.set({
+          entry: {
+            name: "",
+            size: "",
             type: localLeftDir.fileSystemType,
             fileSystem: localLeftDir.fileSystem,
             dir: ndir,
-            datetime: '',
-            selected: false
-          }, pane: npane});
+            datetime: "",
+            selected: false,
+          },
+        });
+        if (dirOb.cursor) {
+          currentCursor.set({
+            entry: {
+              name: "",
+              size: "",
+              type: localLeftDir.fileSystemType,
+              fileSystem: localLeftDir.fileSystem,
+              dir: ndir,
+              datetime: "",
+              selected: false,
+            },
+            pane: npane,
+          });
         }
       }
     } else {
-      rightDir.set({path: ndir, fileSystemType: localRightDir.fileSystemType, fileSystem: localRightDir.fileSystem});
+      rightDir.set({
+        path: ndir,
+        fileSystemType: localRightDir.fileSystemType,
+        fileSystem: localRightDir.fileSystem,
+      });
       rightEntries = await localRightDir.fileSystem.getDirList(ndir);
-      if(rightEntries.length !== 0) {
-        var entry = rightEntries.filter(item => item.name === name);
-        if(entry.length !== 0) {
+      if (rightEntries.length !== 0) {
+        var entry = rightEntries.filter((item) => item.name === name);
+        if (entry.length !== 0) {
           currentRightFile.set({
             entry: entry[0],
-            pane: npane
+            pane: npane,
           });
           currentCursor.set({
             entry: entry[0],
-            pane: npane
+            pane: npane,
           });
         } else {
-          currentRightFile.set({ entry: rightEntries[0], pane: npane});
-          currentCursor.set({ entry: rightEntries[0], pane: npane});
+          currentRightFile.set({ entry: rightEntries[0], pane: npane });
+          currentCursor.set({ entry: rightEntries[0], pane: npane });
         }
       } else {
-        currentRightFile.set({ entry: {
-          name: '',
-          size: '',
-          type: localRightDir.fileSystemType,
-          fileSystem: localRightDir.fileSystem,
-          dir: ndir,
-          datetime: '',
-          selected: false
-        }});
-        if(dirOb.cursor) {
-          currentCursor.set({ entry: {
-            name: '',
-            size: '',
+        currentRightFile.set({
+          entry: {
+            name: "",
+            size: "",
             type: localRightDir.fileSystemType,
             fileSystem: localRightDir.fileSystem,
             dir: ndir,
-            datetime: '',
-            selected: false
-          }, pane: npane});
+            datetime: "",
+            selected: false,
+          },
+        });
+        if (dirOb.cursor) {
+          currentCursor.set({
+            entry: {
+              name: "",
+              size: "",
+              type: localRightDir.fileSystemType,
+              fileSystem: localRightDir.fileSystem,
+              dir: ndir,
+              datetime: "",
+              selected: false,
+            },
+            pane: npane,
+          });
         }
       }
     }
@@ -1061,7 +1283,7 @@ commands={commands}
   }
 
   async function actionEntry() {
-    if(localCurrentCursor.entry.type === 0) {
+    if (localCurrentCursor.entry.type === 0) {
       //
       // It is a file. Open it.
       //
@@ -1070,46 +1292,64 @@ commands={commands}
       //
       // It is a directory. Go down a level.
       //
-      var ndir = await localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
-      changeDir({
-        path: ndir,
-        cursor: true
-      }, localCurrentCursor.pane, '');
+      var ndir = await localCurrentCursor.entry.fileSystem.appendPath(
+        localCurrentCursor.entry.dir,
+        localCurrentCursor.entry.name
+      );
+      changeDir(
+        {
+          path: ndir,
+          cursor: true,
+        },
+        localCurrentCursor.pane,
+        ""
+      );
     }
   }
-  
+
   function goUpDir() {
     var sep = localCurrentCursor.entry.fileSystem.sep;
     var parts = localCurrentCursor.entry.dir.split(sep);
-    if(parts.length > 0) {
-      var newDir = parts.slice(0,parts.length-1).join(sep);
-      if(newDir == '') newDir = sep;
-      changeDir({
-        path: newDir,
-        cursor: true
-      }, localCurrentCursor.pane, parts[parts.length-1]);
-      setCursor(parts[parts.length-1]);
+    if (parts.length > 0) {
+      var newDir = parts.slice(0, parts.length - 1).join(sep);
+      if (newDir == "") newDir = sep;
+      changeDir(
+        {
+          path: newDir,
+          cursor: true,
+        },
+        localCurrentCursor.pane,
+        parts[parts.length - 1]
+      );
+      setCursor(parts[parts.length - 1]);
     }
   }
 
   async function goDownDir() {
-    if(localCurrentCursor.entry.type === 1) {
-      var newDir = await localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
-      changeDir({
-        path: newDir,
-        cursor: true
-      }, localCurrentCursor.pane, '');
+    if (localCurrentCursor.entry.type === 1) {
+      var newDir = await localCurrentCursor.entry.fileSystem.appendPath(
+        localCurrentCursor.entry.dir,
+        localCurrentCursor.entry.name
+      );
+      changeDir(
+        {
+          path: newDir,
+          cursor: true,
+        },
+        localCurrentCursor.pane,
+        ""
+      );
     }
   }
 
   function goBottomFile() {
-    if(localCurrentCursor.pane == 'left') {
-      if(leftEntries.length !== 0) {
+    if (localCurrentCursor.pane == "left") {
+      if (leftEntries.length !== 0) {
         const last = leftEntries[leftEntries.length - 1];
         setCursor(last.name);
       }
     } else {
-      if(rightEntries.length !== 0) {
+      if (rightEntries.length !== 0) {
         const last = rightEntries[rightEntries.length - 1];
         setCursor(last.name);
       }
@@ -1117,13 +1357,13 @@ commands={commands}
   }
 
   function goTopFile() {
-    if(localCurrentCursor.pane == 'left') {
-      if(leftEntries.length !== 0) {
+    if (localCurrentCursor.pane == "left") {
+      if (leftEntries.length !== 0) {
         var top = leftEntries[0];
         setCursor(top.name);
       }
     } else {
-      if(rightEntries.length !== 0) {
+      if (rightEntries.length !== 0) {
         var top = rightEntries[0];
         setCursor(top.name);
       }
@@ -1131,20 +1371,20 @@ commands={commands}
   }
 
   function getCurrentFile() {
-    return(localCurrentCursor.entry);
+    return localCurrentCursor.entry;
   }
 
   function getCurrentPane() {
-    return(localCurrentCursor.pane);
+    return localCurrentCursor.pane;
   }
 
   function getLastError() {
-    return(lastError);
+    return lastError;
   }
 
   function deleteEntries() {
     var entries = getSelectedFiles();
-    if(entries.length === 0) {
+    if (entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
@@ -1157,40 +1397,42 @@ commands={commands}
   async function deleteEntriesCommand(entries) {
     msgBoxConfig = {
       title: "Deleting Entries",
-      noShowButton: true
+      noShowButton: true,
     };
     msgBoxItems = [];
     msgBoxItems.push({
-        type: 'label',
-        name: 'msgboxMain',
-        for: 'progress1',
-        text: 'Deleting ' + entries.length + ' Entries...'
-      });
+      type: "label",
+      name: "msgboxMain",
+      for: "progress1",
+      text: "Deleting " + entries.length + " Entries...",
+    });
     msgBoxItems.push({
-        type: 'spinner',
-        name: 'progress1',
-        value: 1
-      });
+      type: "spinner",
+      name: "progress1",
+      value: 1,
+    });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => { showMessageBox = false; };
-    addSpinner('progress1', 1);
- 
+    msgCallBack = (e) => {
+      showMessageBox = false;
+    };
+    addSpinner("progress1", 1);
+
     entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.deleteEntries(item, (err, stdout)=>{
-        if(err) {
+      await item.fileSystem.deleteEntries(item, (err, stdout) => {
+        if (err) {
           //
           // There was an error in deleting.
           //
           console.log(err);
-        } 
-        if(key >= (arr.length-1)) {
+        }
+        if (key >= arr.length - 1) {
           showMessageBox = false;
           $keyProcess = true;
 
           //
           // Refresh the side deleted from.
           //
-          if(localCurrentCursor.pane === 'left') {
+          if (localCurrentCursor.pane === "left") {
             refreshLeftPane();
           } else {
             refreshRightPane();
@@ -1199,12 +1441,12 @@ commands={commands}
           //
           // Remove the spinner from being checked.
           //
-          removeSpinner('progress1');
+          removeSpinner("progress1");
         }
       });
-      updateSpinner('progress1',((key+1)/entries.length)*100);
+      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
     });
-   
+
     //
     // It is all set up. Show the message box.
     //
@@ -1214,48 +1456,53 @@ commands={commands}
   function copyEntries() {
     var entries = getSelectedFiles();
     var sel = true;
-    if(entries.length === 0) {
+    if (entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
       entries.push(localCurrentCursor.entry);
       sel = false;
     }
-    var otherPane = localCurrentCursor.pane === 'left' ? { ...localCurrentRightFile.entry } : { ...localCurrentLeftFile.entry };
+    var otherPane =
+      localCurrentCursor.pane === "left"
+        ? { ...localCurrentRightFile.entry }
+        : { ...localCurrentLeftFile.entry };
     copyEntriesCommand(entries, otherPane, sel);
   }
 
   async function copyEntriesCommand(entries, otherPane, sel) {
     msgBoxConfig = {
       title: "Copying Entries",
-      noShowButton: true
+      noShowButton: true,
     };
     msgBoxItems = [];
     msgBoxItems.push({
-        type: 'label',
-        name: 'msgboxMain',
-        for: 'progress1',
-        text: 'Copying ' + entries.length + ' Entries...'
-      });
+      type: "label",
+      name: "msgboxMain",
+      for: "progress1",
+      text: "Copying " + entries.length + " Entries...",
+    });
     msgBoxItems.push({
-        type: 'spinner',
-        name: 'progress1',
-        value: 1
-      });
+      type: "spinner",
+      name: "progress1",
+      value: 1,
+    });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => { showMessageBox = false; };
-    addSpinner('progress1', 1);
- 
+    msgCallBack = (e) => {
+      showMessageBox = false;
+    };
+    addSpinner("progress1", 1);
+
     entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.copyEntries(item, otherPane, (err, stdout)=>{
-        if(key >= (arr.length-1)) {
+      await item.fileSystem.copyEntries(item, otherPane, (err, stdout) => {
+        if (key >= arr.length - 1) {
           showMessageBox = false;
           $keyProcess = true;
 
           //
           // Refresh the side copied to.
           //
-          if(localCurrentCursor.pane === 'left') {
+          if (localCurrentCursor.pane === "left") {
             refreshRightPane();
           } else {
             refreshLeftPane();
@@ -1264,17 +1511,17 @@ commands={commands}
           //
           // clear out the selections.
           //
-          if(sel) clearSelectedFiles();
+          if (sel) clearSelectedFiles();
 
           //
           // Remove the spinner from being checked.
           //
-          removeSpinner('progress1');
+          removeSpinner("progress1");
         }
       });
-      updateSpinner('progress1',((key+1)/entries.length)*100);
+      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
     });
-   
+
     //
     // It is all set up. Show the message box.
     //
@@ -1282,7 +1529,7 @@ commands={commands}
   }
 
   function swapPanels() {
-    var npane = localCurrentCursor.pane === 'left' ? 'right' : 'left';
+    var npane = localCurrentCursor.pane === "left" ? "right" : "left";
     tmp = localCurrentLeftFile;
     currentLeftFile.set(localCurrentRightFile);
     currentRightFile.set(tmp);
@@ -1301,26 +1548,31 @@ commands={commands}
   }
 
   async function editEntryCommand(entry) {
-    if(await OS.fileExists(userEditor)) {
+    if (await OS.fileExists(userEditor)) {
       //
       // There is an editor defined by the user. Use it.
       //
       var file = entry;
-      if(typeof entry.dir !== 'undefined'){
+      if (typeof entry.dir !== "undefined") {
         file = await OS.appendPath(entry.dir, entry.name);
       }
       var editor = await OS.readFile(userEditor).toString().trim();
-      if(editor.endsWith('.app')) {
+      if (editor.endsWith(".app")) {
         await OS.openFileWithProgram(editor, file);
       } else {
         //
         // It is a command line editor. Open specially.
         //
-        if(editor === 'emacs') {
+        if (editor === "emacs") {
           //
           // Open emacs.
           //
-          await OS.runCommandLine('emacsclient -n -q "' + file + '"');
+          await OS.runCommandLine(
+            'emacsclient -n -q "' + file + '"',
+            [],
+            (err, result) => {},
+            "."
+          );
         } else {
           //
           // Open in a terminal program.
@@ -1337,25 +1589,28 @@ commands={commands}
   }
 
   async function duplicateEntry() {
-    var newName = '';
-    if(localCurrentCursor.entry.name[0] === '.') {
-      newName = localCurrentCursor.entry.name + '-copy';
+    var newName = "";
+    if (localCurrentCursor.entry.name[0] === ".") {
+      newName = localCurrentCursor.entry.name + "-copy";
     } else {
-      newName = localCurrentCursor.entry.name.split('.');
-      if(newName.length >= 2) {
-        newName[newName.length - 2] = newName[newName.length - 2] + '-copy';
-        newName = newName.join('.');
+      newName = localCurrentCursor.entry.name.split(".");
+      if (newName.length >= 2) {
+        newName[newName.length - 2] = newName[newName.length - 2] + "-copy";
+        newName = newName.join(".");
       } else {
         newName = localCurrentCursor.entry.name + "-copy";
       }
     }
     var nEntry = { ...localCurrentCursor.entry };
     nEntry.name = newName;
-    await localCurrentCursor.entry.fileSystem.copyEntries(localCurrentCursor.entry, nEntry);
+    await localCurrentCursor.entry.fileSystem.copyEntries(
+      localCurrentCursor.entry,
+      nEntry
+    );
     //
     // Refresh the file list.
     //
-    if(localCurrentCursor.pane === 'left') {
+    if (localCurrentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -1364,40 +1619,45 @@ commands={commands}
 
   function moveEntries() {
     var entries = getSelectedFiles();
-    if(entries.length === 0) {
+    if (entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
       entries.push(localCurrentCursor.entry);
     }
-    var otherPane = localCurrentCursor.pane === 'left' ? localCurrentRightFile.entry : localCurrentLeftFile.entry;
+    var otherPane =
+      localCurrentCursor.pane === "left"
+        ? localCurrentRightFile.entry
+        : localCurrentLeftFile.entry;
     moveEntriesCommand(entries, otherPane);
   }
 
   async function moveEntriesCommand(entries, otherPane) {
     msgBoxConfig = {
       title: "Moving Entries",
-      noShowButton: true
+      noShowButton: true,
     };
     msgBoxItems = [];
     msgBoxItems.push({
-        type: 'label',
-        name: 'msgboxMain',
-        for: 'progress1',
-        text: 'Moving ' + entries.length + ' Entries...'
-      });
+      type: "label",
+      name: "msgboxMain",
+      for: "progress1",
+      text: "Moving " + entries.length + " Entries...",
+    });
     msgBoxItems.push({
-        type: 'spinner',
-        name: 'progress1',
-        value: 1
-      });
+      type: "spinner",
+      name: "progress1",
+      value: 1,
+    });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => { showMessageBox = false; };
-    addSpinner('progress1', 1);
- 
+    msgCallBack = (e) => {
+      showMessageBox = false;
+    };
+    addSpinner("progress1", 1);
+
     entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.moveEntries(item, otherPane, (err, stdout)=>{
-        if(key >= (arr.length-1)) {
+      await item.fileSystem.moveEntries(item, otherPane, (err, stdout) => {
+        if (key >= arr.length - 1) {
           showMessageBox = false;
           $keyProcess = true;
 
@@ -1409,12 +1669,12 @@ commands={commands}
           //
           // Remove the spinner from being checked.
           //
-          removeSpinner('progress1');
+          removeSpinner("progress1");
         }
       });
-      updateSpinner('progress1',((key+1)/entries.length)*100);
+      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
     });
-   
+
     //
     // It is all set up. Show the message box.
     //
@@ -1425,33 +1685,39 @@ commands={commands}
     //
     // Refresh right pane.
     //
-    rightEntries = await localRightDir.fileSystem.getDirList(localRightDir.path);
+    rightEntries = await localRightDir.fileSystem.getDirList(
+      localRightDir.path
+    );
     var current = currentRightFile.entry;
-    if(rightEntries.length == 0) {
+    if (rightEntries.length == 0) {
       current = {
-        name: '',
+        name: "",
         dir: localRightDir.path,
         fileSystemType: localRightDir.fileSystemType,
         fileSystem: localRightDir.fileSystem,
         selected: false,
-        datetime: '',
+        datetime: "",
         type: 0,
         size: 0,
-        stats: null
+        stats: null,
       };
     } else {
-      if((typeof current === 'undefined')||(current === null)||(rightEntries.filter(item => item.name === current.name).length === 0)) {
+      if (
+        typeof current === "undefined" ||
+        current === null ||
+        rightEntries.filter((item) => item.name === current.name).length === 0
+      ) {
         current = rightEntries[0];
       }
     }
-    if(localCurrentCursor.pane == 'right') {
+    if (localCurrentCursor.pane == "right") {
       currentCursor.set({
         entry: current,
-        pane: 'right'
+        pane: "right",
       });
     }
     currentRightFile.set({
-      entry: current
+      entry: current,
     });
   }
 
@@ -1461,32 +1727,36 @@ commands={commands}
     //
     leftEntries = await localLeftDir.fileSystem.getDirList(localLeftDir.path);
     var current = currentLeftFile.entry;
-    if(leftEntries.length === 0) {
+    if (leftEntries.length === 0) {
       current = {
-        name: '',
+        name: "",
         dir: localLeftDir.path,
         fileSystemType: localLeftDir.fileSystemType,
         fileSystem: localLeftDir.fileSystem,
         selected: false,
-        datetime: '',
+        datetime: "",
         type: 0,
         size: 0,
-        stats: null
+        stats: null,
       };
     } else {
-      if((typeof current === 'undefined')||(current === null)||(leftEntries.filter(item => item.name === current.name).length === 0)) {
+      if (
+        typeof current === "undefined" ||
+        current === null ||
+        leftEntries.filter((item) => item.name === current.name).length === 0
+      ) {
         current = leftEntries[0];
       }
     }
 
-    if(localCurrentCursor.pane == 'left') {
+    if (localCurrentCursor.pane == "left") {
       currentCursor.set({
         entry: current,
-        pane: 'left'
+        pane: "left",
       });
     }
     currentLeftFile.set({
-      entry: current
+      entry: current,
     });
   }
 
@@ -1498,45 +1768,51 @@ commands={commands}
   function showMessage(title, msg) {
     msgBoxConfig = {
       title: title,
-      noShowButton: false
+      noShowButton: false,
     };
 
-    // 
-    // If the msg starts with a tag open, then assume it is 
-    // a block of html and use that for displaying. Otherwise, 
+    //
+    // If the msg starts with a tag open, then assume it is
+    // a block of html and use that for displaying. Otherwise,
     // use a label.
     //
-    if(msg[0] === '<') {
-      msgBoxItems = [{
-        type: 'html',
-        text: msg,
-        id: 'msgboxMain'
-      }];
+    if (msg[0] === "<") {
+      msgBoxItems = [
+        {
+          type: "html",
+          text: msg,
+          id: "msgboxMain",
+        },
+      ];
     } else {
-      msgBoxItems = [{
-        type: 'label',
-        for: 'msgboxMain',
-        text: msg,
-        id: 'msgboxMain'
-      }];
+      msgBoxItems = [
+        {
+          type: "label",
+          for: "msgboxMain",
+          text: msg,
+          id: "msgboxMain",
+        },
+      ];
     }
     msgCallBack = (e) => {};
     showMessageBox = true;
   }
 
   function pickItem(title, items, returnValue, extra) {
-    if(typeof extra === 'undefined') extra = false;
+    if (typeof extra === "undefined") extra = false;
     msgBoxConfig = {
       title: title,
-      noShowButton: false
+      noShowButton: false,
     };
-    msgBoxItems = [{
-      type: 'picker',
-      selections: items,
-      value: items[0].value,
-      id: 'msgboxMain',
-      extra: extra
-    }];
+    msgBoxItems = [
+      {
+        type: "picker",
+        selections: items,
+        value: items[0].value,
+        id: "msgboxMain",
+        extra: extra,
+      },
+    ];
     msgCallBack = (e) => {
       returnValue(e[0].value);
       msgCallBack = (e) => {};
@@ -1547,32 +1823,36 @@ commands={commands}
   function askQuestion(title, question, returnValue) {
     msgBoxConfig = {
       title: title,
-      noShowButton: false
+      noShowButton: false,
     };
-    msgBoxItems = [{
-      type: 'input',
-      msg: question,
-      value: '',
-      id: 'msgboxMain'
-    }];
+    msgBoxItems = [
+      {
+        type: "input",
+        msg: question,
+        value: "",
+        id: "msgboxMain",
+      },
+    ];
     showMessageBox = true;
     msgCallBack = (e) => {
       returnValue(e[0].value);
       msgCallBack = (e) => {};
-    }
+    };
   }
 
   function newFile() {
     msgBoxConfig = {
       title: "New File Name",
-      noShowButton: false
+      noShowButton: false,
     };
-    msgBoxItems = [{
-      type: 'input',
-      msg: 'What name do you want to give the new file?',
-      value: '',
-      id: 'msgboxMain'
-    }];
+    msgBoxItems = [
+      {
+        type: "input",
+        msg: "What name do you want to give the new file?",
+        value: "",
+        id: "msgboxMain",
+      },
+    ];
     showMessageBox = true;
     msgCallBack = newFileReturn;
   }
@@ -1594,12 +1874,12 @@ commands={commands}
     //
     // Refresh the file list.
     //
-    if(localCurrentCursor.pane === 'left') {
+    if (localCurrentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
     }
-    
+
     //
     // Set the new file as the cursor point.
     //
@@ -1609,14 +1889,16 @@ commands={commands}
   function newDirectory() {
     msgBoxConfig = {
       title: "New Directory Name",
-      noShowButton: false
+      noShowButton: false,
     };
-    msgBoxItems = [{
-      type: 'input',
-      msg: 'What name do you want to give the new directory?',
-      value: '',
-      id: 'msgboxMain'
-    }]
+    msgBoxItems = [
+      {
+        type: "input",
+        msg: "What name do you want to give the new directory?",
+        value: "",
+        id: "msgboxMain",
+      },
+    ];
 
     showMessageBox = true;
     msgCallBack = newDirectoryReturn;
@@ -1639,12 +1921,12 @@ commands={commands}
     //
     // Refresh the file list.
     //
-    if(localCurrentCursor.pane === 'left') {
+    if (localCurrentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
     }
-    
+
     //
     // Set the new file as the cursor point.
     //
@@ -1654,14 +1936,16 @@ commands={commands}
   function renameEntry() {
     msgBoxConfig = {
       title: "Rename File or Directory",
-      noShowButton: false
+      noShowButton: false,
     };
-    msgBoxItems = [{
-      type: 'input',
-      msg: 'What name do you want to change to?',
-      value: localCurrentCursor.entry.name,
-      id: 'msgboxMain'
-    }];
+    msgBoxItems = [
+      {
+        type: "input",
+        msg: "What name do you want to change to?",
+        value: localCurrentCursor.entry.name,
+        id: "msgboxMain",
+      },
+    ];
     showMessageBox = true;
     msgCallBack = renameReturn;
   }
@@ -1678,17 +1962,20 @@ commands={commands}
     //
     var nentry = { ...localCurrentCursor.entry };
     nentry.name = nname;
-    await localCurrentCursor.entry.fileSystem.renameEntry(localCurrentCursor.entry, nentry);
+    await localCurrentCursor.entry.fileSystem.renameEntry(
+      localCurrentCursor.entry,
+      nentry
+    );
 
     //
     // Refresh the file list.
     //
-    if(localCurrentCursor.pane === 'left') {
+    if (localCurrentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
     }
-    
+
     //
     // Set the new file as the cursor point.
     //
@@ -1696,11 +1983,11 @@ commands={commands}
   }
 
   function clearSelectedFiles() {
-    if(localCurrentCursor.pane == 'left') {
+    if (localCurrentCursor.pane == "left") {
       //
       // Clear the left pane's selected files
       //
-      leftEntries = leftEntries.map(item => {
+      leftEntries = leftEntries.map((item) => {
         item.selected = false;
         return item;
       });
@@ -1708,7 +1995,7 @@ commands={commands}
       //
       // Clear the right panes selected files
       //
-      rightEntries = rightEntries.map(item => {
+      rightEntries = rightEntries.map((item) => {
         item.selected = false;
         return item;
       });
@@ -1717,18 +2004,18 @@ commands={commands}
 
   function getSelectedFiles() {
     var selected = [];
-    if(localCurrentCursor.pane == 'left') {
+    if (localCurrentCursor.pane == "left") {
       //
       // Get the left pane's selected files
       //
-      selected = leftEntries.filter(item => item.selected === true);
+      selected = leftEntries.filter((item) => item.selected === true);
     } else {
       //
       // Get the right panes selected files
       //
-      selected = rightEntries.filter(item => item.selected === true);
+      selected = rightEntries.filter((item) => item.selected === true);
     }
-    return(selected);
+    return selected;
   }
 
   function msgReturn(e) {
@@ -1741,44 +2028,44 @@ commands={commands}
   }
 
   function qsChangeEntries(e) {
-    if(e.detail.pane === 'left') {
+    if (e.detail.pane === "left") {
       leftEntries = e.detail.entries;
     } else {
       rightEntries = e.detail.entries;
     }
-    if(localCurrentCursor.pane == 'left') {
+    if (localCurrentCursor.pane == "left") {
       currentCursor.set({
         entry: leftEntries[0],
-        pane: 'left'
+        pane: "left",
       });
       currentLeftFile.set({
-        entry: leftEntries[0]
+        entry: leftEntries[0],
       });
     } else {
       currentCursor.set({
         entry: rightEntries[0],
-        pane: 'right'
+        pane: "right",
       });
       currentRightFile.set({
-        entry: rightEntries[0]
+        entry: rightEntries[0],
       });
     }
   }
 
   function getCursor() {
-    return(localCurrentCursor);
+    return localCurrentCursor;
   }
 
   function getLeftFile() {
-    return(localCurrentLeftFile);
+    return localCurrentLeftFile;
   }
 
   function getRightFile() {
-    return(localCurrentRightFile);
+    return localCurrentRightFile;
   }
 
   function editDirLoc() {
-    if(localCurrentCursor.pane === 'left') {
+    if (localCurrentCursor.pane === "left") {
       setEditDirFlagLeft = true;
     } else {
       setEditDirFlagRight = true;
@@ -1795,7 +2082,7 @@ commands={commands}
       shift: shift,
       meta: meta,
       key: key,
-      command: cmd
+      command: cmd,
     });
   }
 
@@ -1804,7 +2091,7 @@ commands={commands}
   }
 
   function getTheme() {
-    return(localTheme);
+    return localTheme;
   }
 
   function addDirectoryListener(listener) {
@@ -1820,27 +2107,27 @@ commands={commands}
   function addSpinner(name, value) {
     msgBoxSpinners.push({
       name: name,
-      value: value
+      value: value,
     });
     msgBoxSpinners = msgBoxSpinners;
   }
 
   function updateSpinner(name, value) {
-    msgBoxSpinners = msgBoxSpinners.map(spinner => {
-      if(spinner.name === name) {
+    msgBoxSpinners = msgBoxSpinners.map((spinner) => {
+      if (spinner.name === name) {
         spinner.value = value;
       }
-      return(spinner);
+      return spinner;
     });
   }
 
   function removeSpinner(name) {
-    msgBoxSpinners = msgBoxSpinners.filter(spinner => spinner.name !== name);
+    msgBoxSpinners = msgBoxSpinners.filter((spinner) => spinner.name !== name);
   }
 
   function toggleGitHub() {
     showGitHub = !showGitHub;
-    if(showGitHub) {
+    if (showGitHub) {
       $keyProcess = false;
     } else {
       $keyProcess = true;
@@ -1860,7 +2147,7 @@ commands={commands}
   }
 
   function toggleFilter() {
-    switch(flagFilter) {
+    switch (flagFilter) {
       case 0:
         setDefaultFilter();
         break;
@@ -1874,300 +2161,341 @@ commands={commands}
   }
 
   async function createDefaultNormalMap(keyMapDir) {
-    // 
+    //
     // There are no key map files. We need to create them.
-    // 
-    let defaultNormalMap = [{
-      ctrl: false,
-      shift: true,
-      meta: false,
-      key: ':',
-      command: "toggleCommandPrompt"
-    },{
-      ctrl: true,
-      shift: false,
-      meta: false,
-      key: 'p',
-      command: "toggleCommandPrompt"
-    },{
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 's',
-      command: "toggleExtraPanel"
-    },{
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'q',
-      command: "editDirLoc"
-    },{
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'r',
-      command: "reloadPane"
-    },{
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'p',
-      command: "swapPanels"
-    },{
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'd',
-      command: "duplicateEntry"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'e',
-      command: "editEntry"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'm',
-      command: "moveEntries"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'c',
-      command: "copyEntries"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'x',
-      command: "deleteEntries"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'g',
-      command: "goTopFile"
-    }, {
-      ctrl: false,
-      shift: true,
-      meta: false,
-      key: 'G',
-      command: "goBottomFile"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'ArrowDown',
-      command: "moveCursorDown"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'ArrowUp',
-      command: "moveCursorUp"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'l',
-      command: "goDownDir"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'h',
-      command: "goUpDir"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'Enter',
-      command: "actionEntry"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'Tab',
-      command: "cursorToNextPane"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'k',
-      command: "moveCursorUp"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'j',
-      command: "moveCursorDown"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'i',
-      command: "changeModeInsert"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'v',
-      command: "changeModeVisual"
-    }, {    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: '/',
-      command: "toggleQuickSearch"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: '.',
-      command: "reRunLastCommand"
-    }, {
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: ',',
-      command: "toggleFilter"
-    }, {
-      ctrl: false,
-      shift: true,
-      meta: false,
-      key: 'O',
-      command: "openOppositePanel"
-    }];
-    
-    // 
+    //
+    let defaultNormalMap = [
+      {
+        ctrl: false,
+        shift: true,
+        meta: false,
+        key: ":",
+        command: "toggleCommandPrompt",
+      },
+      {
+        ctrl: true,
+        shift: false,
+        meta: false,
+        key: "p",
+        command: "toggleCommandPrompt",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "s",
+        command: "toggleExtraPanel",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "q",
+        command: "editDirLoc",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "r",
+        command: "reloadPane",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "p",
+        command: "swapPanels",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "d",
+        command: "duplicateEntry",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "e",
+        command: "editEntry",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "m",
+        command: "moveEntries",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "c",
+        command: "copyEntries",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "x",
+        command: "deleteEntries",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "g",
+        command: "goTopFile",
+      },
+      {
+        ctrl: false,
+        shift: true,
+        meta: false,
+        key: "G",
+        command: "goBottomFile",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "ArrowDown",
+        command: "moveCursorDown",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "ArrowUp",
+        command: "moveCursorUp",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "l",
+        command: "goDownDir",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "h",
+        command: "goUpDir",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "Enter",
+        command: "actionEntry",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "Tab",
+        command: "cursorToNextPane",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "k",
+        command: "moveCursorUp",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "j",
+        command: "moveCursorDown",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "i",
+        command: "changeModeInsert",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "v",
+        command: "changeModeVisual",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "/",
+        command: "toggleQuickSearch",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: ".",
+        command: "reRunLastCommand",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: ",",
+        command: "toggleFilter",
+      },
+      {
+        ctrl: false,
+        shift: true,
+        meta: false,
+        key: "O",
+        command: "openOppositePanel",
+      },
+    ];
+
+    //
     // Create the directory for the keymaps if it doesn't exist.
     //
-    if(!await OS.dirExists(keyMapDir)) { 
+    if (!(await OS.dirExists(keyMapDir))) {
       await OS.createDir(keyMapDir);
     }
 
     //
     // Create the default files if they don't exist.
     //
-    const nkmfile = await OS.appendPath(keyMapDir, 'normalKeyMap.json');
+    const nkmfile = await OS.appendPath(keyMapDir, "normalKeyMap.json");
     await OS.writeFile(nkmfile, JSON.stringify(defaultNormalMap));
-    
-    // 
+
+    //
     // Set the proper commands.
     //
-    stateMaps['normal'] = processKeyMap(defaultNormalMap);
+    stateMaps["normal"] = processKeyMap(defaultNormalMap);
   }
 
   async function createDefaultVisualMap(keyMapDir) {
-    let defaultVisualMap = [{
+    let defaultVisualMap = [
+      {
         ctrl: false,
-      shift: true,
-      meta: false,
-      key: ':',
-      command: "toggleCommandPrompt"
-    },{
+        shift: true,
+        meta: false,
+        key: ":",
+        command: "toggleCommandPrompt",
+      },
+      {
         ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'k',
-      command: "moveCursorUpWithSelect"
-    }, {
+        shift: false,
+        meta: false,
+        key: "k",
+        command: "moveCursorUpWithSelect",
+      },
+      {
         ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'j',
-      command: "moveCursorDownWithSelect"
-    }, {
+        shift: false,
+        meta: false,
+        key: "j",
+        command: "moveCursorDownWithSelect",
+      },
+      {
         ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'ArrowDown',
-      command: "moveCursorDown"
-    }, {
+        shift: false,
+        meta: false,
+        key: "ArrowDown",
+        command: "moveCursorDown",
+      },
+      {
         ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'ArrowUp',
-      command: "moveCursorUp"
-    }, {    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'Escape',
-      command: "changeModeNormal"
-    }];
-    
-    // 
+        shift: false,
+        meta: false,
+        key: "ArrowUp",
+        command: "moveCursorUp",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "Escape",
+        command: "changeModeNormal",
+      },
+    ];
+
+    //
     // Create the directory for the keymaps if it doesn't exist.
     //
-    if(! await OS.dirExists(keyMapDir)) {
+    if (!(await OS.dirExists(keyMapDir))) {
       await OS.createDir(keyMapDir);
     }
 
     //
     // Create the default files if they don't exist.
     //
-    const nvmFile = await OS.appendPath(keyMapDir, 'visualKeyMap.json');
+    const nvmFile = await OS.appendPath(keyMapDir, "visualKeyMap.json");
     await OS.writeFile(nvmFile, JSON.stringify(defaultVisualMap));
-    
-    // 
+
+    //
     // Set the proper commands.
     //
-    stateMaps['visual'] = processKeyMap(defaultVisualMap);
+    stateMaps["visual"] = processKeyMap(defaultVisualMap);
   }
-  
-  async function  createDefaultInsertMap(keyMapDir) {
-    let defaultInsertMap = [{
-        ctrl: false,
-      shift: true,
-      meta: false,
-      key: ':',
-      command: "toggleCommandPrompt"
-    },{    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'Escape',
-      command: "changeModeNormal"
-    }, {    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'd',
-      command: "newDirectory"
-    }, {    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'f',
-      command: "newFile"
-    }, {    
-      ctrl: false,
-      shift: false,
-      meta: false,
-      key: 'r',
-      command: "renameEntry"
-    }];
 
-    // 
+  async function createDefaultInsertMap(keyMapDir) {
+    let defaultInsertMap = [
+      {
+        ctrl: false,
+        shift: true,
+        meta: false,
+        key: ":",
+        command: "toggleCommandPrompt",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "Escape",
+        command: "changeModeNormal",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "d",
+        command: "newDirectory",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "f",
+        command: "newFile",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "r",
+        command: "renameEntry",
+      },
+    ];
+
+    //
     // Create the directory for the keymaps if it doesn't exist.
     //
-    if(! await OS.dirExists(keyMapDir)) {
+    if (!(await OS.dirExists(keyMapDir))) {
       await OS.createDir(keyMapDir);
     }
 
     //
     // Create the default files if they don't exist.
     //
-    const ikmFile = await OS.appendPath(keyMapDir, 'insertKeyMap.json');
+    const ikmFile = await OS.appendPath(keyMapDir, "insertKeyMap.json");
     await OS.writeFile(ikmFile, JSON.stringify(defaultInsertMap));
-    
-    // 
+
+    //
     // Set the proper commands.
     //
-    stateMaps['insert'] = processKeyMap(defaultInsertMap);
+    stateMaps["insert"] = processKeyMap(defaultInsertMap);
   }
 
   async function loadKeyMaps() {
@@ -2176,54 +2504,54 @@ commands={commands}
     //
     var keyMapDir = { ...localCurrentCursor.entry };
     keyMapDir.dir = configDir;
-    keyMapDir.name = 'keyMaps';
+    keyMapDir.name = "keyMaps";
 
-    if(! await OS.dirExists(keyMapDir)) {
+    if (!(await OS.dirExists(keyMapDir))) {
       createDefaultNormalMap(keyMapDir);
       createDefaultVisualMap(keyMapDir);
       createDefaultInsertMap(keyMapDir);
     } else {
-      // 
+      //
       // The keymap directory is there. let's load the files.
-      // 
-      var fileLoc = await OS.appendPath(keyMapDir, 'normalKeyMap.json');
-      if(! await OS.fileExists(fileLoc)) {
+      //
+      var fileLoc = await OS.appendPath(keyMapDir, "normalKeyMap.json");
+      if (!(await OS.fileExists(fileLoc))) {
         createDefaultNormalMap(keyMapDir);
       }
       const nkmfile = await OS.readFile(fileLoc);
-      stateMaps['normal'] = processKeyMap(JSON.parse(nkmfile));
+      stateMaps["normal"] = processKeyMap(JSON.parse(nkmfile));
 
-      fileLoc = await OS.appendPath(keyMapDir, 'visualKeyMap.json')
-      if(! await OS.fileExists(fileLoc)) {
+      fileLoc = await OS.appendPath(keyMapDir, "visualKeyMap.json");
+      if (!(await OS.fileExists(fileLoc))) {
         createDefaultVisualMap(keyMapDir);
       }
       const vmFile = await OS.readFile(fileLoc);
-      stateMaps['visual'] = processKeyMap(JSON.parse(vmFile));
-      
-      fileLoc = await OS.appendPath(keyMapDir, 'insertKeyMap.json');
-      if(! await OS.fileExists(fileLoc)) {
+      stateMaps["visual"] = processKeyMap(JSON.parse(vmFile));
+
+      fileLoc = await OS.appendPath(keyMapDir, "insertKeyMap.json");
+      if (!(await OS.fileExists(fileLoc))) {
         createDefaultInsertMap(keyMapDir);
       }
       const ikmFile = await OS.readFile(fileLoc);
-      stateMaps['insert'] = processKeyMap(JSON.parse(ikmFile));
+      stateMaps["insert"] = processKeyMap(JSON.parse(ikmFile));
     }
   }
 
   function processKeyMap(kmap) {
     return kmap.map((item, index, arr) => {
       var cmd = commands.getCommand(item.command);
-      if(typeof cmd === 'undefined') {
+      if (typeof cmd === "undefined") {
         cmd = commands.getAltCommand(item.command);
       }
-      if(typeof cmd !== 'undefined') {
-        // 
+      if (typeof cmd !== "undefined") {
+        //
         // Found the command. Set it up.
         //
         item.name = item.command;
         item.command = cmd.command;
-        return(item);
+        return item;
       } else {
-        // 
+        //
         // If the command can't be found, remove it from the map.
         //
         delete arr[index];
@@ -2232,11 +2560,11 @@ commands={commands}
   }
 
   function getRightDir() {
-    return(localRightDir);
+    return localRightDir;
   }
 
   function getLeftDir() {
-    return(localLeftDir);
+    return localLeftDir;
   }
 
   function addExtraPanelProcessor(panelProc) {
@@ -2245,3 +2573,156 @@ commands={commands}
     extraPanel.set(lextraPanel);
   }
 </script>
+
+<div
+  id="container"
+  style="background-color: {$theme.backgroundColor};
+         color: {$theme.textColor};
+         font-family: {$theme.font};
+         font-size: {$theme.fontSize};
+         height: {mid}px;"
+  on:mousemove={mouseMove}
+  on:mouseup={(e) => {
+    mdown = false;
+  }}
+  bind:this={containerDOM}
+>
+  {#if showGitHub}
+    <GitHub
+      on:closeGitHub={(e) => {
+        toggleGitHub();
+      }}
+    />
+  {/if}
+
+  {#if showCommandPrompt}
+    <CommandPrompt
+      {commands}
+      on:closeCommandPrompt={(e) => {
+        showCommandPrompt = false;
+        if (!showMessageBox) {
+          $keyProcess = true;
+        }
+        if (e.detail.skip) $skipKey = true;
+      }}
+    />
+  {/if}
+
+  {#if showMessageBox}
+    <MessageBox
+      config={msgBoxConfig}
+      spinners={msgBoxSpinners}
+      items={msgBoxItems}
+      on:msgReturn={msgReturn}
+      on:closeMsgBox={(e) => {
+        showMessageBox = false;
+        $keyProcess = true;
+        if (e.detail.skip) $skipKey = true;
+      }}
+    />
+  {/if}
+
+  {#if showQuickSearch}
+    <QuickSearch
+      {leftDOM}
+      {rightDOM}
+      {leftEntries}
+      {rightEntries}
+      on:changeEntries={qsChangeEntries}
+      on:closeQuickSearch={(e) => {
+        showQuickSearch = false;
+        $keyProcess = true;
+        if (e.detail.skip) $skipKey = true;
+      }}
+    />
+  {/if}
+
+  <div id="leftSide" bind:this={leftDOM}>
+    {#if localCurrentCursor.pane === "right" && showExtra}
+      <ExtraPanel side="left" />
+    {:else}
+      <DirectoryListing
+        path={localLeftDir}
+        edit={setEditDirFlagLeft}
+        on:dirChange={(e) => {
+          changeDir(e.detail, "left", "");
+          setEditDirFlagLeft = false;
+        }}
+        on:updateDir={(e) => {
+          refreshLeftPane();
+        }}
+      />
+      <Pane
+        pane="left"
+        entries={leftEntries}
+        utilities={localLeftDir.fileSystem}
+        on:changeDir={(e) => {
+          changeDir(e.detail.dir, e.detail.pane, "");
+        }}
+        on:openFile={(e) => {
+          openFile(e.detail.entry);
+        }}
+      />
+    {/if}
+  </div>
+  <ResizeBorder
+    on:mouseDown={(e) => {
+      mdown = e.detail;
+    }}
+  />
+  <div id="rightSide" bind:this={rightDOM}>
+    {#if localCurrentCursor.pane === "left" && showExtra}
+      <ExtraPanel side="right" />
+    {:else}
+      <DirectoryListing
+        path={localRightDir}
+        edit={setEditDirFlagRight}
+        on:dirChange={(e) => {
+          changeDir(e.detail, "right", "");
+          setEditDirFlagRight = false;
+        }}
+        on:updateDir={(e) => {
+          refreshRightPane();
+        }}
+      />
+      <Pane
+        pane="right"
+        entries={rightEntries}
+        utilities={localRightDir.fileSystem}
+        on:changeDir={(e) => {
+          changeDir(e.detail.dir, e.detail.pane, "");
+        }}
+        on:openFile={(e) => {
+          openFile(e.detail.entry);
+        }}
+      />
+    {/if}
+  </div>
+</div>
+
+<style>
+  #leftSide {
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    margin: 0px;
+    width: 50%;
+  }
+
+  #rightSide {
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    margin: 0px;
+    width: 50%;
+  }
+
+  #container {
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex-grow: 1;
+  }
+</style>

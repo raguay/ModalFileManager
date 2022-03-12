@@ -306,13 +306,13 @@
     if(!await confg.localFS.dirExists(thmDir)) {
       await confg.localFS.createDir(thmDir);
     }
-    await confg.localFS.runCommandLine("git clone '" + thm.git_url + "' '" + thmDir + "';", (err, stdin, stdout) => {
+    await confg.localFS.runCommandLine("git clone '" + thm.git_url + "' '" + thmDir + "';", [], (err, stdin, stdout) => {
       // 
       // The clone should be there. Let's load the new theme.
       // 
       loadTheme(thm);
       loadRepoInfo();
-    });
+    }, '.');
   }
 
   async function loadTheme(thm) {
@@ -346,9 +346,9 @@
     //
     // #TODO - make it not a command line.
     //
-    await confg.localFS.runCommandLine('rm -Rf "' + thmDir + '";', (err, stdin, stdout) => {
+    await confg.localFS.runCommandLine('rm -Rf "' + thmDir + '";', [], (err, stdin, stdout) => {
       loadRepoInfo();
-    })
+    }, '.')
   }
 
   async function installExtension(ext) {
@@ -358,10 +358,10 @@
     if(!await confg.localFS.dirExists(extDir)) {
       await confg.localFS.createDir(extDir);
     }
-    await confg.localFS.runCommandLine("git clone '" + ext.git_url + "' '" + extDir + "';", (err, stdin, stdout) => {
+    await confg.localFS.runCommandLine("git clone '" + ext.git_url + "' '" + extDir + "';", [], (err, stdin, stdout) => {
       addMsg(ext,'Restart the program to use this extension.');
       loadRepoInfo();
-    });
+    }, '.');
   }
   
   async function extExists(ext) {
@@ -378,10 +378,10 @@
     //
     // #TODO = change to not using command line.
     //
-    await confg.localFS.runCommandLine('rm -Rf "' + extDir + '";', (err, stdin, stdout) => {
+    await confg.localFS.runCommandLine('rm -Rf "' + extDir + '";', [], (err, stdin, stdout) => {
       loadRepoInfo();
       addMsg(ext, 'Rerun the application to remove the extension from memory.');
-    });
+    }, '.');
   }
 
   function hasMsg(rp) {
