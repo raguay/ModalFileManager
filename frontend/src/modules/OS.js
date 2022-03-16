@@ -388,7 +388,7 @@ var OS = {
     //
     // Run the command line in a shell. #TODO make the shell configurable.
     //
-    var args = `-ic "${line}"`;
+    var args = ["zsh", '-c', line];
     var cmd = "zsh";
 
     //
@@ -526,6 +526,13 @@ var OS = {
     const parts = await window.go.main.App.SplitFile(filePath);
     return (parts);
   },
+  getClipBoard: async function() {
+    result = await window.go.main.App.GetClip()
+    return result
+  },
+  setClipBoard: async function(msg) {
+    await window.go.main.App.SetClip(msg)
+  }
 };
 
 export default OS;

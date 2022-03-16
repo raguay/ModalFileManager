@@ -35,20 +35,20 @@ var extensions = {
     extensions.config = confg;
     extensions.localFS = LFS;
     var items = await extensions.localFS.readDir(extensions.extensionDir);
-    for (var i=0; i<items.length; i++) {
-      const extsDir = await extensions.localFS.appendPath(extensions.extensionDir,items[i].Name);
+    for (var i = 0; i < items.length; i++) {
+      const extsDir = await extensions.localFS.appendPath(extensions.extensionDir, items[i].Name);
       try {
         //
         // an extension directory. load it!
         //
         const paramfile = await extensions.localFS.appendPath(extsDir, 'package.json');
-        if(await extensions.localFS.fileExists(paramfile)) {
+        if (await extensions.localFS.fileExists(paramfile)) {
           var parms = await extensions.localFS.readFile(paramfile);
           parms = JSON.parse(parms.toString());
-          if(typeof parms.mfmextension !== 'undefined') {
+          if (typeof parms.mfmextension !== 'undefined') {
             const extfile = await extensions.localFS.appendPath(extsDir, parms.mfmextension.main);
             const extension = await extensions.localFS.loadJavaScript(extfile);
-            if(extension !== null) {
+            if (extension !== null) {
               extensions.addExtension(parms.mfmextension.name, parms.mfmextension.description, extension, parms.mfmextension.type, parms.mfmextension.github);
             } else {
               console.log(`extension ${items[i].Name} didn't load.`);
@@ -57,12 +57,12 @@ var extensions = {
             console.log("extension: " + extsDir + " isn't configured correctly.");
           }
         }
-      } catch(e) {
-          //
-          // There was a problem getting the stats. Therefore, it's not a file or 
-          // directory we need.
-          //
-          console.log(e);
+      } catch (e) {
+        //
+        // There was a problem getting the stats. Therefore, it's not a file or 
+        // directory we need.
+        //
+        console.log(e);
       }
     }
   },
@@ -105,11 +105,11 @@ var extensions = {
   },
   listExtCommands: function() {
     return extensions.extCommandList.map(item => {
-      return { name: item.name, description: item.description};
+      return { name: item.name, description: item.description };
     });
   },
   getExtCommand: function(name) {
-    return(extensions.extCommandList.find(item => item.name === name));
+    return (extensions.extCommandList.find(item => item.name === name));
   },
   addExtension: function(name, description, extension, type, github) {
     //
@@ -124,23 +124,30 @@ var extensions = {
     });
   },
   unloadExtensions: function() {
-    if(extensions.extensionList !== null) {
+    if (extensions.extensionList !== null) {
       extensions.extensionList.forEach(item => {
-        if((typeof item.extension !== 'undefined')&&(typeof item.extension.unload !== 'undefined')) item.extension.unload();
+        if ((typeof item.extension !== 'undefined') && (typeof item.extension.unload !== 'undefined')) item.extension.unload();
       });
     }
   },
   init: function() {
-    if(extensions.extensionList !== null) {
+    if (extensions.extensionList !== null) {
       extensions.extensionList.forEach(item => {
-        if(typeof item.extension !== 'undefined') item.extension.init(extensions);
+        if (typeof item.extension !== 'undefined') item.extension.init(extensions);
       });
     }
   },
   installKeyMaps: function() {
-    if(extensions.extensionList !== null) {
+    console.log('Install key Maps');
+    if (extensions.extensionList !== null) {
+      console.log('Loop through the extensions...');
+      console.log(`extension list: ${extensions.extensionList}`);
       extensions.extensionList.forEach(item => {
-        if(typeof item.extension !== 'undefined') item.extension.installKeyMaps();
+        console.log(`check ${item.name}`);
+        if (typeof item.extension !== 'undefined') {
+          item.extension.installKeyMaps();
+          console.log(`installed keymap for ${item.name}`)
+        }
       });
     }
   },

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	clip "github.com/atotto/clipboard"
 	cp "github.com/otiai10/copy"
 	"io"
 	"io/ioutil"
@@ -188,19 +189,36 @@ func (b *App) DeleteEntries(path string) {
 	}
 }
 
-func (b *App) RunCommandLine(cmd string, args string, env []string, dir string) string {
+func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
 	fmt.Printf("The command is: %s\n", cmd)
 	fmt.Printf("The args are: %s\n", args)
 	fmt.Printf("The env are: %v\n", env)
 	fmt.Printf("The directory is: %s\n", dir)
 	b.err = ""
-	cmdline := exec.Command(cmd, args)
+	cmdline := exec.Command(cmd)
+	cmdline.Args = args
 	cmdline.Env = env
 	cmdline.Dir = dir
-	result, err := cmdline.CombinedOutput();
-	if( err != nil ) {
+	fmt.Printf("The cmdline: %v\n", cmdline)
+	result, err := cmdline.CombinedOutput()
+	if err != nil {
 		b.err = err.Error()
 	}
 
 	return string(result[:])
+}
+
+func (b *App) GetClip() string {
+	result, err := clip.ReadAll()
+	if err != nil {
+		b.err = err.Error()
+	}
+	return result
+}
+
+func (b *App) SetClip(msg string) {
+	err := clip.WriteAll(msg)
+	if err != nil {
+		b.err = err.Error()
+	}
 }

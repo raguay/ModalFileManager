@@ -245,11 +245,6 @@
     }
 
     //
-    // Load the extensions, keyboard, and theme.
-    //
-    loadExtensionsKeyboard();
-
-    //
     // Set the configuration store.
     //
     $config = {
@@ -262,6 +257,11 @@
     };
     OS.setConfig(localConfig);
     extensions.setConfig(localConfig);
+
+    //
+    // Load the extensions, keyboard, and theme.
+    //
+    await loadExtensionsKeyboard();
 
     //
     // Setup the directory history.
@@ -349,14 +349,15 @@
     //
     // Setup Extensions.
     //
-    setUpExt();
+    await setUpExt();
 
     //
     // Setup State Maps. This has to be after setting up extensions in case
     // an extension command is being used.
     //
-    loadKeyMaps();
-    extensions.installKeyMaps();
+    await loadKeyMaps();
+    const ldKeyMaps = extensions.installKeyMaps;
+    await ldKeyMaps();
   }
 
   async function setUpExt() {
@@ -382,11 +383,11 @@
     commands.lastError = "";
   }
 
-  function reloadExtensions() {
+  async function reloadExtensions() {
     clearKeyboard();
     clearExtensions();
     clearCommands();
-    loadExtensionsKeyboard();
+    await loadExtensionsKeyboard();
   }
 
   function switchView(view) {
