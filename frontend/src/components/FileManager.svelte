@@ -1557,7 +1557,8 @@
       if (typeof entry.dir !== "undefined") {
         file = await OS.appendPath(entry.dir, entry.name);
       }
-      var editor = await OS.readFile(userEditor).toString().trim();
+      var editor = await OS.readFile(userEditor);
+      editor = editor.toString().trim();
       if (editor.endsWith(".app")) {
         await OS.openFileWithProgram(editor, file);
       } else {

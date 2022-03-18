@@ -138,15 +138,10 @@ var extensions = {
     }
   },
   installKeyMaps: function() {
-    console.log('Install key Maps');
     if (extensions.extensionList !== null) {
-      console.log('Loop through the extensions...');
-      console.log(`extension list: ${extensions.extensionList}`);
       extensions.extensionList.forEach(item => {
-        console.log(`check ${item.name}`);
         if (typeof item.extension !== 'undefined') {
           item.extension.installKeyMaps();
-          console.log(`installed keymap for ${item.name}`)
         }
       });
     }

@@ -296,24 +296,19 @@ var OS = {
     //
     // For macOS, open with the open command line command.
     //
-    //
-    // TODO
-    //
-    pdir = pdir;
-    file = file;
+    this.runCommandLine(`open '${pdir}/${file}'`)
   },
   openFileWithProgram: async function(prog, file) {
     //
     // For macOS, open with the open command line command.
     //
-    //
-    // TODO
-    //
+    this.runCommandLine(`open -a ${prog} '${file}'`)
   },
   openInTerminal: async function(prog, file) {
     //
     // TODO
-    //
+    // "/usr/bin/osascript " + this.terminalScript + " '" + prog + " \"" + file + "\"'", (err, stdin, stdout) => {}
+    this.runCommandLine(`osascript '${this.terminalScript}' '${prog}' '${file}'`, (err, stdout) => { }, '.');
   },
   getConfig: async function() {
     if (this.config === null) {
@@ -366,7 +361,7 @@ var OS = {
     //
     // Get the environment to use.
     //
-    var cnfg = this.getConfig();
+    var cnfg = await this.getConfig();
     var nEnv = { ...cnfg.env };
     if (typeof rEnv !== "undefined") {
       nEnv = { ...nEnv, ...rEnv };

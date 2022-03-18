@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
+	//"fmt"
 	clip "github.com/atotto/clipboard"
 	cp "github.com/otiai10/copy"
 	"io"
@@ -190,16 +190,11 @@ func (b *App) DeleteEntries(path string) {
 }
 
 func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
-	fmt.Printf("The command is: %s\n", cmd)
-	fmt.Printf("The args are: %s\n", args)
-	fmt.Printf("The env are: %v\n", env)
-	fmt.Printf("The directory is: %s\n", dir)
 	b.err = ""
 	cmdline := exec.Command(cmd)
 	cmdline.Args = args
 	cmdline.Env = env
 	cmdline.Dir = dir
-	fmt.Printf("The cmdline: %v\n", cmdline)
 	result, err := cmdline.CombinedOutput()
 	if err != nil {
 		b.err = err.Error()
