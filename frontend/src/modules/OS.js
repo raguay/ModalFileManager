@@ -93,7 +93,9 @@ var OS = {
     return dir;
   },
   dirExists: async function(dir) {
-    if (typeof dir.name !== 'undefined') dir = await this.appendPath(dir.dir, dir.name);
+    if (typeof dir.name !== 'undefined') {
+      dir = await this.appendPath(dir.dir, dir.name);
+    }
     return await this.fileExists(dir);
   },
   fileExists: async function(file) {

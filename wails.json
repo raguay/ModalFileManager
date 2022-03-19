@@ -9,7 +9,7 @@
   "BuildDir": "",
   "outputfilename": "mfm",
   "OutputType": "",
-  "Platform": "",
+  "Platform": "darwin/universal",
   "Author": {
     "name": "Richard Guay",
     "email": "raguay@customct.com"

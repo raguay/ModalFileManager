@@ -82,17 +82,17 @@
   let isExtra = false;
   let extraHTML = '';
 
-  onMount(() => {
+  onMount(async () => {
     // 
     // Subscribe to the current cursor in order to get the file information.
     //
-    var unsubscribeCurrentCursor = currentCursor.subscribe((value) => {
+    var unsubscribeCurrentCursor = currentCursor.subscribe(async (value) => {
       // 
       // Get the file information needed.
       //
       localCurrentCursor = value;
-      fullPath = localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
-      extension = localCurrentCursor.entry.fileSystem.getExtension(localCurrentCursor.entry.name).toLowerCase();
+      fullPath = await localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
+      extension = localCurrentCursor.entry.ext;
       size = util.readableSize(localCurrentCursor.entry.size);
 
       //
@@ -106,7 +106,6 @@
     //
     var unsubscribeExtraPanel = extraPanel.subscribe(value => {
       localExtraPanel = value;
-      isExtra = checkExtraPanel();
     });
 
     // 
@@ -129,9 +128,7 @@
       }
       getDimensions(fullPath);
     }
-    if(!isExtra) {
-      isExtra = checkExtraPanel();
-    } else {
+    if(isExtra) {
       localExtraPanel.forEach(item => {
         item.after();
       });
@@ -139,10 +136,12 @@
   });
 
   function checkExtraPanel() {
-    localExtraPanel.forEach(item => {
-      isExtra = item.check(localCurrentCursor.entry.dir, localCurrentCursor.entry.name, localCurrentCursor.fileSystem, side);
+    extraHTML = '';
+    localExtraPanel.forEach(async item => {
+      isExtra = await item.check(localCurrentCursor.entry.dir, localCurrentCursor.entry.name, localCurrentCursor.fileSystem, side);
       if(isExtra) {
-        extraHTML = item.createHTML();
+        var newContent = await item.createHTML();
+        extraHTML = extraHTML.concat('\n',newContent);
       }
     });
     return(isExtra);

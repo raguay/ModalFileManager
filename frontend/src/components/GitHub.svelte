@@ -38,7 +38,7 @@
               <p class='repostars'
                  style="color: {$theme.Yellow};"
               >
-                {repo.stargazers_count} ⭐️ s
+                {repo.stargazers_count} ⭐️s
               </p>
             </div>
             <div class='reporow'>
@@ -151,7 +151,7 @@
     position: absolute;
     display: flex;
     flex-direction: column;
-    top: 20px;
+    top: 30px;
     left: 20px;
     border: 3px solid;
     border-radius: 3px;
@@ -274,7 +274,7 @@
       themes = {};
     }
     repos = octok.search.repos({
-      q: 'topic:modalfilemanager+topic:extension'
+      q: 'topic:modalfilemanager+topic:extension+topic:v2'
     });
     themes = octok.search.repos({
       q: 'topic:modalfilemanager+topic:theme'
@@ -285,7 +285,7 @@
     // 
     // The height of the window minus (status line + Directory + top location)
     //
-    return window.document.body.clientHeight - 61;
+    return window.document.body.clientHeight - 71;
   }
 
   function exitGitHub() {
@@ -301,12 +301,12 @@
 
   async function installTheme(thm) {
     var confg = get(config);
-    var thmDir = await confg.localFS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.localFS.appendPath(thmDir, thm.name);
-    if(!await confg.localFS.dirExists(thmDir)) {
-      await confg.localFS.createDir(thmDir);
+    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    if(!await confg.OS.dirExists(thmDir)) {
+      await confg.OS.createDir(thmDir);
     }
-    await confg.localFS.runCommandLine("git clone '" + thm.git_url + "' '" + thmDir + "';", [], (err, stdin, stdout) => {
+    await confg.OS.runCommandLine("git clone '" + thm.git_url + "' '" + thmDir + "';", [], (err, stdin, stdout) => {
       // 
       // The clone should be there. Let's load the new theme.
       // 
@@ -317,13 +317,15 @@
 
   async function loadTheme(thm) {
     var confg = get(config);
-    var thmDir = await confg.localFS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.localFS.appendPath(thmDir, thm.name);
-    const pfile = confg.localFS.appendPath(thmDir, 'package.json');
-    if(await confg.localFS.fileExists(pfile)) {
-      var manifest = JSON.parse(await confg.localFS.readFile(pfile));
-      const mfile = await confg.localFS.appendPath(thmDir, manifest.mfmtheme.main);
-      var newTheme = JSON.parse(await confg.localFS.readFile(mfile));
+    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    const pfile = await confg.OS.appendPath(thmDir, 'package.json');
+    if(await confg.OS.fileExists(pfile)) {
+      var manifest = await confg.OS.readFile(pfile);
+      manifest = JSON.parse(manifest);
+      const mfile = await confg.OS.appendPath(thmDir, manifest.mfmtheme.main);
+      var newTheme = await confg.OS.readFile(mfile);
+      newTheme = JSON.parse(newTheme);
       theme.set(newTheme);
       addMsg(thm, "This theme is now being used.");
     } else {
@@ -334,31 +336,32 @@
 
   async function themeExists(thm) {
     var confg = get(config);
-    var thmDir = await confg.localFS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.localFS.appendPath(thmDir, thm.name);
-    return(await confg.localFS.dirExists(thmDir))
+    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    var result = await confg.OS.dirExists(thmDir);
+    return(result);
   }
 
   async function deleteTheme(thm) {
     var confg = get(config);
-    var thmDir = await confg.localFS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.localFS.appendPath(thmDir, thm.name);
+    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
     //
     // #TODO - make it not a command line.
     //
-    await confg.localFS.runCommandLine('rm -Rf "' + thmDir + '";', [], (err, stdin, stdout) => {
+    await confg.OS.runCommandLine('rm -Rf "' + thmDir + '";', [], (err, stdin, stdout) => {
       loadRepoInfo();
     }, '.')
   }
 
   async function installExtension(ext) {
     var confg = get(config);
-    var extDir = await confg.localFS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.localFS.appendPath(extDir, ext.name);
-    if(!await confg.localFS.dirExists(extDir)) {
-      await confg.localFS.createDir(extDir);
+    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
+    extDir = await confg.OS.appendPath(extDir, ext.name);
+    if(!await confg.OS.dirExists(extDir)) {
+      await confg.OS.createDir(extDir);
     }
-    await confg.localFS.runCommandLine("git clone '" + ext.git_url + "' '" + extDir + "';", [], (err, stdin, stdout) => {
+    await confg.OS.runCommandLine("git clone '" + ext.git_url + "' '" + extDir + "';", [], (err, stdin, stdout) => {
       addMsg(ext,'Restart the program to use this extension.');
       loadRepoInfo();
     }, '.');
@@ -366,19 +369,19 @@
   
   async function extExists(ext) {
     var confg = get(config);
-    var extDir = await confg.localFS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.localFS.appendPath(extDir, ext.name);
-    return(await confg.localFS.dirExists(extDir))
+    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
+    extDir = await confg.OS.appendPath(extDir, ext.name);
+    return(await confg.OS.dirExists(extDir))
   }
   
   async function deleteExtension(ext) {
     var confg = get(config);
-    var extDir = await confg.localFS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.localFS.appendPath(extDir, ext.name);
+    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
+    extDir = await confg.OS.appendPath(extDir, ext.name);
     //
     // #TODO = change to not using command line.
     //
-    await confg.localFS.runCommandLine('rm -Rf "' + extDir + '";', [], (err, stdin, stdout) => {
+    await confg.OS.runCommandLine('rm -Rf "' + extDir + '";', [], (err, stdin, stdout) => {
       loadRepoInfo();
       addMsg(ext, 'Rerun the application to remove the extension from memory.');
     }, '.');
