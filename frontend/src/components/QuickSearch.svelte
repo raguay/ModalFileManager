@@ -26,7 +26,7 @@
     width: 100px;
     max-width: 100px;
     min-width: 100px;
-    bottom: 0px;
+    bottom: 30px;
     z-index: 100;
     user-select: none;
     text-decoration: none;
@@ -77,9 +77,9 @@
 
   onMount(() => {
     if(cursor.pane === 'left') {
-      position = leftDOM.clientWidth - 100;
+      position = leftDOM.clientWidth - 110;
     } else {
-      position = rightDOM.clientWidth + leftDOM.clientWidth - 85;
+      position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
     }
   });
 

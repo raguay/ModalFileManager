@@ -78,7 +78,7 @@ const go = {
       /**
        * ReadDir
        * @param {string} arg1 - Go Type: string
-       * @returns {Promise<Array<FileInfo>>}  - Go Type: []main.FileInfo
+       * @returns {Promise<Array<models.FileInfo>>}  - Go Type: []main.FileInfo
        */
       "ReadDir": (arg1) => {
         return window.go.main.App.ReadDir(arg1);
@@ -122,7 +122,7 @@ const go = {
       /**
        * SplitFile
        * @param {string} arg1 - Go Type: string
-       * @returns {Promise<FileParts>}  - Go Type: main.FileParts
+       * @returns {Promise<models.FileParts>}  - Go Type: main.FileParts
        */
       "SplitFile": (arg1) => {
         return window.go.main.App.SplitFile(arg1);
