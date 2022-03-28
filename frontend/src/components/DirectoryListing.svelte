@@ -89,8 +89,8 @@
     keyProcess.set(false);
   }
 
-  function editOff(e) {
-    if (path.fileSystem.dirExists(inputPath)) {
+  async function editOff() {
+    if (await path.fileSystem.dirExists(inputPath)) {
       show = true;
       dirlist = [];
       keyProcess.set(true);
@@ -106,7 +106,7 @@
       show = true;
       dirlist = [];
       keyProcess.set(true);
-      if (path.fileSystem.dirExists(inputPath)) {
+      if (await path.fileSystem.dirExists(inputPath)) {
         dispatch("dirChange", {
           path: inputPath,
           cursor: true,

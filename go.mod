@@ -1,6 +1,6 @@
 module changeme
 
-go 1.17
+go 1.18
 
 require (
 	github.com/atotto/clipboard v0.1.4
@@ -38,4 +38,4 @@ require (
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 )
 
-replace github.com/wailsapp/wails/v2 => /Users/raguay/Documents/wails/V2/
+//replace github.com/wailsapp/wails/v2 => /Users/raguay/Documents/wails/V2/

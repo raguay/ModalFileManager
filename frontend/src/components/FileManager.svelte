@@ -1418,15 +1418,20 @@
     };
     addSpinner("progress1", 1);
 
-    entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.deleteEntries(item, (err, stdout) => {
+    //
+    // It is all set up. Show the message box.
+    //
+    showMessageBox = true;
+
+    for (var i = 0; i < entries.length; i++) {
+      await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
         if (err) {
           //
           // There was an error in deleting.
           //
           console.log(err);
         }
-        if (key >= arr.length - 1) {
+        if (i >= entries.length - 1) {
           showMessageBox = false;
           $keyProcess = true;
 
@@ -1445,13 +1450,8 @@
           removeSpinner("progress1");
         }
       });
-      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
-    });
-
-    //
-    // It is all set up. Show the message box.
-    //
-    showMessageBox = true;
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+    }
   }
 
   function copyEntries() {
@@ -1494,39 +1494,43 @@
     };
     addSpinner("progress1", 1);
 
-    entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.copyEntries(item, otherPane, (err, stdout) => {
-        if (key >= arr.length - 1) {
-          showMessageBox = false;
-          $keyProcess = true;
-
-          //
-          // Refresh the side copied to.
-          //
-          if (localCurrentCursor.pane === "left") {
-            refreshRightPane();
-          } else {
-            refreshLeftPane();
-          }
-
-          //
-          // clear out the selections.
-          //
-          if (sel) clearSelectedFiles();
-
-          //
-          // Remove the spinner from being checked.
-          //
-          removeSpinner("progress1");
-        }
-      });
-      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
-    });
-
     //
     // It is all set up. Show the message box.
     //
     showMessageBox = true;
+
+    for (var i = 0; i < entries.length; i++) {
+      await entries[i].fileSystem.copyEntries(
+        entries[i],
+        otherPane,
+        (err, stdout) => {
+          if (i == entries.length - 1) {
+            showMessageBox = false;
+            $keyProcess = true;
+
+            //
+            // Refresh the side copied to.
+            //
+            if (localCurrentCursor.pane === "left") {
+              refreshRightPane();
+            } else {
+              refreshLeftPane();
+            }
+
+            //
+            // clear out the selections.
+            //
+            if (sel) clearSelectedFiles();
+
+            //
+            // Remove the spinner from being checked.
+            //
+            removeSpinner("progress1");
+          }
+        }
+      );
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+    }
   }
 
   function swapPanels() {
@@ -1657,30 +1661,34 @@
     };
     addSpinner("progress1", 1);
 
-    entries.forEach(async (item, key, arr) => {
-      await item.fileSystem.moveEntries(item, otherPane, (err, stdout) => {
-        if (key >= arr.length - 1) {
-          showMessageBox = false;
-          $keyProcess = true;
-
-          //
-          // Refresh both sides.
-          //
-          refreshPanes();
-
-          //
-          // Remove the spinner from being checked.
-          //
-          removeSpinner("progress1");
-        }
-      });
-      updateSpinner("progress1", ((key + 1) / entries.length) * 100);
-    });
-
     //
     // It is all set up. Show the message box.
     //
     showMessageBox = true;
+
+    for (var i = 0; i < entries.length; i++) {
+      await entries[i].fileSystem.moveEntries(
+        entries[i],
+        otherPane,
+        (err, stdout) => {
+          if (i >= entries.length - 1) {
+            showMessageBox = false;
+            $keyProcess = true;
+
+            //
+            // Refresh both sides.
+            //
+            refreshPanes();
+
+            //
+            // Remove the spinner from being checked.
+            //
+            removeSpinner("progress1");
+          }
+        }
+      );
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+    }
   }
 
   async function refreshRightPane() {
