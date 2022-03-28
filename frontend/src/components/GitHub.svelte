@@ -1,12 +1,292 @@
-<div  id='GitHub'
-      style="background-color: {$theme.backgroundColor};
-             border-color: {util.pSBC(.1,$theme.backgroundColor)};
+<script>
+  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
+  import { get } from "svelte/store";
+  import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
+  import { keyProcess } from "../stores/keyProcess.js";
+  import util from "../modules/util.js";
+  import { Octokit } from "@octokit/rest";
+
+  const dispatch = createEventDispatcher();
+
+  let octok;
+  let repos;
+  let themes;
+  let width = null;
+  let msgs = [];
+  let pickerDOM;
+  let hiddenInput;
+  let once = true;
+  let timeOut;
+  let loading = true;
+
+  onMount(async () => {
+    keyProcess.set(false);
+    width = window.innerWidth - 30;
+    octok = new Octokit();
+    await loadRepoInfo();
+    timeOut = setTimeout(focusInput, 1000);
+    () => {
+      hiddenInput = null;
+      clearTimeout(timeOut);
+    };
+  });
+
+  afterUpdate(() => {
+    if (typeof hiddenInput !== "undefined") hiddenInput.focus();
+  });
+
+  function focusInput() {
+    if (once) keyProcess.set(false);
+    once = false;
+    clearTimeout(timeOut);
+    if (typeof hiddenInput !== "undefined" && hiddenInput !== null)
+      hiddenInput.focus();
+    timeOut = setTimeout(focusInput, 1000);
+  }
+
+  async function loadRepoInfo() {
+    console.log("loading repo info:");
+    loading = true;
+    if (typeof repos !== "undefined") {
+      repos = {};
+    }
+    if (typeof themes !== "undefined") {
+      themes = {};
+    }
+    var repost = await octok.search.repos({
+      q: "topic:modalfilemanager+topic:extension+topic:v2",
+    });
+    if (check(repost)) {
+      repost = repost.data.items;
+      console.log(repost);
+      for (var i = 0; i < repost.length; i++) {
+        console.log(repost[i]);
+        repost[i].loaded = await extExists(repost[i]);
+      }
+      repos = repost;
+    }
+    var themest = await octok.search.repos({
+      q: "topic:modalfilemanager+topic:theme",
+    });
+    if (check(themest)) {
+      themest = themest.data.items;
+      for (var i = 0; i < themest.length; i++) {
+        themest[i].loaded = await themeExists(themest[i]);
+      }
+      themes = themest;
+    }
+    loading = false;
+  }
+
+  function getHeight() {
+    //
+    // The height of the window minus (status line + Directory + top location)
+    //
+    return window.document.body.clientHeight - 71;
+  }
+
+  function exitGitHub() {
+    keyProcess.set(true);
+    inputHidden = null;
+    dispatch("closeGitHub", {});
+  }
+
+  function check(val) {
+    return (
+      typeof val !== "undefined" &&
+      typeof val.data !== "undefined" &&
+      typeof val.data.items !== "undefined"
+    );
+  }
+
+  async function installTheme(thm) {
+    var confg = get(config);
+    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    if (!(await confg.OS.dirExists(thmDir))) {
+      await confg.OS.createDir(thmDir);
+    }
+    await confg.OS.runCommandLine(
+      "git clone '" + thm.git_url + "' '" + thmDir + "';",
+      [],
+      (err, stdin, stdout) => {
+        //
+        // The clone should be there. Let's load the new theme.
+        //
+        loadTheme(thm);
+        loadRepoInfo();
+      },
+      "."
+    );
+  }
+
+  async function loadTheme(thm) {
+    var confg = get(config);
+    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    const pfile = await confg.OS.appendPath(thmDir, "package.json");
+    if (await confg.OS.fileExists(pfile)) {
+      var manifest = await confg.OS.readFile(pfile);
+      manifest = JSON.parse(manifest);
+      const mfile = await confg.OS.appendPath(thmDir, manifest.mfmtheme.main);
+      var newTheme = await confg.OS.readFile(mfile);
+      newTheme = JSON.parse(newTheme);
+      theme.set(newTheme);
+      addMsg(thm, "This theme is now being used.");
+    } else {
+      console.log("The theme doesn't have a package.json file.");
+      addMsg(thm, "The theme doesn't have a package.json file.");
+    }
+  }
+
+  async function themeExists(thm) {
+    var confg = get(config);
+    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    var result = await confg.OS.dirExists(thmDir);
+    return result;
+  }
+
+  async function deleteTheme(thm) {
+    var confg = get(config);
+    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
+    thmDir = await confg.OS.appendPath(thmDir, thm.name);
+    //
+    // #TODO - make it not a command line.
+    //
+    await confg.OS.runCommandLine(
+      'rm -Rf "' + thmDir + '";',
+      [],
+      (err, stdin, stdout) => {
+        loadRepoInfo();
+      },
+      "."
+    );
+  }
+
+  async function installExtension(ext) {
+    var confg = get(config);
+    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
+    extDir = await confg.OS.appendPath(extDir, ext.name);
+    if (!(await confg.OS.dirExists(extDir))) {
+      await confg.OS.createDir(extDir);
+    }
+    await confg.OS.runCommandLine(
+      "git clone '" + ext.git_url + "' '" + extDir + "';",
+      [],
+      (err, stdin, stdout) => {
+        addMsg(ext, "Restart the program to use this extension.");
+        loadRepoInfo();
+      },
+      "."
+    );
+  }
+
+  async function extExists(ext) {
+    console.log("Ext exists...");
+    var confg = get(config);
+    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
+    extDir = await confg.OS.appendPath(extDir, ext.name);
+    console.log(extDir);
+    var flag = await confg.OS.dirExists(extDir);
+    console.log(flag);
+    return flag;
+  }
+
+  async function deleteExtension(ext) {
+    var confg = get(config);
+    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
+    extDir = await confg.OS.appendPath(extDir, ext.name);
+    //
+    // #TODO = change to not using command line.
+    //
+    await confg.OS.runCommandLine(
+      'rm -Rf "' + extDir + '";',
+      [],
+      (err, stdin, stdout) => {
+        loadRepoInfo();
+        addMsg(
+          ext,
+          "Rerun the application to remove the extension from memory."
+        );
+      },
+      "."
+    );
+  }
+
+  function hasMsg(rp) {
+    if (msgs.length > 0) {
+      return msgs.find((item) => item.name === rp.name) !== "undefined";
+    } else {
+      return false;
+    }
+  }
+
+  function getMsg(rp) {
+    if (hasMsg(rp)) {
+      var item = msgs.find((item) => item.name === rp.name);
+      if (typeof item !== "undefined") {
+        return item.msg;
+      } else {
+        return "";
+      }
+    } else {
+      return "";
+    }
+  }
+
+  function addMsg(rp, msg) {
+    msgs.push({
+      name: rp.name,
+      msg: msg,
+    });
+    msgs = msgs;
+    themes = themes;
+    repos = repos;
+  }
+
+  function inputChange(e) {
+    if (e.key === "ArrowUp" || e.key === "k") {
+      //
+      // Go up the list. Zero is at the top.
+      //
+      scrollDOM(-1);
+    } else if (e.key === "ArrowDown" || e.key === "j") {
+      //
+      // Go down the list. The largest index is at the bottom.
+      //
+      scrollDOM(1);
+    } else if (e.key === "Escape") {
+      //
+      // Escape key. Just exit without doing anything.
+      //
+      exitGitHub();
+    }
+  }
+
+  function scrollDOM(amount) {
+    var adj = amount * 20;
+
+    if (pickerDOM !== null) {
+      pickerDOM.scrollTop += adj;
+      if (pickerDOM.scrollTop < 0) pickerDOM.scrollTop = 0;
+    }
+  }
+</script>
+
+<div
+  id="GitHub"
+  style="background-color: {$theme.backgroundColor};
+             border-color: {util.pSBC(0.1, $theme.backgroundColor)};
              max-height: {getHeight()}px;
              width: {width !== null ? width : 100}px;
-             color: {$theme.textColor};" 
-      on:blur={(e) => { exitGitHub(); }}
+             color: {$theme.textColor};"
+  on:blur={(e) => {
+    exitGitHub();
+  }}
 >
-  <div id='GitHubHeader'>
+  <div id="GitHubHeader">
     <h3>GitHub Themes and Extensions Importer</h3>
     <span
       on:click={(e) => {
@@ -14,136 +294,110 @@
       }}
       style="color: {$theme.Red};"
     >
-     X
+      X
     </span>
-    <input
-      id="inputHidden"
-      bind:this={hiddenInput}
-      on:keydown={inputChange}
-    />
+    <input id="inputHidden" bind:this={hiddenInput} on:keydown={inputChange} />
   </div>
-  <div id='GitHubList'
-       bind:this={pickerDOM}
-  >
-    {#await repos}
-      <h3>Loading Extensions Repositories....</h3>
-    {:then value}
-      {#if check(value)}
-        {#each value.data.items as repo}
-          <div class='repoblock'>
-            <div class='reporow'>
-              <p class='reponame'>
-                {repo.name}
-              </p>
-              <p class='repostars'
-                 style="color: {$theme.Yellow};"
-              >
-                {repo.stargazers_count} ⭐️s
-              </p>
-            </div>
-            <div class='reporow'>
-              <p class='repodisc'>
-                {repo.description}
-              </p>
-            </div>
-            {#if hasMsg(repo)}
-              <div class='reporow'
-                   style="color: {$theme.Red};"
-              >
-                {@html getMsg(repo)}
-              </div>
-            {/if}
-            <div class='repobuttons'>
-              {#if extExists(repo)}
-                <button
-                  on:click={(e) => {
-                    deleteExtension(repo);
-                  }}
-                  style="background-color: {$theme.Red};"
-                >
-                  Delete
-                </button>
-              {:else}
-                <button
-                  on:click={(e) => {
-                    installExtension(repo);
-                  }}
-                  style="background-color: {$theme.Green};"
-                >
-                  Install
-                </button>
-              {/if}
-            </div>
+  {#if loading}
+    <h1>Loading....</h1>
+  {:else}
+    <div id="GitHubList" bind:this={pickerDOM}>
+      {#each repos as repo}
+        <div class="repoblock">
+          <div class="reporow">
+            <p class="reponame">
+              {repo.name}
+            </p>
+            <p class="repostars" style="color: {$theme.Yellow};">
+              {repo.stargazers_count} ⭐️s
+            </p>
           </div>
-        {/each}
-      {/if}
-    {:catch error}
-      <h2>There was an error: {error}</h2>
-    {/await}
-    {#await themes}
-      <h3>Loading Theme Repositories....</h3>
-    {:then valueTheme}
-      {#if check(valueTheme)}
-        {#each valueTheme.data.items as thm}
-          <div class="repoblock">
-            <div class='reporow'>
-              <p class='reponame'>
-                {thm.name}
-              </p>
-              <p class='repostars'
-                 style="color: {$theme.Yellow};"
-              >
-                {thm.stargazers_count} ⭐️ s
-              </p>
-            </div>
-            <div class='reporow'>
-              <p class='repodisc'>
-                {thm.description}
-              </p>
-            </div>
-            {#if hasMsg(thm)}
-              <div class='reporow'
-                   style="color: {$theme.Red};"
-              >
-                {@html getMsg(thm)}
-              </div>
-            {/if}
-            <div class="repobuttons">
-              {#if themeExists(thm)}
-                <button
-                  on:click={(e) => {
-                    loadTheme(thm);
-                  }}
-                  style="background-color: {$theme.Green};"
-                >
-                  Load
-                </button>
-                <button
-                  on:click={(e) => {
-                    deleteTheme(thm);
-                  }}
-                  style="background-color: {$theme.Red};"
-                >
-                  Delete
-                </button>
-              {:else}
-                <button
-                  on:click={(e) => {
-                    installTheme(thm);
-                  }}
-                  style="background-color: {$theme.Green};"
-                >
-                  Install
-                </button>
-              {/if}
-            </div>
+          <div class="reporow">
+            <p class="repodisc">
+              {repo.description}
+            </p>
           </div>
-        {/each}
-      {/if}
-    {:catch error}
-      <h2>There was an error: {error}</h2>
-    {/await}
-  </div>
+          {#if hasMsg(repo)}
+            <div class="reporow" style="color: {$theme.Red};">
+              {@html getMsg(repo)}
+            </div>
+          {/if}
+          <div class="repobuttons">
+            {#if repo.loaded}
+              <button
+                on:click={(e) => {
+                  deleteExtension(repo);
+                }}
+                style="background-color: {$theme.Red};"
+              >
+                Delete
+              </button>
+            {:else}
+              <button
+                on:click={(e) => {
+                  installExtension(repo);
+                }}
+                style="background-color: {$theme.Green};"
+              >
+                Install
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/each}
+      {#each themes as thm}
+        <div class="repoblock">
+          <div class="reporow">
+            <p class="reponame">
+              {thm.name}
+            </p>
+            <p class="repostars" style="color: {$theme.Yellow};">
+              {thm.stargazers_count} ⭐️ s
+            </p>
+          </div>
+          <div class="reporow">
+            <p class="repodisc">
+              {thm.description}
+            </p>
+          </div>
+          {#if hasMsg(thm)}
+            <div class="reporow" style="color: {$theme.Red};">
+              {@html getMsg(thm)}
+            </div>
+          {/if}
+          <div class="repobuttons">
+            {#if thm.loaded}
+              <button
+                on:click={(e) => {
+                  loadTheme(thm);
+                }}
+                style="background-color: {$theme.Green};"
+              >
+                Load
+              </button>
+              <button
+                on:click={(e) => {
+                  deleteTheme(thm);
+                }}
+                style="background-color: {$theme.Red};"
+              >
+                Delete
+              </button>
+            {:else}
+              <button
+                on:click={(e) => {
+                  installTheme(thm);
+                }}
+                style="background-color: {$theme.Green};"
+              >
+                Install
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -221,229 +475,3 @@
     border-radius: 5px;
   }
 </style>
-
-<script>
-  import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
-  import { get } from 'svelte/store';
-  import { theme } from '../stores/theme.js';
-  import { config } from '../stores/config.js';
-  import { keyProcess } from '../stores/keyProcess.js';
-  import util from '../modules/util.js';
-  import { Octokit } from "@octokit/rest";
-
-  const dispatch = createEventDispatcher();
-
-  let octok;
-  let repos;
-  let themes;
-  let width = null;
-  let msgs = [];
-  let pickerDOM;
-  let hiddenInput;
-  let once = true;
-  let timeOut;
-
-  onMount(() => {
-    keyProcess.set(false);
-    width = window.innerWidth - 30;
-    octok = new Octokit();
-    loadRepoInfo();
-    timeOut = setTimeout(focusInput, 1000);
-    (() => {
-      clearTimeout(timeOut);
-    })
-  });
-
-  afterUpdate(() => {
-    if(typeof hiddenInput !== 'undefined') hiddenInput.focus();
-  });
-
-  function focusInput() {
-    if(once) keyProcess.set(false);
-    once = false;
-    clearTimeout(timeOut);
-    if(typeof hiddenInput !== 'undefined') hiddenInput.focus();
-    timeOut = setTimeout(focusInput, 1000);
-  }
-
-  function loadRepoInfo() {
-    if(typeof repos !== 'undefined') {
-      repos = {};
-    }
-    if(typeof themes !== 'undefined') {
-      themes = {};
-    }
-    repos = octok.search.repos({
-      q: 'topic:modalfilemanager+topic:extension+topic:v2'
-    });
-    themes = octok.search.repos({
-      q: 'topic:modalfilemanager+topic:theme'
-    });
-  }
-
-  function getHeight() {
-    // 
-    // The height of the window minus (status line + Directory + top location)
-    //
-    return window.document.body.clientHeight - 71;
-  }
-
-  function exitGitHub() {
-    keyProcess.set(true);
-    dispatch('closeGitHub',{});
-  }
-
-  function check(val) {
-    return((typeof val !== 'undefined')&&
-           (typeof val.data !== 'undefined')&&
-           (typeof val.data.items !== 'undefined'));
-  }
-
-  async function installTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    if(!await confg.OS.dirExists(thmDir)) {
-      await confg.OS.createDir(thmDir);
-    }
-    await confg.OS.runCommandLine("git clone '" + thm.git_url + "' '" + thmDir + "';", [], (err, stdin, stdout) => {
-      // 
-      // The clone should be there. Let's load the new theme.
-      // 
-      loadTheme(thm);
-      loadRepoInfo();
-    }, '.');
-  }
-
-  async function loadTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    const pfile = await confg.OS.appendPath(thmDir, 'package.json');
-    if(await confg.OS.fileExists(pfile)) {
-      var manifest = await confg.OS.readFile(pfile);
-      manifest = JSON.parse(manifest);
-      const mfile = await confg.OS.appendPath(thmDir, manifest.mfmtheme.main);
-      var newTheme = await confg.OS.readFile(mfile);
-      newTheme = JSON.parse(newTheme);
-      theme.set(newTheme);
-      addMsg(thm, "This theme is now being used.");
-    } else {
-      console.log("The theme doesn't have a package.json file.");
-      addMsg(thm, "The theme doesn't have a package.json file.");
-    }
-  }
-
-  async function themeExists(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    var result = await confg.OS.dirExists(thmDir);
-    return(result);
-  }
-
-  async function deleteTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir,'themes');
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    //
-    // #TODO - make it not a command line.
-    //
-    await confg.OS.runCommandLine('rm -Rf "' + thmDir + '";', [], (err, stdin, stdout) => {
-      loadRepoInfo();
-    }, '.')
-  }
-
-  async function installExtension(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    if(!await confg.OS.dirExists(extDir)) {
-      await confg.OS.createDir(extDir);
-    }
-    await confg.OS.runCommandLine("git clone '" + ext.git_url + "' '" + extDir + "';", [], (err, stdin, stdout) => {
-      addMsg(ext,'Restart the program to use this extension.');
-      loadRepoInfo();
-    }, '.');
-  }
-  
-  async function extExists(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    return(await confg.OS.dirExists(extDir))
-  }
-  
-  async function deleteExtension(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir,'extensions');
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    //
-    // #TODO = change to not using command line.
-    //
-    await confg.OS.runCommandLine('rm -Rf "' + extDir + '";', [], (err, stdin, stdout) => {
-      loadRepoInfo();
-      addMsg(ext, 'Rerun the application to remove the extension from memory.');
-    }, '.');
-  }
-
-  function hasMsg(rp) {
-    if(msgs.length > 0) {
-      return(msgs.find(item => item.name === rp.name) !== 'undefined');
-    } else {
-      return(false);
-    }
-  }
-
-  function getMsg(rp) {
-    if(hasMsg(rp)) {
-      var item = msgs.find(item => item.name === rp.name);
-      if(typeof item !== 'undefined') {
-        return(item.msg);
-      } else {
-        return('');
-      }
-    } else {
-      return('');
-    }
-  }
-
-  function addMsg(rp,msg) {
-    msgs.push({
-      name: rp.name,
-      msg: msg
-    });
-    msgs = msgs;
-    themes = themes;
-    repos = repos;
-  }
-  
-  function inputChange(e) {
-    if((e.key === 'ArrowUp')||(e.key === 'k')) {
-      // 
-      // Go up the list. Zero is at the top.
-      //
-      scrollDOM(-1);
-    } else if((e.key === 'ArrowDown')||(e.key === 'j')) {
-      // 
-      // Go down the list. The largest index is at the bottom.
-      //
-      scrollDOM(1);
-    } else if(e.key === 'Escape') {
-      //
-      // Escape key. Just exit without doing anything.
-      //
-      exitGitHub();
-    }
-  } 
-
-  function scrollDOM(amount) {
-    var adj = amount * 20;
-
-    if(pickerDOM !== null) {
-      pickerDOM.scrollTop += adj;
-      if(pickerDOM.scrollTop < 0) pickerDOM.scrollTop = 0;
-    }
-  }
-</script>
-

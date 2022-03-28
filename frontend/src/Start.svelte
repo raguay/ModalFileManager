@@ -1,13 +1,40 @@
+<script>
+  import { onMount } from "svelte";
+  import FileManager from "./components/FileManager.svelte";
+  import Preferences from "./components/Preferences.svelte";
+  import StatusLine from "./components/StatusLine.svelte";
+  import TitleBar from "./components/TitleBar.svelte";
+  import { shiftKey } from "./stores/shiftKey.js";
+  import { ctrlKey } from "./stores/ctrlKey.js";
+  import { metaKey } from "./stores/metaKey.js";
+  import { altKey } from "./stores/altKey.js";
+  import { skipKey } from "./stores/skipKey.js";
+  import { processKey } from "./stores/processKey.js";
+  import { keyProcess } from "./stores/keyProcess.js";
+
+  let showComponent = "filemanager";
+  let midSize = null;
+
+  onMount(() => {
+    midSize = window.innerHeight - 75;
+  });
+
+  function switchView(v) {
+    showComponent = v.detail.view;
+  }
+</script>
+
 <svelte:window
   on:keydown={(e) => {
     $ctrlKey = e.ctrlKey;
     $shiftKey = e.shiftKey;
     $metaKey = e.metaKey;
-    if(($skipKey && (e.key === 'Enter'))||(showComponent !== 'filemanager')) {
+    $altKey = e.altKey;
+    if (($skipKey && e.key === "Enter") || showComponent !== "filemanager") {
       $keyProcess = true;
     } else {
-      if($keyProcess) {
-        if($processKey !== null) $processKey(e);
+      if ($keyProcess) {
+        if ($processKey !== null) $processKey(e);
       }
     }
     $skipKey = false;
@@ -16,30 +43,23 @@
     $ctrlKey = e.ctrlKey;
     $shiftKey = e.shiftKey;
     $metaKey = e.metaKey;
+    $altKey = e.altKey;
   }}
-  on:resize={(e) => {
+  on:resize={() => {
     midSize = window.innerHeight - 75;
   }}
 />
 
-<div
-  id='bodyContainer'
->
-
+<div id="bodyContainer">
   <TitleBar />
 
-  <FileManager 
-    on:switchView={switchView}
-    mid={midSize}
-  />
+  <FileManager on:switchView={switchView} mid={midSize} />
 
   <StatusLine />
 </div>
 
-{#if showComponent === 'preferences'}
-  <Preferences
-    on:switchView={switchView}
-  />
+{#if showComponent === "preferences"}
+  <Preferences on:switchView={switchView} />
 {/if}
 
 <style>
@@ -63,29 +83,3 @@
     min-width: 100%;
   }
 </style>
-
-<script>
-  import { onMount } from "svelte";
-  import FileManager from "./components/FileManager.svelte";
-  import Preferences from "./components/Preferences.svelte";
-  import StatusLine from './components/StatusLine.svelte';
-  import TitleBar from './components/TitleBar.svelte';
-  import { shiftKey } from "./stores/shiftKey.js";
-  import { ctrlKey } from "./stores/ctrlKey.js";
-  import { metaKey } from "./stores/metaKey.js";
-  import { altKey } from "./stores/altKey.js";
-  import { skipKey } from "./stores/skipKey.js";
-  import { processKey } from "./stores/processKey.js";
-  import { keyProcess } from './stores/keyProcess.js';
-
-  let showComponent = 'filemanager';
-  let midSize = null;
-
-  onMount(() => {
-    midSize = window.innerHeight - 75;
-  });
-
-  function switchView(v) {
-    showComponent = v.detail.view;
-  }
-</script>
