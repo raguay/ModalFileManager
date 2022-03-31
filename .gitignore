@@ -10,3 +10,6 @@ frontend/public/bundle.*
 
 # The black hole that is...
 node_modules
+
+# Binaries zipped
+*.zip
