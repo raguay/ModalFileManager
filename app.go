@@ -14,7 +14,6 @@ import (
 	cp "github.com/otiai10/copy"
 	watcher "github.com/radovskyb/watcher"
 
-	//notify "github.com/rjeczalik/notify"
 	runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -26,6 +25,7 @@ type App struct {
 	watcher      *watcher.Watcher
 	lastRightDir string
 	lastLeftDir  string
+	watchers     []WatcherInfo
 }
 
 type FileParts struct {
@@ -43,6 +43,12 @@ type FileInfo struct {
 	Modtime   string
 }
 
+type WatcherInfo struct {
+	Path        string
+	WatcherType int // if 0, a nonrecursive watch. 1 is a AddRecursive watch
+	SigName     string
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -55,6 +61,7 @@ func (b *App) startup(ctx context.Context) {
 	//
 	b.ctx = ctx
 	b.watcher = watcher.New()
+	b.watchers = make([]WatcherInfo, 0, 0)
 	go func() {
 		for {
 			select {
@@ -70,9 +77,20 @@ func (b *App) startup(ctx context.Context) {
 							runtime.EventsEmit(b.ctx, "rightDirChange", event.Path)
 						} else {
 							//
-							// It's not the left or right directory. Remove it.
+							// See if it is in watchers list
 							//
-							if b.DirExists(event.Path) {
+							found := false
+							for i := 0; i < len(b.watchers); i++ {
+								if b.watchers[i].Path == event.Path {
+									runtime.EventsEmit(b.ctx, b.watchers[i].SigName, event.Path)
+									found = true
+								}
+							}
+
+							//
+							// It's not the left or right directory or watchers list. Remove it.
+							//
+							if !found && b.DirExists(event.Path) {
 								b.watcher.Remove(event.Path)
 							}
 						}
@@ -309,4 +327,37 @@ func (b *App) CloseRightWatch() {
 
 func (b *App) CloseLeftWatch() {
 	b.watcher.Remove(b.lastLeftDir)
+}
+
+func (b *App) AddWatcher(path string, wtype int, signame string) {
+	if wtype == 0 {
+		b.watcher.Add(path)
+	} else {
+		b.watcher.AddRecursive(path)
+	}
+	b.watchers = append(b.watchers, WatcherInfo{
+		Path:        path,
+		WatcherType: wtype,
+		SigName:     signame,
+	})
+}
+
+func (b *App) RemoveWatcher(path string, wtype int) {
+	if wtype == 0 {
+		b.watcher.Remove(path)
+	} else {
+		b.watcher.RemoveRecursive(path)
+	}
+
+	//
+	// Remove the watcher from the list of watchers
+	//
+	for i := 0; i < len(b.watchers); i++ {
+		if b.watchers[i].Path == path {
+			runtime.EventsOff(b.ctx, b.watchers[i].SigName)
+			copy(b.watchers[i:], b.watchers[i+1:])
+			b.watchers[len(b.watchers)-1] = WatcherInfo{} // or the zero value of T
+			b.watchers = b.watchers[:len(b.watchers)-1]
+		}
+	}
 }

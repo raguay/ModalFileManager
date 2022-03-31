@@ -42,7 +42,7 @@
   let msgBoxConfig = {};
   let msgBoxSpinners = [];
   let msgBoxItems = null;
-  let msgCallBack = (e) => {};
+  let msgCallBack = () => {};
   let configDir = "";
   let localConfig = null;
   let setEditDirFlagLeft = false;
@@ -561,6 +561,16 @@
       "addExtraPanelProcessor",
       "Add a processor for creating extra panel html.",
       addExtraPanelProcessor
+    );
+    extensions.addExtCommand(
+      "addWatcher",
+      "Add a file or directory watcher",
+      addWatcher
+    );
+    extensions.addExtCommand(
+      "removeWatcher",
+      "Remove a file or directory watcher",
+      removeWatcher
     );
   }
 
@@ -2581,6 +2591,15 @@
     var lextraPanel = get(extraPanel);
     lextraPanel.push(panelProc);
     extraPanel.set(lextraPanel);
+  }
+
+  async function addWatcher(path, wtype, signame, sigFunction) {
+    await window.go.main.App.AddWatcher(path, wtype, signame);
+    window.runtime.EventsOn(signame, sigFunction);
+  }
+  async function removeWatcher(path, wtype, signame) {
+    await window.go.main.App.RemoveWatcher(path, wtype, signame);
+    window.runtime.EventsOff(signame);
   }
 </script>
 

@@ -2,15 +2,13 @@
 
 [![Richard's GitHub stats](https://github-readme-stats.vercel.app/api?username=raguay)](https://github.com/anuraghazra/github-readme-stats)
 
-This project is for creating a file manager using web technologies. My original design was based on NW.js and can be found [here](https://github.com/raguay/ModalFileManager-NWjs). This version uses the same Svelte based frontend code, but the backend is a [Wails 2](https://wails.io/) implementation. 
+This project is for creating a file manager using web technologies. My original design was based on NW.js and can be found [here](https://github.com/raguay/ModalFileManager-NWjs). This version uses the same Svelte based frontend code, but the backend is a [Wails 2](https://wails.io/) implementation. By using this implementation, I no longer use command line `rm`, `cp`, etc. commands. It is fully coded using Go and runs much faster than the previous versions. 
 
-Currently, it can`t transfer files to other programs with Drag and Drop due to a limitation of the web technologies used. I should be able to get past this limitation soon by using lower level commands to the operating system which I will be exploring with this new Wails 2 implementation.
+Currently, it can't transfer files to other programs with Drag and Drop due to a limitation of the web technologies used. I should be able to get past this limitation soon by using lower level commands to the operating system which I will be exploring with this new Wails 2 implementation.
 
-This file manager is designed around the same principle as Vim: a state controled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers.
+This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers.
 
-# Disclamer:  Beta level software. Use at your own risk! I accept no liability for lost information from the use of this software. User beware! But, if you have a major problem, please let me know so that I can look for solutions. Deletions currently default to moving to the trashcan on new installations.
-
-The low level interface is still being mapped out and changes are happening. This means that extensions made using the current API will most likely need changes as the project moves forward. All features from the original version isn't working yet, but I'm working on it. 
+# Disclamer:  This program can permanently delete directories and files. Use at your own risk! I accept no liability for lost information from the use of this software. User beware! But, if you have a major problem, please let me know so that I can look for solutions. Deletions currently default to moving to the trashcan on new installations.
 
 ## Table of Contents
 
@@ -34,12 +32,11 @@ The low level interface is still being mapped out and changes are happening. Thi
 - [Creating Themes](#creating-themes)
 - [Creating Extensions](#creating-extensions)
 - [Tutorials on Modal File Manager](#tutorials-on-modal-file-manager)
-- [Adding Video Preview on Extra Panel](#adding-video-preview-on-extra-panel)
 - [Icon](#icon)
 
 ## Philosophy
 
-I started my programming career with Emacs as my main text editor on a main frame computer in college. I really loved Emacs, but had a very hard time remembering all the key commands.  I ended up using Vim once for a class I had (the teacher loved Vim) and hit the perverbial Vim wall -- How do I exit this thing! I finally had to kill the process. So, I went back to Emacs.
+I started my programming career with Emacs as my main text editor on a main frame computer in college (after they quit using punch cards!). I really loved Emacs, but had a very hard time remembering all the key commands.  I ended up using Vim once for a class I had (the teacher loved Vim) and hit the perverbial Vim wall -- How do I exit this thing! I finally had to kill the process. So, I went back to Emacs.
 
 With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is [OniVim2](https://github.com/onivim/oni2) which is the fastest programming editor I've ever used. It is great!
 
@@ -341,6 +338,8 @@ These commands require inputs and supply results. Therefore these commands can`t
 | `getRightDir` | Get the directory path for the right panel. |
 | `getLeftDir` | Get the directory path for the left panel. |
 | `addExtraPanelProcessor` | Add a object for processing extra panel informaiton. |
+| `addWatcher` | Add a file or directory watcher |
+| `removeWatcher` | Remove a file or directory watcher |
 
 ## Creating Themes
 
