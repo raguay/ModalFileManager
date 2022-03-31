@@ -10,6 +10,7 @@
 
   export let path;
   export let edit = false;
+  export let side;
 
   let show = true;
   let dirInputDOM;
@@ -23,6 +24,8 @@
   let dirIndex = 0;
   let localDirListeners = [];
   let lastDir = "";
+  let rightSet = false;
+  let leftSet = false;
 
   $: newPath = shortenPath(path);
   $: setEditFlag(edit);
@@ -38,6 +41,21 @@
     );
     localTheme = get(theme);
     newPath = shortenPath(path);
+    if (side === "left") {
+      window.runtime.EventsOn("leftDirChange", () => {
+        dispatch("dirChange", {
+          path: path.path,
+          cursor: false,
+        });
+      });
+    } else {
+      window.runtime.EventsOn("rightDirChange", () => {
+        dispatch("dirChange", {
+          path: path.path,
+          cursor: false,
+        });
+      });
+    }
     return () => {
       unsubscribeTheme();
       unsubscribeDirectoryListeners();
@@ -51,11 +69,25 @@
     }
   });
 
-  function updateWatcher(pth) {
+  async function updateWatcher(pth) {
     //
-    // TODO
+    // Set the path in the watcher.
     //
-    pth = pth;
+    if (pth !== "" && pth === path.path) {
+      if (side === "left") {
+        if (leftSet) {
+          await window.go.main.App.CloseLeftWatch();
+        }
+        leftSet = true;
+        window.go.main.App.SetLeftDirWatch(pth);
+      } else {
+        if (rightSet) {
+          await window.go.main.App.CloseRightWatch();
+        }
+        rightSet = true;
+        window.go.main.App.SetRightDirWatch(pth);
+      }
+    }
   }
 
   function runDirectoryListeners(pth) {
@@ -122,50 +154,51 @@
     if (typeof pth.path === "undefined") return;
     if (pth.filesystem === null) return;
 
-    var result = pth.path.toString();
+    var result = pth.path.toString().trim();
+    if (result !== "") {
+      //
+      // Add directory watching.
+      //
+      updateWatcher(result);
 
-    //
-    // Add directory watching.
-    //
-    updateWatcher(result);
+      //
+      // Tell everyone watching directory changes that a change is occurring.
+      //
+      runDirectoryListeners(result);
 
-    //
-    // Tell everyone watching directory changes that a change is occurring.
-    //
-    runDirectoryListeners(result);
+      //
+      // Add to the history.
+      //
+      var hist = get(dirHistory);
+      hist.addHistory(result);
+      dirHistory.set(hist);
 
-    //
-    // Add to the history.
-    //
-    var hist = get(dirHistory);
-    hist.addHistory(result);
-    dirHistory.set(hist);
-
-    //
-    // Fixing the path.
-    //
-    if (pth.fileSystem !== null) {
-      const sep = pth.fileSystem.sep;
-      if (result[0] === sep) result = result.slice(1);
-      if (result[result.length - 1] === sep) result = result.slice(0, -1);
-      var parts = result.split(sep);
-      if (parts.length > 3) {
-        //
-        // If the path length is greater than the shortener length, shorten the path
-        // by just showing the first character of the upper paths.
-        //
-        const boundry = parts.length - 3;
-        for (var i = 0; i < boundry; i++) {
-          parts[i] = parts[i][0];
+      //
+      // Fixing the path.
+      //
+      if (pth.fileSystem !== null) {
+        const sep = pth.fileSystem.sep;
+        if (result[0] === sep) result = result.slice(1);
+        if (result[result.length - 1] === sep) result = result.slice(0, -1);
+        var parts = result.split(sep);
+        if (parts.length > 3) {
+          //
+          // If the path length is greater than the shortener length, shorten the path
+          // by just showing the first character of the upper paths.
+          //
+          const boundry = parts.length - 3;
+          for (var i = 0; i < boundry; i++) {
+            parts[i] = parts[i][0];
+          }
+          result = parts.join(sep);
         }
-        result = parts.join(sep);
-      }
 
-      //
-      // Make sure there is a path seperator on both sides of the path.
-      //
-      if (result[0] !== sep) result = sep + result;
-      if (result[result.length - 1] !== sep) result += sep;
+        //
+        // Make sure there is a path seperator on both sides of the path.
+        //
+        if (result[0] !== sep) result = sep + result;
+        if (result[result.length - 1] !== sep) result += sep;
+      }
     }
 
     //

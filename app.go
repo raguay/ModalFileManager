@@ -3,22 +3,29 @@ package main
 import (
 	"context"
 	"errors"
-	//"fmt"
-	clip "github.com/atotto/clipboard"
-	cp "github.com/otiai10/copy"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	clip "github.com/atotto/clipboard"
+	cp "github.com/otiai10/copy"
+	watcher "github.com/radovskyb/watcher"
+
+	//notify "github.com/rjeczalik/notify"
+	runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App application struct and other structs
 type App struct {
-	ctx  context.Context
-	err  string
-	proc *os.Process
+	ctx          context.Context
+	err          string
+	proc         *os.Process
+	watcher      *watcher.Watcher
+	lastRightDir string
+	lastLeftDir  string
 }
 
 type FileParts struct {
@@ -43,8 +50,48 @@ func NewApp() *App {
 
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
-	// Perform your setup here
+	//
+	// Create the file system watcher and get it running.
+	//
 	b.ctx = ctx
+	b.watcher = watcher.New()
+	go func() {
+		for {
+			select {
+			case event := <-b.watcher.Event:
+				{
+					if (b.lastLeftDir == b.lastRightDir) && (b.lastLeftDir == event.Path) {
+						runtime.EventsEmit(b.ctx, "leftDirChange", event.Path)
+						runtime.EventsEmit(b.ctx, "rightDirChange", event.Path)
+					} else {
+						if b.lastLeftDir == event.Path {
+							runtime.EventsEmit(b.ctx, "leftDirChange", event.Path)
+						} else if b.lastRightDir == event.Path {
+							runtime.EventsEmit(b.ctx, "rightDirChange", event.Path)
+						} else {
+							//
+							// It's not the left or right directory. Remove it.
+							//
+							if b.DirExists(event.Path) {
+								b.watcher.Remove(event.Path)
+							}
+						}
+					}
+				}
+			case err := <-b.watcher.Error:
+				b.err = err.Error()
+			case <-b.watcher.Closed:
+				return
+			}
+		}
+	}()
+
+	//
+	// Start the file system watcher.
+	//
+	if err := b.watcher.Start(time.Millisecond * 100); err != nil {
+		b.err = err.Error()
+	}
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -54,22 +101,31 @@ func (b *App) domReady(ctx context.Context) {
 
 // shutdown is called at application termination
 func (b *App) shutdown(ctx context.Context) {
-	// Perform your teardown here
+	//
+	// Close the file system watcher.
+	//
+	b.watcher.Close()
 }
 
 func (b *App) ReadFile(path string) string {
-	contents, _ := os.ReadFile(path)
+	b.err = ""
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		b.err = err.Error()
+	}
 	return string(contents[:])
 }
 
 func (b *App) GetHomeDir() string {
-	var hdir string
-	hdir, _ = os.UserHomeDir()
+	b.err = ""
+	hdir, err := os.UserHomeDir()
+	if err != nil {
+		b.err = err.Error()
+	}
 	return hdir
 }
 
 func (b *App) WriteFile(path string, data string) {
-	b.err = ""
 	err := os.WriteFile(path, []byte(data), 0666)
 	if err != nil {
 		b.err = err.Error()
@@ -80,6 +136,16 @@ func (b *App) FileExists(path string) bool {
 	b.err = ""
 	_, err := os.Stat(path)
 	return !errors.Is(err, os.ErrNotExist)
+}
+
+func (b *App) DirExists(path string) bool {
+	b.err = ""
+	dstat, err := os.Stat(path)
+	if err != nil {
+		b.err = err.Error()
+		return false
+	}
+	return dstat.IsDir()
 }
 
 func (b *App) SplitFile(path string) FileParts {
@@ -94,16 +160,20 @@ func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
 	var result []FileInfo
 	result = make([]FileInfo, 0, 0)
-	files, _ := ioutil.ReadDir(path)
-	for _, file := range files {
-		var fileInfo FileInfo
-		fileInfo.Name = file.Name()
-		fileInfo.Size = file.Size()
-		fileInfo.IsDir = file.IsDir()
-		fileInfo.Modtime = file.ModTime().Format(time.Stamp)
-		fileInfo.Dir = path
-		fileInfo.Extension = filepath.Ext(file.Name())
-		result = append(result, fileInfo)
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		b.err = err.Error()
+	} else {
+		for _, file := range files {
+			var fileInfo FileInfo
+			fileInfo.Name = file.Name()
+			fileInfo.Size = file.Size()
+			fileInfo.IsDir = file.IsDir()
+			fileInfo.Modtime = file.ModTime().Format(time.Stamp)
+			fileInfo.Dir = path
+			fileInfo.Extension = filepath.Ext(file.Name())
+			result = append(result, fileInfo)
+		}
 	}
 	return result
 }
@@ -117,6 +187,7 @@ func (b *App) MakeDir(path string) {
 }
 
 func (b *App) MakeFile(path string) {
+	b.err = ""
 	b.WriteFile(path, "")
 }
 
@@ -216,4 +287,26 @@ func (b *App) SetClip(msg string) {
 	if err != nil {
 		b.err = err.Error()
 	}
+}
+
+func (b *App) SetRightDirWatch(path string) {
+	b.lastRightDir = path
+	if err := b.watcher.Add(path); err != nil {
+		b.err = err.Error()
+	}
+}
+
+func (b *App) SetLeftDirWatch(path string) {
+	b.lastLeftDir = path
+	if err := b.watcher.Add(path); err != nil {
+		b.err = err.Error()
+	}
+}
+
+func (b *App) CloseRightWatch() {
+	b.watcher.Remove(b.lastRightDir)
+}
+
+func (b *App) CloseLeftWatch() {
+	b.watcher.Remove(b.lastLeftDir)
 }

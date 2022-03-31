@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/otiai10/copy v1.7.0
+	github.com/radovskyb/watcher v1.0.7
 	github.com/wailsapp/wails/v2 v2.0.0-beta.33
 )
 

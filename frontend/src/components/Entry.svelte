@@ -77,15 +77,17 @@
   });
 
   function elementInViewport(el) {
-    var windowInner = window.innerHeight - 31;
-    var boundingEl = el.getBoundingClientRect();
-    return {
-      visible: boundingEl.top >= 60 && boundingEl.bottom <= windowInner,
-      dir:
-        boundingEl.top < 60
-          ? boundingEl.top - 60
-          : boundingEl.bottom - windowInner,
-    };
+    if (typeof el.getBoundingClientRect !== "undefined") {
+      var windowInner = window.innerHeight - 31;
+      var boundingEl = el.getBoundingClientRect();
+      return {
+        visible: boundingEl.top >= 60 && boundingEl.bottom <= windowInner,
+        dir:
+          boundingEl.top < 60
+            ? boundingEl.top - 60
+            : boundingEl.bottom - windowInner,
+      };
+    }
   }
 
   function cursorToEntry(pane, entry, index) {

@@ -2654,6 +2654,7 @@
       <DirectoryListing
         path={localLeftDir}
         edit={setEditDirFlagLeft}
+        side="left"
         on:dirChange={(e) => {
           changeDir(e.detail, "left", "");
           setEditDirFlagLeft = false;
@@ -2687,6 +2688,7 @@
       <DirectoryListing
         path={localRightDir}
         edit={setEditDirFlagRight}
+        side="right"
         on:dirChange={(e) => {
           changeDir(e.detail, "right", "");
           setEditDirFlagRight = false;

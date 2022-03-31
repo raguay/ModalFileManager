@@ -5,6 +5,20 @@ const go = {
   "main": {
     "App": {
       /**
+       * CloseLeftWatch
+       * @returns {Promise<void>} 
+       */
+      "CloseLeftWatch": () => {
+        return window.go.main.App.CloseLeftWatch();
+      },
+      /**
+       * CloseRightWatch
+       * @returns {Promise<void>} 
+       */
+      "CloseRightWatch": () => {
+        return window.go.main.App.CloseRightWatch();
+      },
+      /**
        * CopyEntries
        * @param {string} arg1 - Go Type: string
        * @param {string} arg2 - Go Type: string
@@ -20,6 +34,14 @@ const go = {
        */
       "DeleteEntries": (arg1) => {
         return window.go.main.App.DeleteEntries(arg1);
+      },
+      /**
+       * DirExists
+       * @param {string} arg1 - Go Type: string
+       * @returns {Promise<boolean>}  - Go Type: bool
+       */
+      "DirExists": (arg1) => {
+        return window.go.main.App.DirExists(arg1);
       },
       /**
        * FileExists
@@ -118,6 +140,22 @@ const go = {
        */
       "SetClip": (arg1) => {
         return window.go.main.App.SetClip(arg1);
+      },
+      /**
+       * SetLeftDirWatch
+       * @param {string} arg1 - Go Type: string
+       * @returns {Promise<void>} 
+       */
+      "SetLeftDirWatch": (arg1) => {
+        return window.go.main.App.SetLeftDirWatch(arg1);
+      },
+      /**
+       * SetRightDirWatch
+       * @param {string} arg1 - Go Type: string
+       * @returns {Promise<void>} 
+       */
+      "SetRightDirWatch": (arg1) => {
+        return window.go.main.App.SetRightDirWatch(arg1);
       },
       /**
        * SplitFile
