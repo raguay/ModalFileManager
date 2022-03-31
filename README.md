@@ -406,6 +406,7 @@ These tutorials are based on using my original, NW.js version of the Modal File 
 
 - [My Side Project: Modal File Manager](https://blog.customct.com/my-side-project-modal-file-manager)
 - [Modal File Manager: Update and Extensions](https://blog.customct.com/modal-file-manager-update-and-extensions)
+- [First Release of the New Modal File Manager](https://blog.customct.com/first-release-of-the-new-modal-file-manager)
 
 ## Icon
 
