@@ -8,6 +8,12 @@ Currently, it can't transfer files to other programs with Drag and Drop due to a
 
 This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers.
 
+![Modal File Manager - Buffy Theme](https://github.com/raguay/ModalFileManager/blob/main/frontend/Pictures/ModalFileManager2.png)
+
+A small gif showing Modal File Manager in action.
+
+![Using Modal File Manager Some](https://github.com/raguay/ModalFileManager/blob/main/frontend/Pictures/UsingMFMSome.gif)
+
 # Disclamer:  This program can permanently delete directories and files. Use at your own risk! I accept no liability for lost information from the use of this software. User beware! But, if you have a major problem, please let me know so that I can look for solutions. Deletions currently default to moving to the trashcan on new installations.
 
 ## Table of Contents
