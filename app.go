@@ -187,7 +187,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Name = file.Name()
 			fileInfo.Size = file.Size()
 			fileInfo.IsDir = file.IsDir()
-			fileInfo.Modtime = file.ModTime().Format(time.Stamp)
+			fileInfo.Modtime = file.ModTime().Format(time.ANSIC)
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
 			result = append(result, fileInfo)
