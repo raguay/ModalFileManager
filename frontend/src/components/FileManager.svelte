@@ -271,6 +271,28 @@
     $dirHistory = dhist;
 
     //
+    // Setup emmiters from the go code.
+    //
+    var commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
+    window.runtime.EventsOn("runCommands", (commands) => {
+      for (var i = 0; i < commands.length; i++) {
+        var parts = commands[i].match(commandParse);
+        if (parts[2][0] == "'") {
+          parts[2] = parts[2].slice(1, -1);
+        }
+        extensions.getExtCommand(parts[1])(parts[2]);
+      }
+    });
+    var commands = await window.go.main.App.GetCommandLineCommands();
+    for (var i = 0; i < commands.length; i++) {
+      var parts = commands[i].match(commandParse);
+      if (parts[2][0] == "'") {
+        parts[2] = parts[2].slice(1, -1);
+      }
+      extensions.getExtCommand(parts[1]).command(parts[2]);
+    }
+
+    //
     // return a command to unsubscribe from everything.
     //
     return () => {
@@ -557,6 +579,17 @@
       "Get the path for the left pane.",
       getLeftDir
     );
+    extensions.addExtCommand(
+      "setLeftDir",
+      "Set the left panel directory.",
+      setLeftDir
+    );
+    extensions.addExtCommand(
+      "setRightDir",
+      "Set the right panel directory.",
+      setRightDir
+    );
+
     extensions.addExtCommand(
       "addExtraPanelProcessor",
       "Add a processor for creating extra panel html.",
@@ -2583,8 +2616,18 @@
     return localRightDir;
   }
 
+  function setRightDir(path) {
+    $rightDir.path = path;
+    refreshRightPane();
+  }
+
   function getLeftDir() {
     return localLeftDir;
+  }
+
+  function setLeftDir(path) {
+    $leftDir.path = path;
+    refreshLeftPane();
   }
 
   function addExtraPanelProcessor(panelProc) {

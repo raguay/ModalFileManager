@@ -5,6 +5,16 @@ const go = {
   "main": {
     "App": {
       /**
+       * AddWatcher
+       * @param {string} arg1 - Go Type: string
+       * @param {number} arg2 - Go Type: int
+       * @param {string} arg3 - Go Type: string
+       * @returns {Promise<void>} 
+       */
+      "AddWatcher": (arg1, arg2, arg3) => {
+        return window.go.main.App.AddWatcher(arg1, arg2, arg3);
+      },
+      /**
        * CloseLeftWatch
        * @returns {Promise<void>} 
        */
@@ -57,6 +67,13 @@ const go = {
        */
       "GetClip": () => {
         return window.go.main.App.GetClip();
+      },
+      /**
+       * GetCommandLineCommands
+       * @returns {Promise<Array<string>>}  - Go Type: []string
+       */
+      "GetCommandLineCommands": () => {
+        return window.go.main.App.GetCommandLineCommands();
       },
       /**
        * GetError
@@ -112,6 +129,15 @@ const go = {
        */
       "ReadFile": (arg1) => {
         return window.go.main.App.ReadFile(arg1);
+      },
+      /**
+       * RemoveWatcher
+       * @param {string} arg1 - Go Type: string
+       * @param {number} arg2 - Go Type: int
+       * @returns {Promise<void>} 
+       */
+      "RemoveWatcher": (arg1, arg2) => {
+        return window.go.main.App.RemoveWatcher(arg1, arg2);
       },
       /**
        * RenameEntry

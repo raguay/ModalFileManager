@@ -2,14 +2,14 @@ package main
 
 import (
 	"embed"
-	"log"
-
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
-
+	"fmt"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"log"
+	"os"
 )
 
 //go:embed frontend/public
@@ -19,8 +19,31 @@ var assets embed.FS
 var icon []byte
 
 func main() {
+	var commands []string
+	commands = make([]string, 0, 0)
+
+	if len(os.Args) > 1 {
+		//
+		// Process the command line arguments.
+		//
+		var firstDir = true
+		for i := 1; i < len(os.Args); i++ {
+			if os.Args[i][0] != '-' {
+				if firstDir {
+					commands = append(commands, fmt.Sprintf("setLeftDir('%s')", os.Args[i]))
+					firstDir = false
+				} else {
+					commands = append(commands, fmt.Sprintf("setRightDir('%s')", os.Args[i]))
+				}
+			}
+		}
+	}
+
 	// Create an instance of the app structure
 	app := NewApp()
+	if len(commands) > 0 {
+		app.Commands = commands
+	}
 
 	// Create application with options
 	err := wails.Run(&options.App{

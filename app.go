@@ -3,16 +3,15 @@ package main
 import (
 	"context"
 	"errors"
+	clip "github.com/atotto/clipboard"
+	cp "github.com/otiai10/copy"
+	watcher "github.com/radovskyb/watcher"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
-
-	clip "github.com/atotto/clipboard"
-	cp "github.com/otiai10/copy"
-	watcher "github.com/radovskyb/watcher"
 
 	runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -26,6 +25,7 @@ type App struct {
 	lastRightDir string
 	lastLeftDir  string
 	watchers     []WatcherInfo
+	Commands     []string
 }
 
 type FileParts struct {
@@ -114,7 +114,6 @@ func (b *App) startup(ctx context.Context) {
 
 // domReady is called after the front-end dom has been loaded
 func (b *App) domReady(ctx context.Context) {
-	// Add your action here
 }
 
 // shutdown is called at application termination
@@ -123,6 +122,10 @@ func (b *App) shutdown(ctx context.Context) {
 	// Close the file system watcher.
 	//
 	b.watcher.Close()
+}
+
+func (b *App) GetCommandLineCommands() []string {
+	return b.Commands
 }
 
 func (b *App) ReadFile(path string) string {
