@@ -609,6 +609,18 @@
     // Add all built in commands to the commands object.
     //
     commands.addCommand(
+      "Select All",
+      "selectAll",
+      "Select All entries in the current pane.",
+      selectAll
+    );
+    commands.addCommand(
+      "Unselect All",
+      "unselectAll",
+      "Unselect All entries in the current pane.",
+      unselectAll
+    );
+    commands.addCommand(
       "Move Cursor Down",
       "moveCursorDown",
       "Move the cursor down one line.",
@@ -924,6 +936,34 @@
       result = rmap;
     }
     return result;
+  }
+
+  function selectAll() {
+    if(localCurrentCursor.pane == "left") {
+      leftEntries.forEach(item => {
+        item.selected = true;
+      });
+      leftEntries = leftEntries;
+    } else {
+      rightEntries.forEach(item => {
+        item.selected = true;
+      });
+      rightEntries = rightEntries;
+    }
+  }
+
+  function unselectAll() {
+    if(localCurrentCursor.pane == "left") {
+      leftEntries.forEach(item => {
+        item.selected = false;
+      });
+      leftEntries = leftEntries;
+    } else {
+      rightEntries.forEach(item => {
+        item.selected = false;
+      });
+      rightEntries = rightEntries;
+    }
   }
 
   function setCursor(fname) {
@@ -2447,6 +2487,20 @@
         meta: false,
         key: "j",
         command: "moveCursorDownWithSelect",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "a",
+        command: "selectAll",
+      },
+      {
+        ctrl: false,
+        shift: true,
+        meta: false,
+        key: "A",
+        command: "unselectAll",
       },
       {
         ctrl: false,

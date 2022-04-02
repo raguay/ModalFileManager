@@ -115,6 +115,7 @@ You can run a developer mode in which you can debug the frontend code by running
 ```bash 
 wails dev 
 ```
+Or, you can download the latest release. You will have to give mfm permission to access directories on your system.
 
 ## Upgrading
 
@@ -251,6 +252,8 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
 | `ArrowDown` | moveCursorDown |
 | `ArrowUp` | moveCursorUp |
 | `:` | toggleCommandPrompt |
+| `a` | selectAll |
+| `A` | unselectAll |
 
 ### Insert Mode
 
@@ -304,6 +307,8 @@ These commands can be ran from the command prompt. They all act upon the current
 | `Show Only Non-System Files/Folders` | Sets the default filter of not showing system files/folders. | setDefaultFilter |
 | `Open in Opposite Panel` | Opens the directory the cursor is on or the directory the cursor is in in the opposite panel. | openOppositePanel |
 | `Reload Extensions` | Reload all the extensions, keyboard maps, and theme. | reloadExtensions |
+| `Select All` | Select all entries in the current panel. | selectAll |
+| `Unselect All` | Unselect all entries in the current panel. | unselectAll |
 
 ### Extension Commands
 
