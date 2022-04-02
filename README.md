@@ -22,6 +22,7 @@ A small gif showing Modal File Manager in action.
 - [Current Feature Set](#current-feature-set)
 - [Some Limitations](#some-limitations)
 - [Installation](#installation)
+- [Command Line](#command-line)
 - [Upgrading](#upgrading)
 - [Command Line Programs Used](#command-line-programs-used)
 - [Configuration Files](#configuration-files)
@@ -116,6 +117,22 @@ You can run a developer mode in which you can debug the frontend code by running
 wails dev 
 ```
 Or, you can download the latest release. You will have to give mfm permission to access directories on your system.
+
+## Command Line
+
+Modal File Manager takes come command line arguments as well. I will be expanding this feature more and more to help with automation. On the macOS, you need to create an alias in your shell for the command line program. If you place the `mfm.app` file in your `/Applications` folder, you would add this to your `.zshrc` file in your home directory:
+
+```sh
+alias mfm='/Applications/mfm.app/Contents/MacOS/mfmf'
+```
+
+Once you reload the shell, you can give one or two file/directory paths to open Modal File Manager in those directories. For example:
+
+```sh 
+mfm '/User/raguay/Dropbox (Personal)'
+```
+
+will open the Modal File Manager in my personal dropbox folder in the left pane. Notice, you have to give the quote marks because of the spaces and parentheses. If you give two paths, then the first is the left pane while the second is the right pane.
 
 ## Upgrading
 
@@ -309,6 +326,7 @@ These commands can be ran from the command prompt. They all act upon the current
 | `Reload Extensions` | Reload all the extensions, keyboard maps, and theme. | reloadExtensions |
 | `Select All` | Select all entries in the current panel. | selectAll |
 | `Unselect All` | Unselect all entries in the current panel. | unselectAll |
+| `goHome` | Go to the home directory. | goHome |
 
 ### Extension Commands
 

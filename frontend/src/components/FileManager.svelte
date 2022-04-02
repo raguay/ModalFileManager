@@ -609,6 +609,12 @@
     // Add all built in commands to the commands object.
     //
     commands.addCommand(
+      "Go Home",
+      "goHome",
+      "Puts the current panel in the home directory.",
+      goHome
+    );
+    commands.addCommand(
       "Select All",
       "selectAll",
       "Select All entries in the current pane.",
@@ -1207,6 +1213,29 @@
     }
   }
 
+  async function goHome() {
+    var entry = await OS.getHomeDir();
+    if (localCurrentCursor.pane === "right") {
+      changeDir(
+        {
+          path: entry,
+          cursor: true,
+        },
+        "right",
+        ""
+      );
+    } else {
+      changeDir(
+        {
+          path: entry,
+          cursor: true,
+        },
+        "left",
+        ""
+      );
+    }
+  }
+  
   function cursorToPane(npane) {
     if (npane == "right") {
       currentCursor.set({
@@ -2444,6 +2473,13 @@
         key: "O",
         command: "openOppositePanel",
       },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "w",
+        command: "goHome",
+      }
     ];
 
     //
