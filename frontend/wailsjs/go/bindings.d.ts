@@ -2,6 +2,7 @@ export interface go {
   "main": {
     "App": {
 		AddWatcher(arg1:string,arg2:number,arg3:string):Promise<void>
+		AppendPath(arg1:string,arg2:string):Promise<string>
 		CloseLeftWatch():Promise<void>
 		CloseRightWatch():Promise<void>
 		CopyEntries(arg1:string,arg2:string):Promise<void>
@@ -10,6 +11,7 @@ export interface go {
 		FileExists(arg1:string):Promise<boolean>
 		GetClip():Promise<string>
 		GetCommandLineCommands():Promise<Array<string>>
+		GetEnvironment():Promise<Array<string>>
 		GetError():Promise<string>
 		GetHomeDir():Promise<string>
 		MakeDir(arg1:string):Promise<void>

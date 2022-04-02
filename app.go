@@ -364,3 +364,11 @@ func (b *App) RemoveWatcher(path string, wtype int) {
 		}
 	}
 }
+
+func (b *App) GetEnvironment() []string {
+	return os.Environ()
+}
+
+func (b *App) AppendPath(dir string, name string) string {
+	return filepath.Join(dir, name)
+}

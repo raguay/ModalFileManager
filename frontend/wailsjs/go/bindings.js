@@ -15,6 +15,15 @@ const go = {
         return window.go.main.App.AddWatcher(arg1, arg2, arg3);
       },
       /**
+       * AppendPath
+       * @param {string} arg1 - Go Type: string
+       * @param {string} arg2 - Go Type: string
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      "AppendPath": (arg1, arg2) => {
+        return window.go.main.App.AppendPath(arg1, arg2);
+      },
+      /**
        * CloseLeftWatch
        * @returns {Promise<void>} 
        */
@@ -74,6 +83,13 @@ const go = {
        */
       "GetCommandLineCommands": () => {
         return window.go.main.App.GetCommandLineCommands();
+      },
+      /**
+       * GetEnvironment
+       * @returns {Promise<Array<string>>}  - Go Type: []string
+       */
+      "GetEnvironment": () => {
+        return window.go.main.App.GetEnvironment();
       },
       /**
        * GetError

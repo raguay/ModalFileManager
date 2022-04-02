@@ -117,13 +117,10 @@
     // Setup the configuration directory.
     //
     configDir = await OS.getConfigDir();
-    if (!(await OS.dirExists(configDir))) {
+    if (! await OS.dirExists(configDir)) {
       await OS.makeDir(configDir);
-      await OS.makeDir({
-        dir: configDir,
-        name: "extensions",
-        fileSystem: OS,
-      });
+      var extdir = await OS.appendPath(configDir, "extensions");
+      await OS.makeDir(extdir);
     }
 
     //

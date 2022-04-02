@@ -88,7 +88,7 @@ var OS = {
   },
   normalize: async function(dir) {
     if (dir[0] === "~") {
-      dir = await this.appendPath(await this.getHomeDir(), dir.slice(1, dir.length));
+      dir = await this.appendPath(this.localHomeDir, dir.slice(1, dir.length));
     }
     return dir;
   },
@@ -96,7 +96,8 @@ var OS = {
     if (typeof dir.name !== 'undefined') {
       dir = await this.appendPath(dir.dir, dir.name);
     }
-    return await this.fileExists(dir);
+    var dirReal = await window.go.main.App.DirExists(dir);
+    return dirReal;
   },
   fileExists: async function(file) {
     var result = true;
@@ -108,7 +109,7 @@ var OS = {
   },
   makeDir: async function(dir) {
     if (typeof dir.name !== "undefined") {
-      dir = await this.appendpath(dir.dir, dir.name);
+      dir = await this.appendPath(dir.dir, dir.name);
     }
     //
     // Make a directory.
@@ -308,8 +309,8 @@ var OS = {
   },
   openInTerminal: async function(prog, file) {
     //
-    // TODO
-    // "/usr/bin/osascript " + this.terminalScript + " '" + prog + " \"" + file + "\"'", (err, stdin, stdout) => {}
+    // Run the terminal Script.
+    //
     this.runCommandLine(`osascript '${this.terminalScript}' '${prog}' '${file}'`, (err, stdout) => { }, '.');
   },
   getConfig: async function() {
@@ -321,21 +322,25 @@ var OS = {
       this.config = {
         env: null,
         shell: "",
-        useTrash: false,
+        useTrash: true,
       };
 
       //
-      // Copy the environment from the process.
+      // Copy the environment from the process. Get the environment.
       //
-      this.config.env = {
-        ...process.env,
-      };
+      var env = await window.go.main.App.GetEnvironment();
+      var newEnv = {};
+      env.map(item => {
+        var parts = item.split('=');
+        newEnv[parts[0]] = parts[1];
+      });
+      this.config.env = newEnv;
 
       //
       // Add directories that the user's system should have.
       //
       var hdir = await this.getHomeDir();
-      if (await this.dirExists(+ "/bin")) {
+      if (await this.dirExists(hdir + "/bin")) {
         this.config.env.PATH = hdir + "/bin:" + this.config.env.PATH;
       }
       if (await this.dirExists("/opt/homebrew/bin")) {
@@ -404,16 +409,11 @@ var OS = {
   appendPath: async function(dir, name) {
     // dir can be an entry or a path string. name is always a string.
     //
-    if (typeof dir === "object") dir = `${dir.dir}${this.sep}${dir.name}`;
-    if (dir == this.sep) {
-      return this.sep + name;
-    } else {
-      if (dir[dir.length - 1] === this.sep) {
-        return dir + name;
-      } else {
-        return dir + this.sep + name;
-      }
+    if(typeof dir.dir !== 'undefined') {
+      dir = await this.appendPath(dir.dir, dir.name);
     }
+    var path = await window.go.main.App.AppendPath(dir, name);
+    return path;
   },
   readFile: async function(file) {
     var contents = "";
