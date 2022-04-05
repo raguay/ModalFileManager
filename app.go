@@ -122,6 +122,7 @@ func (b *App) shutdown(ctx context.Context) {
 	// Close the file system watcher.
 	//
 	b.watcher.Close()
+	b.Quit()
 }
 
 func (b *App) GetCommandLineCommands() []string {
@@ -371,4 +372,8 @@ func (b *App) GetEnvironment() []string {
 
 func (b *App) AppendPath(dir string, name string) string {
 	return filepath.Join(dir, name)
+}
+
+func (b *App) Quit() {
+	runtime.Quit(b.ctx)
 }

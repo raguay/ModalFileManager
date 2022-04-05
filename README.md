@@ -8,6 +8,8 @@ Currently, it can't transfer files to other programs with Drag and Drop due to a
 
 This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers.
 
+This picture shows Modal File Manager in it's default theme.
+
 ![Modal File Manager - Buffy Theme](https://github.com/raguay/ModalFileManager/blob/main/frontend/Pictures/ModalFileManager2.png)
 
 A small gif showing Modal File Manager in action.
@@ -47,7 +49,7 @@ I started my programming career with Emacs as my main text editor on a main fram
 
 With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is [OniVim2](https://github.com/onivim/oni2) which is the fastest programming editor I've ever used. It is great!
 
-But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. I also don't really like python, it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was, but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. Along with anything else you can do with a full Node.js backend.
+But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. I also don't really like python, it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was, but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
 
 Modal File Manager is also somewhat minimal in the UI. Many graphical file managers have buttons, shelves, etc. all over the place with information everywhere. I decided to make the main interface as low keyed as possible with all other information in the status line or extras panel. Extra file information is on the status line for the current cursor location. More information is displayed in extras panel as well.
 
@@ -64,19 +66,20 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Command Prompt for executing commands (`:` in any mode or `<ctrl>p` in normal mode).
 - Fully extendable with extensions using the extensions API
 - Fully theme-able. 
+- Launching with paths on the command line will open in the specified directories. See [Command Line](#command-line).
 - A file details side panel can be shown to overlay the panel not currently focused (`toggleExtraPanel` command). It shows video previews and stats with the ffmpeg programs installed. Extensions can place special content in this panel as well.
-- Themes and extensions are explorable and downloadable from GitHub inside the program.
 - Hot keys are programmable
 - A number before a hot key runs it's associated command that many times (ex: `5j` will move the cursor 5 entries down the list).
 - Watches for changes in the current directory and updates accordingly.
 - Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory.
 - File editor is configurable by the `~/.myeditorchoice` file (see `Editing Files` below). Otherwise, the system editor for the file type will be used.
 - Integrated with ScriptPad - another project of mine coming soon!
-- Quick Search - a input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quic search.
+- Quick Search - a input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quick search.
 - Toggle System files/folders visibility
 - Optionally deletes to the OS's trashcan (external program has to be installed)
 - Change the environment used to execute external programs using the `Show Preferences` Command Prompt command.
 - Theme Creator/Editor
+- Extensions and Themes can be viewed and downloaded from GitHub inside of Modal File Manager. Just use the `Toggle GitHub Importer` command on the command prompt.
 - Extension Creator/Editor with template.
 - Extensions controled content in the Extras Panel.
 - Extensions currently created and downloadable from GitHub:
@@ -120,10 +123,10 @@ Or, you can download the latest release. You will have to give mfm permission to
 
 ## Command Line
 
-Modal File Manager takes come command line arguments as well. I will be expanding this feature more and more to help with automation. On the macOS, you need to create an alias in your shell for the command line program. If you place the `mfm.app` file in your `/Applications` folder, you would add this to your `.zshrc` file in your home directory:
+Modal File Manager takes command line arguments as well. I will be expanding this feature more and more to help with automation. On the macOS, you need to create an alias in your shell for the command line program. If you place the `mfm.app` file in your `/Applications` folder, you would add this to your `.zshrc` file in your home directory:
 
 ```sh
-alias mfm='/Applications/mfm.app/Contents/MacOS/mfmf'
+alias mfm='/Applications/mfm.app/Contents/MacOS/mfm'
 ```
 
 Once you reload the shell, you can give one or two file/directory paths to open Modal File Manager in those directories. For example:
@@ -140,7 +143,7 @@ If a new version comes out with new default key mappings, you will either have t
 
 ## Command Line Programs Used
 
-There are a few non-standard command line programs I use with Modal File Manager. They are:
+There are a few command line programs I use with Modal File Manager. They are:
 
 - [ffmpeg](https://ffmpeg.org/) for getting and using video information in the Extra Panel.
 - [fd](https://github.com/sharkdp/fd) for quick file finding. It's a `find` replacement written in Rust.
@@ -178,7 +181,7 @@ The directory structure is:
       - components                  Here are all the Svelte components for the UI
       - modules                     These are JavaScript Helper files with the data structures used.
       - stores                      This directory contains all the Svelte Store items
-      - FileManager.svelte          This is the main program
+      - Start.svelte                This is the main program to start MFM.
       - main.js                     This installs the main program into the HTML
   - app.go                          This is the go language application backend
   - main.go                         This is the go language main routine.
@@ -202,7 +205,7 @@ file in the default file editor.
 
 ## Preferences
 
-With the command prompt command of `Show Preferences`, you can now open a new panel over the filemanager that shows all the program preferences. It is setup as a tab system with a General, Theme, and Extension tab.
+With the command prompt command of `Show Preferences`, you can now open a new panel over the file manager that shows all the program preferences. It is setup as a tab system with a General, Theme, and Extension tab.
 
 The General tab allows the user to delete, edit, or add environment variables to the running of command line programs. This give the user complete control over the environment variables used in launching commands from Modal File Manager. You can also turn on/off the use of the trashcan for deletions.
 
@@ -213,6 +216,7 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
 ## Things in the Works
 
 - Getting all the functionality as in the original program and defined earlier.
+  - Mostly still working on items in the Extra Panel working again.
 - Translating my fman extensions to work with Modal File Manager
 	- Dropbox File System
 	- Regular Expression selection
@@ -225,6 +229,7 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
 - Get audio listening in the Extras Panel.
 - Documentation!
 - Of course, bug fixing!
+- More and more features!
 
 ## Default Key Bindings
 
@@ -290,27 +295,29 @@ These commands can be ran from the command prompt. They all act upon the current
 | Command Name                      | Command Description                                                        | Command Function Name    | 
 |:--------------------------------- |:-------------------------------------------------------------------------- | ------------------------ | 
 | `Move Cursor Up`                  | This will move the cursor up one line                                    | moveCursorUp             |
-| `Move Cursor Up with Selection`   | This will move select the current entry and move the cursor up one line. | moveCursorUpWithSelect   |     |
-| `Change Mode to Normal`           | Set the normal mode.                                                     | changeModeNormal         |     |
-| `Change Mode to Insert`           | Set the insert mode.                                                     | changeModeInsert         |     |
-| `Change Mode to Visual`           | Set the visual mode.                                                     | changeModeVisual         |     |
-| `Cursor to Next Pane`             | This will move the cursore to the opposite pane.                         | cursorToNextPane         |     |
-| `Action Entry`                    | This will open a file or go into a directory.                            | actionEntry              |     |
-| `Go Up a Directory`               | Go to the parent directory.                                              | goUpDir                  |     |
-| `God Down a Directory`            | If the current entry is a directory go to it.                            | goDownDir                |     |
-| `Go to Bottom File`               | Move the cursor to the bottom most file.                                 | goBottomFile             |     |
-| `Go to Top File`                  | Move the cursor to the top most file.                                    | goTopFile                |     |
-| `Delete Entries`                  | Delete all selected entries or the one under the cursor                  | deleteEntries            |     |
-| `Copy Entries`                    | Copy the selected entries or the one under the cursor to the other pane. | copyEntries              |     |
-| `Move Entries`                    | Move the selected entries or the one under the cursor to the other pane. | moveEntries              |     |
-| `Edit Entry`                      | Opens the file under the cursor in the editor specified.                 | editEntry                |     |
-| `Duplicate Entry`                 | Make a copy of the current entry with "\_copy" added to it.              | duplicateEntry           |     |
-| `New File`                        | Create a new file in the current pane.                                   | newFile                  |     |
-| `New Directory`                   | Create a new directory in the current pane.                              | newDirectory             |     |
-| `Rename Entry`                    | Rename the current entry.                                                | renameEntry              |     |
-| `Swap Panels`                     | Swap the panel contents.                                                 | swapPanels               |     |
-| `Toggle Quick Search`             | Show/Hide the Quick Search panel.                                        | toggleQuickSearch        |     |
-| `Reload Pane`                     | Reload the Current Pane.                                                 | reloadPane               |     |
+| `Move Cursor Up with Selection`   | This will move select the current entry and move the cursor up one line. | moveCursorUpWithSelect   |    
+| `Move Cursor Down` | This will move the cursor down one line. | moveCursorDown |
+| `Move Cursor Down with Selection` | This will move the cursor down and select the previous entry. | moveCursorDownWithSelect |
+| `Change Mode to Normal`           | Set the normal mode.                                                     | changeModeNormal         | 
+| `Change Mode to Insert`           | Set the insert mode.                                                     | changeModeInsert         |  
+| `Change Mode to Visual`           | Set the visual mode.                                                     | changeModeVisual         | 
+| `Cursor to Next Pane`             | This will move the cursore to the opposite pane.                         | cursorToNextPane         | 
+| `Action Entry`                    | This will open a file or go into a directory.                            | actionEntry              |   
+| `Go Up a Directory`               | Go to the parent directory.                                              | goUpDir                  |   
+| `God Down a Directory`            | If the current entry is a directory go to it.                            | goDownDir                |  
+| `Go to Bottom File`               | Move the cursor to the bottom most file.                                 | goBottomFile             |  
+| `Go to Top File`                  | Move the cursor to the top most file.                                    | goTopFile                |  
+| `Delete Entries`                  | Delete all selected entries or the one under the cursor                  | deleteEntries            |  
+| `Copy Entries`                    | Copy the selected entries or the one under the cursor to the other pane. | copyEntries              |  
+| `Move Entries`                    | Move the selected entries or the one under the cursor to the other pane. | moveEntries              | 
+| `Edit Entry`                      | Opens the file under the cursor in the editor specified.                 | editEntry                |  
+| `Duplicate Entry`                 | Make a copy of the current entry with "\_copy" added to it.              | duplicateEntry           | 
+| `New File`                        | Create a new file in the current pane.                                   | newFile                  | 
+| `New Directory`                   | Create a new directory in the current pane.                              | newDirectory             | 
+| `Rename Entry`                    | Rename the current entry.                                                | renameEntry              | 
+| `Swap Panels`                     | Swap the panel contents.                                                 | swapPanels               | 
+| `Toggle Quick Search`             | Show/Hide the Quick Search panel.                                        | toggleQuickSearch        | 
+| `Reload Pane`                     | Reload the Current Pane.                                                 | reloadPane               | 
 | `Toggle Extra Panel`          | Show/Hide the extra panel. | toggleExtraPanel |
 | `Edit Directory` | Open the Edit Directory for the current panel.| editDirectory |
 | `Toggle Command Prompt` | Show/Hide the command prompt. | toggleCommandPrompt |
@@ -319,14 +326,19 @@ These commands can be ran from the command prompt. They all act upon the current
 | `Refresh Left Pane` | This will reload the files in the Left Pane. | refreshLeftPane  |
 | `Refresh Right Pane` | This will reload the files in the Right Pane. | refreshRightPane |
 | `Rerun Last Command` | This will rerun the last command along with it the number of times it was ran. | reRunLastCommand |
-|`Toggle Filter` | Toggles the show all and default filters. | toggleFilter |
+| `Toggle Filter` | Toggles the show all and default filters. | toggleFilter |
 | `Show All Filter` | Sets to show all Entries. | setShowAllFilter |
 | `Show Only Non-System Files/Folders` | Sets the default filter of not showing system files/folders. | setDefaultFilter |
 | `Open in Opposite Panel` | Opens the directory the cursor is on or the directory the cursor is in in the opposite panel. | openOppositePanel |
-| `Reload Extensions` | Reload all the extensions, keyboard maps, and theme. | reloadExtensions |
+| `Reload Extensions` | Reload all the extensions, keyboard maps, and theme. Still not working completely. | reloadExtensions |
 | `Select All` | Select all entries in the current panel. | selectAll |
 | `Unselect All` | Unselect all entries in the current panel. | unselectAll |
 | `goHome` | Go to the home directory. | goHome |
+| `Minimize` | Minimize the program. | minimizeWindow |
+| `Quit` | Quit the program. | quitApp |
+| `Show Preferences` | Show the program preferences and allow editing them. |
+| `Reload Extensions` | Reload all extensions. |
+
 
 ### Extension Commands
 
@@ -349,6 +361,7 @@ These commands require inputs and supply results. Therefore these commands can`t
 | `getSelectedFiles` | Returns a list of Entries that have been selected. |
 | `getCurrentFile`   | Get the current file. |
 | `getCurrentPane` | Get the pane that is currently active. |
+| `pickItem` | Show the user a list of items to pick from. |
 | `addSpinner` | Add a message box spinner value. | 
 | `updateSpinner` | Update a message box spinner value. | 
 | `removeSpinner` | Remove a message box spinner value. | 
@@ -359,16 +372,20 @@ These commands require inputs and supply results. Therefore these commands can`t
 | `showMessage` | Show a message to the user. |
 | `createNewMode` | Allows the creation of a new mode for keyboard commands. |
 | `changeMode` | Change to mode given. |
+| `askQuestion` | Ask the user a question and return the answer. |
 | `switchView` | Change to new program view. Currently `filemanager` or `preferences`. |
 | `copyEntriesCommand` | Copy the entry list to the destination entry. |
 | `moveEntriesCommand` | Move the entry list to the destination entry. |
 | `deleteEntriesCommand` | Delete the entry list |
 | `editEntryCommand` | Edit the entry |
 | `getRightDir` | Get the directory path for the right panel. |
+| `setRightDir` | Set the directory path for the right panel. |
 | `getLeftDir` | Get the directory path for the left panel. |
+| `setLeftDir` | Set the directory path for the left panel. |
 | `addExtraPanelProcessor` | Add a object for processing extra panel informaiton. |
 | `addWatcher` | Add a file or directory watcher |
 | `removeWatcher` | Remove a file or directory watcher |
+| `stringKeyProcessor` | Send a string of keystrokes to be ran. |
 
 ## Creating Themes
 
@@ -435,6 +452,9 @@ These tutorials are based on using my original, NW.js version of the Modal File 
 
 - [My Side Project: Modal File Manager](https://blog.customct.com/my-side-project-modal-file-manager)
 - [Modal File Manager: Update and Extensions](https://blog.customct.com/modal-file-manager-update-and-extensions)
+
+This list of tutorials are with the latest version of Modal File Manager:
+
 - [First Release of the New Modal File Manager](https://blog.customct.com/first-release-of-the-new-modal-file-manager)
 
 ## Icon

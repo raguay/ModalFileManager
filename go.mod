@@ -6,7 +6,7 @@ require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/otiai10/copy v1.7.0
 	github.com/radovskyb/watcher v1.0.7
-	github.com/wailsapp/wails/v2 v2.0.0-beta.33
+	github.com/wailsapp/wails/v2 v2.0.0-beta.34
 )
 
 require (
@@ -38,5 +38,3 @@ require (
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 )
-
-//replace github.com/wailsapp/wails/v2 => /Users/raguay/Documents/wails/V2/

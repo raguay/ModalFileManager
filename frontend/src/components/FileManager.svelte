@@ -117,7 +117,7 @@
     // Setup the configuration directory.
     //
     configDir = await OS.getConfigDir();
-    if (! await OS.dirExists(configDir)) {
+    if (!(await OS.dirExists(configDir))) {
       await OS.makeDir(configDir);
       var extdir = await OS.appendPath(configDir, "extensions");
       await OS.makeDir(extdir);
@@ -609,6 +609,13 @@
     // Add all built in commands to the commands object.
     //
     commands.addCommand(
+      "Minimize",
+      "minimizeWindow",
+      "Minimizes the window.",
+      minimizeWindow
+    );
+    commands.addCommand("Quit", "quitApp", "Quits the application.", quitApp);
+    commands.addCommand(
       "Go Home",
       "goHome",
       "Puts the current panel in the home directory.",
@@ -945,13 +952,13 @@
   }
 
   function selectAll() {
-    if(localCurrentCursor.pane == "left") {
-      leftEntries.forEach(item => {
+    if (localCurrentCursor.pane == "left") {
+      leftEntries.forEach((item) => {
         item.selected = true;
       });
       leftEntries = leftEntries;
     } else {
-      rightEntries.forEach(item => {
+      rightEntries.forEach((item) => {
         item.selected = true;
       });
       rightEntries = rightEntries;
@@ -959,17 +966,25 @@
   }
 
   function unselectAll() {
-    if(localCurrentCursor.pane == "left") {
-      leftEntries.forEach(item => {
+    if (localCurrentCursor.pane == "left") {
+      leftEntries.forEach((item) => {
         item.selected = false;
       });
       leftEntries = leftEntries;
     } else {
-      rightEntries.forEach(item => {
+      rightEntries.forEach((item) => {
         item.selected = false;
       });
       rightEntries = rightEntries;
     }
+  }
+
+  async function quitApp() {
+    await window.go.main.App.Quit();
+  }
+
+  async function minimizeWindow() {
+    await window.runtime.WindowMinimise();
   }
 
   function setCursor(fname) {
@@ -1235,7 +1250,7 @@
       );
     }
   }
-  
+
   function cursorToPane(npane) {
     if (npane == "right") {
       currentCursor.set({
@@ -2292,6 +2307,20 @@
         command: "toggleCommandPrompt",
       },
       {
+        ctrl: false,
+        shift: false,
+        meta: true,
+        key: "m",
+        command: "minimizeWindow",
+      },
+      {
+        ctrl: false,
+        shift: false,
+        meta: true,
+        key: "q",
+        command: "quitApp",
+      },
+      {
         ctrl: true,
         shift: false,
         meta: false,
@@ -2479,7 +2508,7 @@
         meta: false,
         key: "w",
         command: "goHome",
-      }
+      },
     ];
 
     //
