@@ -302,6 +302,8 @@
 
   .name {
     white-space: nowrap;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .type {
@@ -312,5 +314,7 @@
     max-height: 20px;
     max-width: 20px;
     margin: 0px 10px 0px 5px;
+    -webkit-user-select: none;
+    user-select: none;
   }
 </style>

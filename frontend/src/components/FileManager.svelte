@@ -82,6 +82,12 @@
   let numberAcc = "";
   let lastCommand = "";
   let flagFilter = 1;
+  let selRegExpHist = [
+    {
+      name: "",
+      value: "",
+    },
+  ];
 
   onMount(async () => {
     //
@@ -272,21 +278,25 @@
     //
     var commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
     window.runtime.EventsOn("runCommands", (commands) => {
+      if (typeof commands === "string" && commands.length > 0) {
+        for (var i = 0; i < commands.length; i++) {
+          var parts = commands[i].match(commandParse);
+          if (parts[2][0] == "'") {
+            parts[2] = parts[2].slice(1, -1);
+          }
+          extensions.getExtCommand(parts[1])(parts[2]);
+        }
+      }
+    });
+    var commands = await window.go.main.App.GetCommandLineCommands();
+    if (commands !== null) {
       for (var i = 0; i < commands.length; i++) {
         var parts = commands[i].match(commandParse);
         if (parts[2][0] == "'") {
           parts[2] = parts[2].slice(1, -1);
         }
-        extensions.getExtCommand(parts[1])(parts[2]);
+        extensions.getExtCommand(parts[1]).command(parts[2]);
       }
-    });
-    var commands = await window.go.main.App.GetCommandLineCommands();
-    for (var i = 0; i < commands.length; i++) {
-      var parts = commands[i].match(commandParse);
-      if (parts[2][0] == "'") {
-        parts[2] = parts[2].slice(1, -1);
-      }
-      extensions.getExtCommand(parts[1]).command(parts[2]);
     }
 
     //
@@ -613,6 +623,12 @@
       "minimizeWindow",
       "Minimizes the window.",
       minimizeWindow
+    );
+    commands.addCommand(
+      "Select by Regular Expression",
+      "selectRegExp",
+      "Selects the files/directories in the current pane based on a regular expression.",
+      selectRegExp
     );
     commands.addCommand("Quit", "quitApp", "Quits the application.", quitApp);
     commands.addCommand(
@@ -2259,6 +2275,41 @@
     msgBoxSpinners = msgBoxSpinners.filter((spinner) => spinner.name !== name);
   }
 
+  function selectRegExp() {
+    pickItem(
+      "Select Regular Expressions",
+      selRegExpHist,
+      runRegExpHistSelection
+    );
+  }
+
+  function runRegExpHistSelection(value) {
+    saveRegExpSelectHistory(value.value);
+    var selRegExp = new RegExp(value.value);
+    if (localCurrentCursor.pane === "left") {
+      leftEntries.map((item) => {
+        if (item.name.match(selRegExp) !== null) {
+          item.selected = true;
+        }
+      });
+      leftEntries = leftEntries;
+    } else {
+      rightEntries.map((item) => {
+        if (item.name.match(selRegExp) !== null) {
+          item.selected = true;
+        }
+      });
+      rightEntries = rightEntries;
+    }
+  }
+
+  function saveRegExpSelectHistory(value) {
+    //
+    // Save to disk, removing redundant items, etc. needs implemented.
+    //
+    selRegExpHist.push(value);
+  }
+
   function toggleGitHub() {
     showGitHub = !showGitHub;
     if (showGitHub) {
@@ -2770,14 +2821,14 @@
          font-size: {$theme.fontSize};
          height: {mid}px;"
   on:mousemove={mouseMove}
-  on:mouseup={(e) => {
+  on:mouseup={() => {
     mdown = false;
   }}
   bind:this={containerDOM}
 >
   {#if showGitHub}
     <GitHub
-      on:closeGitHub={(e) => {
+      on:closeGitHub={() => {
         toggleGitHub();
       }}
     />
@@ -2837,7 +2888,7 @@
           changeDir(e.detail, "left", "");
           setEditDirFlagLeft = false;
         }}
-        on:updateDir={(e) => {
+        on:updateDir={() => {
           refreshLeftPane();
         }}
       />
@@ -2871,7 +2922,7 @@
           changeDir(e.detail, "right", "");
           setEditDirFlagRight = false;
         }}
-        on:updateDir={(e) => {
+        on:updateDir={() => {
           refreshRightPane();
         }}
       />

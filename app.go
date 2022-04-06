@@ -122,7 +122,6 @@ func (b *App) shutdown(ctx context.Context) {
 	// Close the file system watcher.
 	//
 	b.watcher.Close()
-	b.Quit()
 }
 
 func (b *App) GetCommandLineCommands() []string {

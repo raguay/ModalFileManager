@@ -1,3 +1,5 @@
+import * as models from './models';
+
 export interface go {
   "main": {
     "App": {
@@ -17,7 +19,8 @@ export interface go {
 		MakeDir(arg1:string):Promise<void>
 		MakeFile(arg1:string):Promise<void>
 		MoveEntries(arg1:string,arg2:string):Promise<void>
-		ReadDir(arg1:string):Promise<Array<FileInfo>>
+		Quit():Promise<void>
+		ReadDir(arg1:string):Promise<Array<models.FileInfo>>
 		ReadFile(arg1:string):Promise<string>
 		RemoveWatcher(arg1:string,arg2:number):Promise<void>
 		RenameEntry(arg1:string,arg2:string):Promise<void>
@@ -25,7 +28,7 @@ export interface go {
 		SetClip(arg1:string):Promise<void>
 		SetLeftDirWatch(arg1:string):Promise<void>
 		SetRightDirWatch(arg1:string):Promise<void>
-		SplitFile(arg1:string):Promise<FileParts>
+		SplitFile(arg1:string):Promise<models.FileParts>
 		WriteFile(arg1:string,arg2:string):Promise<void>
     },
   }

@@ -1,5 +1,10 @@
-<div 
-  id='titleBar'
+<script>
+  import { onMount } from "svelte";
+  import { theme } from "../stores/theme.js";
+</script>
+
+<div
+  id="titleBar"
   data-wails-drag
   style="background-color: {$theme.backgroundColor};
          color: {$theme.textColor};
@@ -7,21 +12,13 @@
          font-size: {$theme.fontSize};
          border-bottom: 3px solid {$theme.borderColor};"
 >
-  <div 
-    id='spacer'
-  >
-  </div>
+  <div id="spacer" />
 
-  <div
-    id='title'
-  >
+  <div id="title">
     <p>Modal File Manager</p>
   </div>
 
-  <div 
-    id='spacer2'
-  >
-  </div>
+  <div id="spacer2" />
 </div>
 
 <style>
@@ -31,35 +28,39 @@
     flex-grow: 0;
     height: 37px;
     width: 100%;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   #spacer {
-    min-height: 37px; 
+    min-height: 37px;
     width: 76px;
     flex-grow: 0;
+    -webkit-user-select: none;
+    user-select: none;
   }
-  
+
   #spacer2 {
-    min-height: 37px; 
+    min-height: 37px;
     width: 76px;
     flex-grow: 0;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   #title {
     flex-grow: 1;
     padding: 0px;
     margin: 0px;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   #title p {
     padding: 0px;
     margin: 10px auto;
     text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
   }
 </style>
-
-<script>
-  import { onMount } from "svelte";
-  import { theme } from '../stores/theme.js';
- 
-</script>
