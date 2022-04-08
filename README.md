@@ -69,6 +69,7 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Launching with paths on the command line will open in the specified directories. See [Command Line](#command-line).
 - A file details side panel can be shown to overlay the panel not currently focused (`toggleExtraPanel` command). It shows video previews and stats with the ffmpeg programs installed. Extensions can place special content in this panel as well.
 - Hot keys are programmable
+- Select entries by regular expressions. The regular expressions are saved and can be reused.
 - A number before a hot key runs it's associated command that many times (ex: `5j` will move the cursor 5 entries down the list).
 - Watches for changes in the current directory and updates accordingly.
 - Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory.
@@ -79,6 +80,7 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Optionally deletes to the OS's trashcan (external program has to be installed)
 - Change the environment used to execute external programs using the `Show Preferences` Command Prompt command.
 - Theme Creator/Editor
+- Center bar separating panels can be dragged back and forth to change it's location.
 - Extensions and Themes can be viewed and downloaded from GitHub inside of Modal File Manager. Just use the `Toggle GitHub Importer` command on the command prompt.
 - Extension Creator/Editor with template.
 - Extensions controled content in the Extras Panel.
@@ -219,7 +221,6 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
   - Mostly still working on items in the Extra Panel working again.
 - Translating my fman extensions to work with Modal File Manager
 	- Dropbox File System
-	- Regular Expression selection
 	- Zip Selected Entries
 - Drag and drop with external programs 
 - Add more file views for the Extra Panel
@@ -276,6 +277,7 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
 | `:` | toggleCommandPrompt |
 | `a` | selectAll |
 | `A` | unselectAll |
+| `r` | selectRegExp |
 
 ### Insert Mode
 
@@ -338,6 +340,8 @@ These commands can be ran from the command prompt. They all act upon the current
 | `Quit` | Quit the program. | quitApp |
 | `Show Preferences` | Show the program preferences and allow editing them. |
 | `Reload Extensions` | Reload all extensions. |
+| `Save Default Keymaps` | Save the default keymaps over the current keymap files | saveDefaultKeymaps |
+| `Select by Regular Expression` | Select entries using a regulare expression. | selectRegExp |
 
 
 ### Extension Commands

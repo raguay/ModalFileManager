@@ -82,12 +82,7 @@
   let numberAcc = "";
   let lastCommand = "";
   let flagFilter = 1;
-  let selRegExpHist = [
-    {
-      name: "",
-      value: "",
-    },
-  ];
+  let selRegExpHist = null;
 
   onMount(async () => {
     //
@@ -618,6 +613,12 @@
     //
     // Add all built in commands to the commands object.
     //
+    commands.addCommand(
+      "Save Default Keymaps",
+      "saveDefaultKeymaps",
+      "Save the default keymaps into the keymap files.",
+      saveDefaultKeymaps
+    );
     commands.addCommand(
       "Minimize",
       "minimizeWindow",
@@ -1553,7 +1554,7 @@
       value: 1,
     });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => {
+    msgCallBack = () => {
       showMessageBox = false;
     };
     addSpinner("progress1", 1);
@@ -1629,7 +1630,7 @@
       value: 1,
     });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => {
+    msgCallBack = () => {
       showMessageBox = false;
     };
     addSpinner("progress1", 1);
@@ -1796,7 +1797,7 @@
       value: 1,
     });
     msgBoxItems = msgBoxItems;
-    msgCallBack = (e) => {
+    msgCallBack = () => {
       showMessageBox = false;
     };
     addSpinner("progress1", 1);
@@ -1944,7 +1945,7 @@
         },
       ];
     }
-    msgCallBack = (e) => {};
+    msgCallBack = () => {};
     showMessageBox = true;
   }
 
@@ -1958,14 +1959,14 @@
       {
         type: "picker",
         selections: items,
-        value: items[0].value,
+        value: items.length > 0 ? items[0].value : "",
         id: "msgboxMain",
         extra: extra,
       },
     ];
     msgCallBack = (e) => {
-      returnValue(e[0].value);
-      msgCallBack = (e) => {};
+      returnValue(e.value);
+      msgCallBack = () => {};
     };
     showMessageBox = true;
   }
@@ -1985,8 +1986,8 @@
     ];
     showMessageBox = true;
     msgCallBack = (e) => {
-      returnValue(e[0].value);
-      msgCallBack = (e) => {};
+      returnValue(e.value);
+      msgCallBack = () => {};
     };
   }
 
@@ -2011,8 +2012,8 @@
     //
     // Setup a null callback.
     //
-    msgCallBack = (e) => {};
-    var nfname = data[0].value;
+    msgCallBack = () => {};
+    var nfname = data.value;
 
     //
     // Create the new file.
@@ -2058,8 +2059,8 @@
     //
     // Setup a null callback.
     //
-    msgCallBack = (e) => {};
-    var ndname = data[0].value;
+    msgCallBack = () => {};
+    var ndname = data.value;
 
     //
     // Create the new file.
@@ -2104,8 +2105,8 @@
     //
     // Setup a null callback.
     //
-    msgCallBack = (e) => {};
-    var nname = data[0].value;
+    msgCallBack = () => {};
+    var nname = data.value;
 
     //
     // Create the new file.
@@ -2275,17 +2276,30 @@
     msgBoxSpinners = msgBoxSpinners.filter((spinner) => spinner.name !== name);
   }
 
-  function selectRegExp() {
+  async function selectRegExp() {
+    if (selRegExpHist === null) {
+      selRegExpHist = await getRegExpSelectHistory();
+    }
+    var selectList = selRegExpHist.map((item) => {
+      return {
+        name: item,
+        value: item,
+      };
+    });
     pickItem(
       "Select Regular Expressions",
-      selRegExpHist,
-      runRegExpHistSelection
+      selectList,
+      runRegExpHistSelection,
+      true
     );
   }
 
   function runRegExpHistSelection(value) {
-    saveRegExpSelectHistory(value.value);
-    var selRegExp = new RegExp(value.value);
+    if (typeof value === "object") {
+      value = value.value;
+    }
+    saveRegExpSelectHistory(value);
+    var selRegExp = new RegExp(value);
     if (localCurrentCursor.pane === "left") {
       leftEntries.map((item) => {
         if (item.name.match(selRegExp) !== null) {
@@ -2303,11 +2317,24 @@
     }
   }
 
-  function saveRegExpSelectHistory(value) {
+  async function saveRegExpSelectHistory(value) {
     //
-    // Save to disk, removing redundant items, etc. needs implemented.
+    // Save if not already in the list.
     //
-    selRegExpHist.push(value);
+    if (selRegExpHist.filter((item) => item === value).length === 0)
+      selRegExpHist.push(value);
+    var regExpFile = await OS.appendPath(configDir, "regexps.json");
+    await OS.writeFile(regExpFile, JSON.stringify(selRegExpHist));
+  }
+
+  async function getRegExpSelectHistory() {
+    var result = [];
+    var regExpFile = await OS.appendPath(configDir, "regexps.json");
+    if (await OS.fileExists(regExpFile)) {
+      result = await OS.readFile(regExpFile);
+      result = JSON.parse(result);
+    }
+    return result;
   }
 
   function toggleGitHub() {
@@ -2639,6 +2666,13 @@
         key: "Escape",
         command: "changeModeNormal",
       },
+      {
+        ctrl: false,
+        shift: false,
+        meta: false,
+        key: "r",
+        command: "selectRegExp",
+      },
     ];
 
     //
@@ -2810,6 +2844,16 @@
   async function removeWatcher(path, wtype, signame) {
     await window.go.main.App.RemoveWatcher(path, wtype, signame);
     window.runtime.EventsOff(signame);
+  }
+
+  function saveDefaultKeymaps() {
+    var keyMapDir = { ...localCurrentCursor.entry };
+    keyMapDir.dir = configDir;
+    keyMapDir.name = "keyMaps";
+
+    createDefaultNormalMap(keyMapDir);
+    createDefaultVisualMap(keyMapDir);
+    createDefaultInsertMap(keyMapDir);
   }
 </script>
 

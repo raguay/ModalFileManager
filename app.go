@@ -374,5 +374,6 @@ func (b *App) AppendPath(dir string, name string) string {
 }
 
 func (b *App) Quit() {
+	b.watcher.Close()
 	runtime.Quit(b.ctx)
 }
