@@ -31,6 +31,7 @@
   import { metaKey } from "../stores/metaKey.js";
   import { skipKey } from "../stores/skipKey.js";
   import { shiftKey } from "../stores/shiftKey.js";
+  import { key } from "../stores/key.js";
   import { processKey } from "../stores/processKey.js";
 
   const dispatch = createEventDispatcher();
@@ -880,24 +881,19 @@
     );
   }
 
-  function processKeyFunction(e) {
-    //
-    // Stop the system for propgating the keystroke.
-    //
-    e.preventDefault();
-
+  function processKeyFunction() {
     //
     // Send to the processor.
     //
-    keyProcessor(e.key, $ctrlKey, $shiftKey, $metaKey);
+    keyProcessor($key, $ctrlKey, $shiftKey, $metaKey, $altKey);
   }
 
   function stringKeyProcessor(str) {
     for (var i = 0; i < str.length; i++) {
       if (str[i] >= "A" && str[i] <= "Z") {
-        keyProcessor(str[i], false, true, false);
+        keyProcessor(str[i], false, true, false, false);
       } else {
-        keyProcessor(str[i], false, false, false);
+        keyProcessor(str[i], false, false, false, false);
       }
     }
   }
@@ -906,7 +902,7 @@
     stringKeyProcessor(lastCommand);
   }
 
-  function keyProcessor(key, cKey, sKey, mKey) {
+  function keyProcessor(key, cKey, sKey, mKey, aKey) {
     if (key >= 0 && key <= 9) {
       //
       // It is a number prefixing a command. Get the digits for using in the command.
@@ -917,7 +913,14 @@
       // Get the command for the current state in the stateMaps.
       //
 
-      const command = getCommand(stateMaps[localState], key, cKey, sKey, mKey);
+      const command = getCommand(
+        stateMaps[localState],
+        key,
+        cKey,
+        sKey,
+        mKey,
+        aKey
+      );
 
       //
       // Figure the number of times to run the command.
@@ -950,18 +953,22 @@
     stateMapColors.set(localStateMapColors);
   }
 
-  function getCommand(map, key, cKey, sKey, mKey) {
+  function getCommand(map, key, cKey, sKey, mKey, aKey) {
     var result = {
       command: () => {},
       name: "empty",
     };
-    var rmap = map.find(
-      (item) =>
+    if (typeof aKey === "undefined") aKey = false;
+    var rmap = map.find((item) => {
+      if (typeof item.alt === "undefined") item.alt = false;
+      return (
         item.key == key &&
         item.meta == mKey &&
         item.ctrl == cKey &&
-        item.shift == sKey
-    );
+        item.shift == sKey &&
+        item.alt == aKey
+      );
+    });
     if (typeof rmap !== "undefined") {
       result = rmap;
     }
@@ -2227,11 +2234,13 @@
     showExtra = !showExtra;
   }
 
-  function addKeyboardShort(keyboard, ctrl, shift, meta, key, cmd) {
+  function addKeyboardShort(keyboard, ctrl, shift, meta, key, cmd, alt) {
+    if (typeof alt === "undefined") alt = false;
     stateMaps[keyboard].push({
       ctrl: ctrl,
       shift: shift,
       meta: meta,
+      alt: alt,
       key: key,
       command: cmd,
     });
@@ -2381,6 +2390,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: ":",
         command: "toggleCommandPrompt",
       },
@@ -2388,6 +2398,7 @@
         ctrl: false,
         shift: false,
         meta: true,
+        alt: false,
         key: "m",
         command: "minimizeWindow",
       },
@@ -2395,6 +2406,7 @@
         ctrl: false,
         shift: false,
         meta: true,
+        alt: false,
         key: "q",
         command: "quitApp",
       },
@@ -2402,6 +2414,7 @@
         ctrl: true,
         shift: false,
         meta: false,
+        alt: false,
         key: "p",
         command: "toggleCommandPrompt",
       },
@@ -2409,6 +2422,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "s",
         command: "toggleExtraPanel",
       },
@@ -2416,6 +2430,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "q",
         command: "editDirLoc",
       },
@@ -2423,6 +2438,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "r",
         command: "reloadPane",
       },
@@ -2430,6 +2446,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "p",
         command: "swapPanels",
       },
@@ -2437,6 +2454,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "d",
         command: "duplicateEntry",
       },
@@ -2444,6 +2462,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "e",
         command: "editEntry",
       },
@@ -2451,6 +2470,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "m",
         command: "moveEntries",
       },
@@ -2458,6 +2478,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "c",
         command: "copyEntries",
       },
@@ -2465,6 +2486,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "x",
         command: "deleteEntries",
       },
@@ -2472,6 +2494,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "g",
         command: "goTopFile",
       },
@@ -2479,6 +2502,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: "G",
         command: "goBottomFile",
       },
@@ -2486,6 +2510,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "ArrowDown",
         command: "moveCursorDown",
       },
@@ -2493,6 +2518,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "ArrowUp",
         command: "moveCursorUp",
       },
@@ -2500,6 +2526,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "l",
         command: "goDownDir",
       },
@@ -2507,6 +2534,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "h",
         command: "goUpDir",
       },
@@ -2514,6 +2542,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "Enter",
         command: "actionEntry",
       },
@@ -2521,6 +2550,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "Tab",
         command: "cursorToNextPane",
       },
@@ -2528,6 +2558,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "k",
         command: "moveCursorUp",
       },
@@ -2535,6 +2566,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "j",
         command: "moveCursorDown",
       },
@@ -2542,6 +2574,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "i",
         command: "changeModeInsert",
       },
@@ -2549,6 +2582,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "v",
         command: "changeModeVisual",
       },
@@ -2556,6 +2590,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "/",
         command: "toggleQuickSearch",
       },
@@ -2563,6 +2598,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: ".",
         command: "reRunLastCommand",
       },
@@ -2570,6 +2606,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: ",",
         command: "toggleFilter",
       },
@@ -2577,6 +2614,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: "O",
         command: "openOppositePanel",
       },
@@ -2584,6 +2622,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "w",
         command: "goHome",
       },
@@ -2614,6 +2653,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: ":",
         command: "toggleCommandPrompt",
       },
@@ -2621,6 +2661,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "k",
         command: "moveCursorUpWithSelect",
       },
@@ -2628,6 +2669,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "j",
         command: "moveCursorDownWithSelect",
       },
@@ -2635,6 +2677,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "a",
         command: "selectAll",
       },
@@ -2642,6 +2685,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: "A",
         command: "unselectAll",
       },
@@ -2649,6 +2693,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "ArrowDown",
         command: "moveCursorDown",
       },
@@ -2656,6 +2701,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "ArrowUp",
         command: "moveCursorUp",
       },
@@ -2663,6 +2709,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "Escape",
         command: "changeModeNormal",
       },
@@ -2670,6 +2717,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "r",
         command: "selectRegExp",
       },
@@ -2700,6 +2748,7 @@
         ctrl: false,
         shift: true,
         meta: false,
+        alt: false,
         key: ":",
         command: "toggleCommandPrompt",
       },
@@ -2707,6 +2756,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "Escape",
         command: "changeModeNormal",
       },
@@ -2714,6 +2764,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "d",
         command: "newDirectory",
       },
@@ -2721,6 +2772,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "f",
         command: "newFile",
       },
@@ -2728,6 +2780,7 @@
         ctrl: false,
         shift: false,
         meta: false,
+        alt: false,
         key: "r",
         command: "renameEntry",
       },

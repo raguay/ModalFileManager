@@ -15,6 +15,7 @@
   let pickerItemsOrig = [];
   let pickerValue = "";
   let pickerDOM;
+  let msgboxDOM;
   let pickerExtra = false;
 
   $: items = updateSpinners(spinners);
@@ -39,7 +40,11 @@
   afterUpdate(async () => {
     await tick();
     var main = window.document.getElementById("msgboxMain");
-    if (main !== null) main.focus();
+    if (main !== null) {
+      main.focus();
+    } else {
+      msgboxDOM.focus();
+    }
   });
 
   function updateSpinners(spins) {
@@ -225,17 +230,22 @@
 <div id="messageboxbg">
   <div
     id="messagebox"
+    tabindex="0"
     style="background-color: {$theme.backgroundColor};
            border-color: {util.pSBC(0.1, $theme.backgroundColor)};
            color: {$theme.textColor};"
     on:keydown={(e) => {
-      if (e.key === "Escape") {
+      if (
+        e.key === "Escape" ||
+        (e.key === "Enter" && items[0].type === "label")
+      ) {
         e.preventDefault();
         dispatch("closeMsgBox", {
           skip: true,
         });
       }
     }}
+    bind:this={msgboxDOM}
   >
     {#if config !== null}
       <h2>{config.title}</h2>
@@ -302,7 +312,7 @@
             {:else if item.type === "spinner"}
               <progress id={item.name} value={item.value} max="100" />
             {:else if item.type === "label"}
-              <label id={item.id} for={item.for}>
+              <label for={item.for}>
                 {item.text}
               </label>
             {:else if item.type === "html"}
@@ -349,11 +359,14 @@
   #messagebox {
     display: flex;
     flex-direction: column;
-    margin: auto;
+    margin: 40px auto;
     padding: 10px;
     width: 70%;
     border: 3px solid;
     border-radius: 5px;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: none;
   }
 
   #butRow {
