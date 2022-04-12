@@ -13,11 +13,14 @@ var OS = {
   lastError: "",
   lastOutput: "",
   config: null,
-  type: "macOS",
+  type: null,
+  rootDir: "/",
   path: "/",
   sep: "/",
+  shell: null,
   localHomeDir: null,
   localConfigDir: null,
+  openCommand: "open",
   setConfig: function(cfg) {
     this.config = cfg;
   },
@@ -31,13 +34,12 @@ var OS = {
   },
   getConfigDir: async function() {
     if (this.localConfigDir === null) {
-      const hdir = await this.getHomeDir();
-      this.localConfigDir = await this.appendPath(hdir, ".config/modalfilemanager");
+      this.localConfigDir = await this.appendPath(this.localHomeDir, ".config/modalfilemanager");
     }
     return this.localConfigDir;
   },
   terminalScript: "bin/openTerminal.scpt",
-  init: function() {
+  init: async function() {
     //
     // Set the defaults
     //
@@ -45,9 +47,44 @@ var OS = {
     this.filterFunction = this.defaultFilter;
 
     //
-    // Get the path seperator 
+    // Initialize OS specific items.
     //
-    this.sep = '/';
+    this.localHomeDir = await this.getHomeDir();
+    this.type = await this.getOSname();
+    switch (this.type) {
+      case "macos": {
+        this.sep = '/';
+        this.rootDir = '/';
+        this.openCommand = "open";
+        this.shell = 'zsh';
+        break;
+      }
+      case "linux": {
+        this.sep = '/';
+        this.rootDir = '/';
+        this.openCommand = "xdg-open";
+        this.shell = 'bash';
+        break;
+      }
+      case "windows": {
+        this.sep = "\\";
+        this.rootDir = "C:\\";
+        this.openCommand = "start";
+        this.shell = 'cmd.exe';
+        break;
+      }
+      default: {
+        this.sep = '/';
+        this.rootDir = '/';
+        break;
+      }
+    }
+  },
+  getOSname: async function() {
+    if (this.type === null) {
+      this.type = window.go.main.App.GetOSName();
+    }
+    return (this.type);
   },
   getDirFirst: function() {
     return this.dirFirst;
@@ -64,7 +101,11 @@ var OS = {
     this.filterFunction = flt;
   },
   getTerminalScript: async function() {
-    return await this.appendPath(await this.getHomeDir(), this.terminalScript);
+    var tsFile = this.terminalScript;
+    if (this.terminalScript.startsWith(this.rootDir)) {
+      tsFile = await this.appendPath(this.localHomeDir, this.terminalScript);
+    }
+    return tsFile;
   },
   setTerminalScript: function(scrpt) {
     this.terminalScript = scrpt;
@@ -299,19 +340,25 @@ var OS = {
     //
     // For macOS, open with the open command line command.
     //
-    this.runCommandLine(`open '${pdir}/${file}'`)
+    this.runCommandLine(`${this.openCommand} '${pdir}/${file}'`)
   },
   openFileWithProgram: async function(prog, file) {
     //
     // For macOS, open with the open command line command.
     //
-    this.runCommandLine(`open -a ${prog} '${file}'`)
+    this.runCommandLine(`${this.openCommand} -a ${prog} '${file}'`)
   },
   openInTerminal: async function(prog, file) {
     //
     // Run the terminal Script.
     //
-    this.runCommandLine(`osascript '${this.terminalScript}' '${prog}' '${file}'`, (err, stdout) => { }, '.');
+    if (this.type === "macos") {
+      this.runCommandLine(`osascript '${this.terminalScript}' '${prog}' '${file}'`, (err, stdout) => { }, '.');
+    } else {
+      //
+      // TODO: Not sure?
+      //
+    }
   },
   getConfig: async function() {
     if (this.config === null) {
@@ -339,9 +386,8 @@ var OS = {
       //
       // Add directories that the user's system should have.
       //
-      var hdir = await this.getHomeDir();
-      if (await this.dirExists(hdir + "/bin")) {
-        this.config.env.PATH = hdir + "/bin:" + this.config.env.PATH;
+      if (await this.dirExists(this.localHomeDir + "/bin")) {
+        this.config.env.PATH = this.localHomeDir + "/bin:" + this.config.env.PATH;
       }
       if (await this.dirExists("/opt/homebrew/bin")) {
         this.config.env.PATH = "/opt/homebrew/bin:" + this.config.env.PATH;
@@ -349,11 +395,11 @@ var OS = {
       if (await this.dirExists("/usr/local/bin")) {
         this.config.env.PATH = "/usr/local/bin:" + this.config.env.PATH;
       }
-      if (await this.dirExists(hdir + "/.cargo/bin")) {
-        this.config.env.PATH += ":" + hdir + "/.cargo/bin";
+      if (await this.dirExists(this.localHomeDir + "/.cargo/bin")) {
+        this.config.env.PATH += ":" + this.localHomeDir + "/.cargo/bin";
       }
-      if (await this.dirExists(hdir + "/go/bin")) {
-        this.config.env.PATH += ":" + hdir + "/go/bin";
+      if (await this.dirExists(this.localHomeDir + "/go/bin")) {
+        this.config.env.PATH += ":" + this.localHomeDir + "/go/bin";
       }
 
       //
@@ -390,8 +436,8 @@ var OS = {
     //
     // Run the command line in a shell. #TODO make the shell configurable.
     //
-    var args = ["zsh", '-c', line];
-    var cmd = "zsh";
+    var args = [this.shell, '-c', line];
+    var cmd = this.shell;
 
     //
     // Run the command line.
@@ -409,7 +455,7 @@ var OS = {
   appendPath: async function(dir, name) {
     // dir can be an entry or a path string. name is always a string.
     //
-    if(typeof dir.dir !== 'undefined') {
+    if (typeof dir.dir !== 'undefined') {
       dir = await this.appendPath(dir.dir, dir.name);
     }
     var path = await window.go.main.App.AppendPath(dir, name);
@@ -490,7 +536,7 @@ var OS = {
     }
     return result;
   },
-  searchDir: async function(pat, dir, numEntries, returnFunction) {
+  searchdir: async function(pat, dir, numEntries, returnFunction) {
     try {
       if (dir === "") dir = this.path;
       if (pat !== "") {

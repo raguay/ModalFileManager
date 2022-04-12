@@ -3,17 +3,18 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	clip "github.com/atotto/clipboard"
 	cp "github.com/otiai10/copy"
 	watcher "github.com/radovskyb/watcher"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	goruntime "runtime"
 	"time"
-
-	runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App application struct and other structs
@@ -68,13 +69,13 @@ func (b *App) startup(ctx context.Context) {
 			case event := <-b.watcher.Event:
 				{
 					if (b.lastLeftDir == b.lastRightDir) && (b.lastLeftDir == event.Path) {
-						runtime.EventsEmit(b.ctx, "leftDirChange", event.Path)
-						runtime.EventsEmit(b.ctx, "rightDirChange", event.Path)
+						wailsruntime.EventsEmit(b.ctx, "leftDirChange", event.Path)
+						wailsruntime.EventsEmit(b.ctx, "rightDirChange", event.Path)
 					} else {
 						if b.lastLeftDir == event.Path {
-							runtime.EventsEmit(b.ctx, "leftDirChange", event.Path)
+							wailsruntime.EventsEmit(b.ctx, "leftDirChange", event.Path)
 						} else if b.lastRightDir == event.Path {
-							runtime.EventsEmit(b.ctx, "rightDirChange", event.Path)
+							wailsruntime.EventsEmit(b.ctx, "rightDirChange", event.Path)
 						} else {
 							//
 							// See if it is in watchers list
@@ -82,7 +83,7 @@ func (b *App) startup(ctx context.Context) {
 							found := false
 							for i := 0; i < len(b.watchers); i++ {
 								if b.watchers[i].Path == event.Path {
-									runtime.EventsEmit(b.ctx, b.watchers[i].SigName, event.Path)
+									wailsruntime.EventsEmit(b.ctx, b.watchers[i].SigName, event.Path)
 									found = true
 								}
 							}
@@ -357,7 +358,7 @@ func (b *App) RemoveWatcher(path string, wtype int) {
 	//
 	for i := 0; i < len(b.watchers); i++ {
 		if b.watchers[i].Path == path {
-			runtime.EventsOff(b.ctx, b.watchers[i].SigName)
+			wailsruntime.EventsOff(b.ctx, b.watchers[i].SigName)
 			copy(b.watchers[i:], b.watchers[i+1:])
 			b.watchers[len(b.watchers)-1] = WatcherInfo{} // or the zero value of T
 			b.watchers = b.watchers[:len(b.watchers)-1]
@@ -375,5 +376,22 @@ func (b *App) AppendPath(dir string, name string) string {
 
 func (b *App) Quit() {
 	b.watcher.Close()
-	runtime.Quit(b.ctx)
+	wailsruntime.Quit(b.ctx)
+}
+
+func (b *App) GetOSName() string {
+	os := goruntime.GOOS
+	result := ""
+	switch os {
+	case "windows":
+		result = "windows"
+		break
+	case "darwin":
+		result = "macos"
+	case "linux":
+		result = "linux"
+	default:
+		result = fmt.Sprintf("%s", os)
+	}
+	return result
 }

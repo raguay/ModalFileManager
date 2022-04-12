@@ -112,8 +112,7 @@
     //
     // Initialize local.
     //
-    OS.init();
-    OS.setDirFirst(true);
+    await OS.init();
 
     //
     // Setup the configuration directory.

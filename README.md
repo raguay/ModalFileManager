@@ -42,6 +42,7 @@ A small gif showing Modal File Manager in action.
 - [Creating Extensions](#creating-extensions)
 - [Tutorials on Modal File Manager](#tutorials-on-modal-file-manager)
 - [Icon](#icon)
+- [Sponsor this project](#sponsor-this-project)
 
 ## Philosophy
 
@@ -467,4 +468,8 @@ I finally made my first attempt at an icon for Modal File Manager. The files are
 
 ![Icon](https://github.com/raguay/ModalFileManager/blob/main/appicon.png)
 
+## Sponsor this project
 
+You can now sponsor my work on this project. The more sponsors I get, the more time I'll focus on development.
+
+<iframe src="https://github.com/sponsors/raguay/card" title="Sponsor raguay" height="225" width="600" style="border: 0;"></iframe>
