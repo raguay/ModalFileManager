@@ -472,4 +472,5 @@ I finally made my first attempt at an icon for Modal File Manager. The files are
 
 You can now sponsor my work on this project. The more sponsors I get, the more time I'll focus on development.
 
+
 <iframe src="https://github.com/sponsors/raguay/card" title="Sponsor raguay" height="225" width="600" style="border: 0;"></iframe>
