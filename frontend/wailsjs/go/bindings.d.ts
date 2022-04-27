@@ -16,6 +16,7 @@ export interface go {
 		GetEnvironment():Promise<Array<string>>
 		GetError():Promise<string>
 		GetHomeDir():Promise<string>
+		GetOSName():Promise<string>
 		MakeDir(arg1:string):Promise<void>
 		MakeFile(arg1:string):Promise<void>
 		MoveEntries(arg1:string,arg2:string):Promise<void>

@@ -10,8 +10,8 @@
   const dispatch = createEventDispatcher();
 
   let octok;
-  let repos;
-  let themes;
+  let repos = null;
+  let themes = null;
   let width = null;
   let msgs = [];
   let pickerDOM;
@@ -46,37 +46,38 @@
   }
 
   async function loadRepoInfo() {
-    console.log("loading repo info:");
-    loading = true;
-    if (typeof repos !== "undefined") {
-      repos = {};
-    }
-    if (typeof themes !== "undefined") {
-      themes = {};
-    }
-    var repost = await octok.search.repos({
-      q: "topic:modalfilemanager+topic:extension+topic:v2",
-    });
-    if (check(repost)) {
-      repost = repost.data.items;
-      console.log(repost);
-      for (var i = 0; i < repost.length; i++) {
-        console.log(repost[i]);
-        repost[i].loaded = await extExists(repost[i]);
+    if (repos === null && themes === null) {
+      loading = true;
+      if (typeof repos !== "undefined") {
+        repos = {};
       }
-      repos = repost;
-    }
-    var themest = await octok.search.repos({
-      q: "topic:modalfilemanager+topic:theme",
-    });
-    if (check(themest)) {
-      themest = themest.data.items;
-      for (var i = 0; i < themest.length; i++) {
-        themest[i].loaded = await themeExists(themest[i]);
+      if (typeof themes !== "undefined") {
+        themes = {};
       }
-      themes = themest;
+      var repost = await octok.search.repos({
+        q: "topic:modalfilemanager+topic:extension+topic:v2",
+      });
+      if (check(repost)) {
+        repost = repost.data.items;
+        for (var i = 0; i < repost.length; i++) {
+          repost[i].loaded = await extExists(repost[i]);
+        }
+        repos = repost;
+      }
+      var themest = await octok.search.repos({
+        q: "topic:modalfilemanager+topic:theme",
+      });
+      if (check(themest)) {
+        themest = themest.data.items;
+        for (var i = 0; i < themest.length; i++) {
+          themest[i].loaded = await themeExists(themest[i]);
+        }
+        themes = themest;
+      }
+      loading = false;
     }
-    loading = false;
+    repos = repos;
+    themes = themes;
   }
 
   function getHeight() {
@@ -135,7 +136,6 @@
       theme.set(newTheme);
       addMsg(thm, "This theme is now being used.");
     } else {
-      console.log("The theme doesn't have a package.json file.");
       addMsg(thm, "The theme doesn't have a package.json file.");
     }
   }
@@ -151,17 +151,19 @@
   async function deleteTheme(thm) {
     var confg = get(config);
     var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    //
-    // #TODO - make it not a command line.
-    //
-    await confg.OS.runCommandLine(
-      'rm -Rf "' + thmDir + '";',
-      [],
-      (err, stdin, stdout) => {
-        loadRepoInfo();
+    await confg.OS.deleteEntries(
+      {
+        name: thm.name,
+        dir: thmDir,
       },
-      "."
+      () => {
+        themes = themes.map((item) => {
+          if (item.name === thm.name) {
+            item.loaded = false;
+          }
+          return item;
+        });
+      }
     );
   }
 
@@ -184,34 +186,33 @@
   }
 
   async function extExists(ext) {
-    console.log("Ext exists...");
     var confg = get(config);
     var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
     extDir = await confg.OS.appendPath(extDir, ext.name);
-    console.log(extDir);
     var flag = await confg.OS.dirExists(extDir);
-    console.log(flag);
     return flag;
   }
 
   async function deleteExtension(ext) {
     var confg = get(config);
     var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    //
-    // #TODO = change to not using command line.
-    //
-    await confg.OS.runCommandLine(
-      'rm -Rf "' + extDir + '";',
-      [],
-      (err, stdin, stdout) => {
-        loadRepoInfo();
+    await confg.OS.deleteEntries(
+      {
+        name: ext.name,
+        dir: extDir,
+      },
+      () => {
+        repos = repos.map((item) => {
+          if (item.name === ext.name) {
+            item.loaded = false;
+          }
+          return item;
+        });
         addMsg(
           ext,
           "Rerun the application to remove the extension from memory."
         );
-      },
-      "."
+      }
     );
   }
 

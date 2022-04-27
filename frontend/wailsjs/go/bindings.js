@@ -106,6 +106,13 @@ const go = {
         return window.go.main.App.GetHomeDir();
       },
       /**
+       * GetOSName
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      "GetOSName": () => {
+        return window.go.main.App.GetOSName();
+      },
+      /**
        * MakeDir
        * @param {string} arg1 - Go Type: string
        * @returns {Promise<void>} 
