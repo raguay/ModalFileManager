@@ -26,7 +26,7 @@
     octok = new Octokit();
     await loadRepoInfo();
     timeOut = setTimeout(focusInput, 1000);
-    () => {
+    return () => {
       hiddenInput = null;
       clearTimeout(timeOut);
     };
@@ -229,12 +229,9 @@
       var item = msgs.find((item) => item.name === rp.name);
       if (typeof item !== "undefined") {
         return item.msg;
-      } else {
-        return "";
       }
-    } else {
-      return "";
     }
+    return "";
   }
 
   function addMsg(rp, msg) {

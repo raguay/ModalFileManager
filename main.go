@@ -40,10 +40,7 @@ func main() {
 	}
 
 	// Create an instance of the app structure
-	app := NewApp()
-	if len(commands) > 0 {
-		app.Commands = commands
-	}
+	a := NewApp()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -62,11 +59,11 @@ func main() {
 		RGBA:              &options.RGBA{R: 33, G: 37, B: 43, A: 255},
 		Assets:            assets,
 		LogLevel:          logger.DEBUG,
-		OnStartup:         app.startup,
-		OnDomReady:        app.domReady,
-		OnShutdown:        app.shutdown,
+		OnStartup:         a.startup,
+		OnDomReady:        a.domReady,
+		OnShutdown:        a.shutdown,
 		Bind: []interface{}{
-			app,
+			a,
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{

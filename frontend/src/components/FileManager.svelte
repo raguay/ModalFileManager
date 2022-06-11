@@ -1611,10 +1611,12 @@
       entries.push(localCurrentCursor.entry);
       sel = false;
     }
-    var otherPane =
-      localCurrentCursor.pane === "left"
-        ? { ...localCurrentRightFile.entry }
-        : { ...localCurrentLeftFile.entry };
+    var otherPane;
+    if (localCurrentCursor.pane === "left") {
+      otherPane = { ...localCurrentRightFile.entry };
+    } else {
+      otherPane = { ...localCurrentLeftFile.entry };
+    }
     copyEntriesCommand(entries, otherPane, sel);
   }
 
