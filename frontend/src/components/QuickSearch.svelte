@@ -1,13 +1,126 @@
-<div id="quickSearch" 
-     style="left: {position}px;" 
->
-  <input type='text' 
-         bind:this={qsInputDOM}
-         bind:value={qsInput} 
-         on:keydown={processKey}
-         on:input={processInput}
-         on:blur={(e) => { exitQS(); }}
-         style="background-color: {localTheme.textColor};
+<script>
+  import {
+    onMount,
+    beforeUpdate,
+    createEventDispatcher,
+    afterUpdate,
+  } from "svelte";
+  import { get } from "svelte/store";
+  import { currentCursor } from "../stores/currentCursor.js";
+  import { theme } from "../stores/theme.js";
+  import { keyProcess } from "../stores/keyProcess.js";
+  import { saved } from "../stores/saved.js";
+
+  const dispatch = createEventDispatcher();
+
+  export let rightDOM;
+  export let leftDOM;
+  export let leftEntries;
+  export let rightEntries;
+
+  let qsInput = "";
+  let qsInputDOM = null;
+  let cursor = null;
+  let localTheme = null;
+  let position = null;
+  let origEntries = null;
+
+  beforeUpdate(() => {
+    if (cursor === null) {
+      getDefaults();
+    }
+  });
+
+  afterUpdate(() => {
+    if (qsInputDOM !== null) {
+      qsInputDOM.focus();
+    }
+  });
+
+  onMount(() => {
+    if (cursor.pane === "left") {
+      position = leftDOM.clientWidth - 110;
+    } else {
+      position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
+    }
+  });
+
+  function getDefaults() {
+    cursor = get(currentCursor);
+    localTheme = get(theme);
+    keyProcess.set(false);
+    origEntries = usingEntry(leftEntries, rightEntries);
+  }
+
+  function usingEntry(leftE, rightE) {
+    if (cursor.pane === "left") {
+      return leftE;
+    } else {
+      return rightE;
+    }
+  }
+
+  function exitQS(skip) {
+    if (typeof skip === "undefined") skip = false;
+    cursor = null;
+    dispatch("closeQuickSearch", {
+      skip: skip,
+    });
+  }
+
+  function processKey(e) {
+    const key = e.key;
+
+    //
+    // If the Enter key, quit the quick search.
+    //
+    if (key === "Escape") {
+      e.preventDefault();
+      exitQS(false);
+    } else if (key === "Enter") {
+      e.preventDefault();
+      exitQS(true);
+    }
+  }
+
+  function processInput() {
+    if (cursor === null) {
+      getDefaults();
+    }
+
+    $saved.qs = qsInput.toLowerCase();
+
+    //
+    // filter the entries by the quick search ignoring case.
+    //
+    var entries = origEntries;
+    entries = entries.filter((item) =>
+      item.name.toLowerCase().includes($saved.qs)
+    );
+
+    //
+    // Send to the panel only if there are some entries to see.
+    //
+    if (entries.length > 0) {
+      dispatch("changeEntries", {
+        pane: cursor.pane,
+        entries: entries,
+      });
+    }
+  }
+</script>
+
+<div id="quickSearch" style="left: {position}px;">
+  <input
+    type="text"
+    bind:this={qsInputDOM}
+    bind:value={qsInput}
+    on:keydown={processKey}
+    on:input={processInput}
+    on:blur={(e) => {
+      exitQS();
+    }}
+    style="background-color: {localTheme.textColor};
                 text-color: {localTheme.backgroundColor};"
   />
 </div>
@@ -41,105 +154,3 @@
     border-radius: 5px;
   }
 </style>
-
-<script> 
-  import { onMount, beforeUpdate, createEventDispatcher, afterUpdate } from 'svelte';
-  import { get } from 'svelte/store';
-  import { currentCursor } from '../stores/currentCursor.js';
-  import { theme } from '../stores/theme.js';
-  import { keyProcess } from '../stores/keyProcess.js';
-
-  const dispatch = createEventDispatcher();
-
-  export let rightDOM;
-  export let leftDOM;
-  export let leftEntries;
-  export let rightEntries;
-
-  let qsInput = '';
-  let qsInputDOM = null;
-  let cursor = null;
-  let localTheme = null;
-  let position = null;
-  let origEntries = null;
-
-  beforeUpdate(() => {
-    if(cursor === null) {
-      getDefaults();
-    }
-  });
-
-  afterUpdate(() => {
-    if(qsInputDOM !== null) {
-      qsInputDOM.focus();
-    }
-  })
-
-  onMount(() => {
-    if(cursor.pane === 'left') {
-      position = leftDOM.clientWidth - 110;
-    } else {
-      position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
-    }
-  });
-
-  function getDefaults() {
-    cursor = get(currentCursor);
-    localTheme = get( theme );
-    keyProcess.set(false);
-    origEntries = usingEntry(leftEntries, rightEntries);
-  }
-
-  function usingEntry(leftE, rightE) {
-    if(cursor.pane === 'left') {
-      return(leftE);
-    } else {
-      return(rightE);
-    }
-  }
-
-  function exitQS(skip) {
-    if(typeof skip === 'undefined') skip = false;
-    cursor = null;
-    dispatch('closeQuickSearch',{
-      skip: skip
-    });
-  }
-
-  function processKey(e) {
-    const key = e.key;
-
-    // 
-    // If the Enter key, quit the quick search.
-    //
-    if(key === 'Escape') {
-      e.preventDefault();
-      exitQS(false);
-    } else if(key === 'Enter') {
-      e.preventDefault();
-      exitQS(true);
-    }
-  }
-
-  function processInput(e) {
-    if(cursor === null) {
-      getDefaults();    
-    }
-
-    //
-    // filter the entries by the quick search ignoring case.
-    // 
-    var entries = origEntries;
-    entries = entries.filter(item => item.name.toLowerCase().includes(qsInput.toLowerCase()));
-
-    // 
-    // Send to the panel only if there are some entries to see.
-    // 
-    if(entries.length > 0) {
-      dispatch('changeEntries', {
-        pane: cursor.pane,
-        entries: entries
-      });
-    }
-  }
-</script>

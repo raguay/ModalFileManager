@@ -22,6 +22,7 @@
   import { directoryListeners } from "../stores/directoryListeners.js";
   import { stateMapColors } from "../stores/stateMapColors.js";
   import { extraPanel } from "../stores/extraPanel.js";
+  import { saved } from "../stores/saved.js";
   import commands from "../modules/commands.js";
   import filesystems from "../modules/filesystems";
   import extensions from "../modules/extensions.js";
@@ -614,6 +615,18 @@
     // Add all built in commands to the commands object.
     //
     commands.addCommand(
+      "lock",
+      "lock",
+      "Lock the current quick search results.",
+      lockqs
+    );
+    commands.addCommand(
+      "unlock",
+      "unlock",
+      "Unlock the current quick search results.",
+      unlockqs
+    );
+    commands.addCommand(
       "Save Default Keymaps",
       "saveDefaultKeymaps",
       "Save the default keymaps into the keymap files.",
@@ -1010,6 +1023,17 @@
     await window.runtime.WindowMinimise();
   }
 
+  function lockqs() {
+    $saved.lockqs = true;
+    $saved.sideqs = $currentCursor.pane;
+  }
+
+  function unlockqs() {
+    $saved.qs = null;
+    $saved.lockqs = false;
+    $saved.sideqs = null;
+  }
+
   function setCursor(fname) {
     var index = 0;
     if (localCurrentCursor.pane == "left") {
@@ -1332,6 +1356,13 @@
         fileSystem: localLeftDir.fileSystem,
       });
       leftEntries = await localLeftDir.fileSystem.getDirList(ndir);
+
+      if ($saved.lockqs && $saved.sideqs === "left") {
+        leftEntries = leftEntries.filter((item) =>
+          item.name.toLowerCase().includes($saved.qs)
+        );
+      }
+
       if (leftEntries.length !== 0) {
         var entry = leftEntries.filter((item) => item.name === name);
         if (entry.length !== 0) {
@@ -1339,13 +1370,17 @@
             entry: entry[0],
             pane: npane,
           });
-          currentCursor.set({
-            entry: entry[0],
-            pane: npane,
-          });
+          if (dirOb.cursor) {
+            currentCursor.set({
+              entry: entry[0],
+              pane: npane,
+            });
+          }
         } else {
           currentLeftFile.set({ entry: leftEntries[0], pane: npane });
-          currentCursor.set({ entry: leftEntries[0], pane: npane });
+          if (dirOb.cursor) {
+            currentCursor.set({ entry: leftEntries[0], pane: npane });
+          }
         }
       } else {
         currentLeftFile.set({
@@ -1381,6 +1416,13 @@
         fileSystem: localRightDir.fileSystem,
       });
       rightEntries = await localRightDir.fileSystem.getDirList(ndir);
+
+      if ($saved.lockqs && $saved.sideqs === "right") {
+        rightEntries = rightEntries.filter((item) =>
+          item.name.toLowerCase().includes($saved.qs)
+        );
+      }
+
       if (rightEntries.length !== 0) {
         var entry = rightEntries.filter((item) => item.name === name);
         if (entry.length !== 0) {
@@ -1388,13 +1430,17 @@
             entry: entry[0],
             pane: npane,
           });
-          currentCursor.set({
-            entry: entry[0],
-            pane: npane,
-          });
+          if (dirOb.cursor) {
+            currentCursor.set({
+              entry: entry[0],
+              pane: npane,
+            });
+          }
         } else {
           currentRightFile.set({ entry: rightEntries[0], pane: npane });
-          currentCursor.set({ entry: rightEntries[0], pane: npane });
+          if (dirOb.cursor) {
+            currentCursor.set({ entry: rightEntries[0], pane: npane });
+          }
         }
       } else {
         currentRightFile.set({
@@ -1847,6 +1893,13 @@
     rightEntries = await localRightDir.fileSystem.getDirList(
       localRightDir.path
     );
+
+    if ($saved.lockqs && $saved.sideqs === "right") {
+      rightEntries = rightEntries.filter((item) =>
+        item.name.toLowerCase().includes($saved.qs)
+      );
+    }
+
     var current = currentRightFile.entry;
     if (rightEntries.length == 0) {
       current = {
@@ -1885,6 +1938,13 @@
     // Refresh left pane.
     //
     leftEntries = await localLeftDir.fileSystem.getDirList(localLeftDir.path);
+
+    if ($saved.lockqs && $saved.sideqs === "left") {
+      leftEntries = leftEntries.filter((item) =>
+        item.name.toLowerCase().includes($saved.qs)
+      );
+    }
+
     var current = currentLeftFile.entry;
     if (leftEntries.length === 0) {
       current = {

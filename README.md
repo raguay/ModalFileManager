@@ -297,6 +297,8 @@ These commands can be ran from the command prompt. They all act upon the current
 
 | Command Name                      | Command Description                                                        | Command Function Name    | 
 |:--------------------------------- |:-------------------------------------------------------------------------- | ------------------------ | 
+| `lock`                  | This will lock in the quick search results.                                    | lock             |
+| `unlock`                  | This will unlock in the quick search results.                                    | unlock             |
 | `Move Cursor Up`                  | This will move the cursor up one line                                    | moveCursorUp             |
 | `Move Cursor Up with Selection`   | This will move select the current entry and move the cursor up one line. | moveCursorUpWithSelect   |    
 | `Move Cursor Down` | This will move the cursor down one line. | moveCursorDown |
