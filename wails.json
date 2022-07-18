@@ -3,7 +3,7 @@
   "frontend:build": "npm run build",
   "frontend:install": "npm install",
   "frontend:dev": "",
-  "wailsjsdir": "./frontend",
+  "wailsjsdir": "./frontend/dist/",
   "version": "2",
   "Path": "",
   "BuildDir": "",
