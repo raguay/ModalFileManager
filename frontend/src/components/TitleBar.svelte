@@ -5,7 +5,6 @@
 
 <div
   id="titleBar"
-  data-wails-drag
   style="background-color: {$theme.backgroundColor};
          color: {$theme.textColor};
          font-family: {$theme.font};
@@ -30,6 +29,7 @@
     width: 100%;
     -webkit-user-select: none;
     user-select: none;
+    --wails-draggable: drag;
   }
 
   #spacer {

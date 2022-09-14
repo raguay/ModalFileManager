@@ -10,6 +10,7 @@
   "outputfilename": "mfm",
   "OutputType": "",
   "Platform": "darwin/universal",
+  "bundle_id": "com.customct.wails.ModalFileManager",
   "Author": {
     "name": "Richard Guay",
     "email": "raguay@customct.com"

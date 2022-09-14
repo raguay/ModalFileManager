@@ -1,6 +1,7 @@
 <script>
   import { onMount, tick, createEventDispatcher } from "svelte";
   import { get } from "svelte/store";
+  import * as App from "../../wailsjs/go/main/App.js";
   import Pane from "../components/Pane.svelte";
   import MessageBox from "../components/MessageBox.svelte";
   import DirectoryListing from "../components/DirectoryListing.svelte";
@@ -284,7 +285,7 @@
         }
       }
     });
-    var commands = await window.go.main.App.GetCommandLineCommands();
+    var commands = await App.GetCommandLineCommands();
     if (commands !== null) {
       for (var i = 0; i < commands.length; i++) {
         var parts = commands[i].match(commandParse);
@@ -953,7 +954,6 @@
         // Something happened in the command. Tell about it.
         //
         lastError = e;
-        console.log(e);
       }
       numberAcc = "";
     }
@@ -1016,7 +1016,7 @@
   }
 
   async function quitApp() {
-    await window.go.main.App.Quit();
+    await App.Quit();
   }
 
   async function minimizeWindow() {
@@ -1617,12 +1617,16 @@
     showMessageBox = true;
 
     for (var i = 0; i < entries.length; i++) {
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
         if (err) {
+          updateSpinner("progress1", 100);
+          refreshPanes();
+
           //
-          // There was an error in deleting.
+          // Remove the spinner from being checked.
           //
-          console.log(err);
+          clearSpinners();
         }
         if (i >= entries.length - 1) {
           showMessageBox = false;
@@ -1643,7 +1647,6 @@
           removeSpinner("progress1");
         }
       });
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
     }
   }
 
@@ -1663,6 +1666,7 @@
     } else {
       otherPane = { ...localCurrentLeftFile.entry };
     }
+    otherPane.name = "";
     copyEntriesCommand(entries, otherPane, sel);
   }
 
@@ -1695,11 +1699,20 @@
     showMessageBox = true;
 
     for (var i = 0; i < entries.length; i++) {
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.copyEntries(
         entries[i],
         otherPane,
         (err, stdout) => {
-          if (i == entries.length - 1) {
+          if (err) {
+            updateSpinner("progress1", 100);
+            refreshPanes();
+
+            //
+            // Remove the spinner from being checked.
+            //
+            clearSpinners();
+          } else if (i == entries.length - 1) {
             showMessageBox = false;
             $keyProcess = true;
 
@@ -1724,7 +1737,6 @@
           }
         }
       );
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
     }
   }
 
@@ -1862,11 +1874,24 @@
     showMessageBox = true;
 
     for (var i = 0; i < entries.length; i++) {
+      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.moveEntries(
         entries[i],
         otherPane,
         (err, stdout) => {
-          if (i >= entries.length - 1) {
+          if (err) {
+            updateSpinner("progress1", 100);
+
+            //
+            // Refresh both sides.
+            //
+            refreshPanes();
+
+            //
+            // Remove the spinner from being checked.
+            //
+            clearSpinners();
+          } else if (i >= entries.length - 1) {
             showMessageBox = false;
             $keyProcess = true;
 
@@ -1882,7 +1907,6 @@
           }
         }
       );
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
     }
   }
 
@@ -2344,6 +2368,12 @@
 
   function removeSpinner(name) {
     msgBoxSpinners = msgBoxSpinners.filter((spinner) => spinner.name !== name);
+  }
+
+  function clearSpinners() {
+    msgBoxSpinners = [];
+    showMessageBox = false;
+    $keyProcess = true;
   }
 
   async function selectRegExp() {
@@ -2952,11 +2982,11 @@
   }
 
   async function addWatcher(path, wtype, signame, sigFunction) {
-    await window.go.main.App.AddWatcher(path, wtype, signame);
+    await AddWatcher(path, wtype, signame);
     window.runtime.EventsOn(signame, sigFunction);
   }
   async function removeWatcher(path, wtype, signame) {
-    await window.go.main.App.RemoveWatcher(path, wtype, signame);
+    await RemoveWatcher(path, wtype, signame);
     window.runtime.EventsOff(signame);
   }
 

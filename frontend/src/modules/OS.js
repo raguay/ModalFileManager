@@ -5,6 +5,7 @@
 //                functions that would be OS dependent. Now, most OS
 //                dependent items have been moved to go main program.
 //
+import * as App from '../../wailsjs/go/main/App.js';
 
 var OS = {
   dirFirst: true,
@@ -82,7 +83,7 @@ var OS = {
   },
   getOSname: async function() {
     if (this.type === null) {
-      this.type = window.go.main.App.GetOSName();
+      this.type = App.GetOSName();
     }
     return (this.type);
   },
@@ -112,7 +113,7 @@ var OS = {
   },
   getHomeDir: async function() {
     if (this.localHomeDir === null) {
-      this.localHomeDir = await window.go.main.App.GetHomeDir();
+      this.localHomeDir = await App.GetHomeDir();
       this.localHomeDir = (new String(this.localHomeDir)).toString();
     }
     return this.localHomeDir;
@@ -124,7 +125,7 @@ var OS = {
     //
     // Get the directory information
     //
-    var result = await window.go.main.App.ReadDir(dir);
+    var result = await App.ReadDir(dir);
     return result
   },
   normalize: async function(dir) {
@@ -137,7 +138,7 @@ var OS = {
     if (typeof dir.name !== 'undefined') {
       dir = await this.appendPath(dir.dir, dir.name);
     }
-    var dirReal = await window.go.main.App.DirExists(dir);
+    var dirReal = await App.DirExists(dir);
     return dirReal;
   },
   fileExists: async function(file) {
@@ -145,7 +146,7 @@ var OS = {
     if (typeof file.name !== 'undefined') {
       file = await this.appendPath(file.dir, file.name);
     }
-    result = window.go.main.App.FileExists(file);
+    result = App.FileExists(file);
     return result;
   },
   makeDir: async function(dir) {
@@ -155,7 +156,7 @@ var OS = {
     //
     // Make a directory.
     //
-    await window.go.main.App.MakeDir(dir);
+    await App.MakeDir(dir);
   },
   moveEntries: async function(from, to, callback) {
     var fromName;
@@ -182,8 +183,8 @@ var OS = {
     //
     // Move the entries.
     //
-    await window.go.main.App.MoveEntries(fromName, toName);
-    var err = await window.go.main.App.GetError();
+    await App.MoveEntries(fromName, toName);
+    var err = await GetError();
 
     //
     // Run the callback if given.
@@ -206,19 +207,21 @@ var OS = {
       fromName = from;
     }
     if (typeof to.dir !== 'undefined') {
-      toName = to.dir
+      toName = await this.appendPath(to.dir, to.name);
     } else {
       toName = to;
     }
-
-    const parts = fromName.split(this.sep);
-    toName = await this.appendPath(toName, parts[parts.length - 1]);
+    const isDir = await this.dirExists(toName);
+    if (isDir) {
+      const parts = fromName.split(this.sep);
+      toName = await this.appendPath(toName, parts[parts.length - 1]);
+    }
 
     //
     // Copy the entries.
     //
-    await window.go.main.App.CopyEntries(fromName, toName);
-    var err = await window.go.main.App.GetError();
+    await App.CopyEntries(fromName, toName);
+    var err = await App.GetError();
 
     //
     // Run the callback if given.
@@ -239,7 +242,6 @@ var OS = {
           this.runCommandLine("trash '" + item + "'", [], (err, stdout) => {
             if (err) {
               that.lastError = err;
-              console.log(err);
             }
             that.lastOutput = stdout;
           }, '.');
@@ -250,8 +252,8 @@ var OS = {
         //
         // Delete the item completely.
         //
-        await window.go.main.App.DeleteEntries(item)
-        var err = await window.go.main.App.GetError();
+        await App.DeleteEntries(item)
+        var err = await App.GetError();
 
         if (typeof callback !== "undefined") {
           callback(err)
@@ -375,7 +377,7 @@ var OS = {
       //
       // Copy the environment from the process. Get the environment.
       //
-      var env = await window.go.main.App.GetEnvironment();
+      var env = await App.GetEnvironment();
       var newEnv = {};
       env.map(item => {
         var parts = item.split('=');
@@ -442,8 +444,8 @@ var OS = {
     //
     // Run the command line.
     //
-    var result = await window.go.main.App.RunCommandLine(cmd, args, penv, dir);
-    var err = await window.go.main.App.GetError();
+    var result = await App.RunCommandLine(cmd, args, penv, dir);
+    var err = await App.GetError();
 
     //
     // If callback is given, call it with the results.
@@ -458,7 +460,7 @@ var OS = {
     if (typeof dir.dir !== 'undefined') {
       dir = await this.appendPath(dir.dir, dir.name);
     }
-    var path = await window.go.main.App.AppendPath(dir, name);
+    var path = await App.AppendPath(dir, name);
     return path;
   },
   readFile: async function(file) {
@@ -470,7 +472,7 @@ var OS = {
     //
     // Read the file from the backend.
     //
-    contents = await window.go.main.App.ReadFile(file);
+    contents = await App.ReadFile(file);
 
     //
     // Return what is read.
@@ -482,7 +484,7 @@ var OS = {
     //
     // Write the file to the os.
     //
-    await window.go.main.App.WriteFile(file, data);
+    await App.WriteFile(file, data);
   },
   renameEntry: async function(oldE, newE) {
     var fromName = oldE;
@@ -496,7 +498,7 @@ var OS = {
     //
     // Rename the file or directory.
     //
-    await window.go.main.App.RenameEntry(fromName, toName);
+    await App.RenameEntry(fromName, toName);
   },
   createFile: async function(file) {
     var fnm = file;
@@ -506,7 +508,7 @@ var OS = {
     //
     // Create the file with zero contents.
     //
-    await window.go.main.App.MakeFile(fnm);
+    await App.MakeFile(fnm);
   },
   createDir: async function(dir) {
     var dnm = dir;
@@ -516,7 +518,7 @@ var OS = {
     //
     // make the directory.
     //
-    await window.go.main.App.MakeDir(dnm);
+    await App.MakeDir(dnm);
   },
   loadJavaScript: async function(file) {
     var result = "";
@@ -566,15 +568,15 @@ var OS = {
     }
   },
   splitFilePath: async function(filePath) {
-    const parts = await window.go.main.App.SplitFile(filePath);
+    const parts = await App.SplitFile(filePath);
     return (parts);
   },
   getClipBoard: async function() {
-    result = await window.go.main.App.GetClip()
+    result = await App.GetClip()
     return result
   },
   setClipBoard: async function(msg) {
-    await window.go.main.App.SetClip(msg)
+    await App.SetClip(msg)
   }
 };
 

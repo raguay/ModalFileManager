@@ -62,6 +62,8 @@ func main() {
 		OnStartup:         a.startup,
 		OnDomReady:        a.domReady,
 		OnShutdown:        a.shutdown,
+    CSSDragProperty:   "--wails-draggable",
+    CSSDragValue:      "drag",
 		Bind: []interface{}{
 			a,
 		},

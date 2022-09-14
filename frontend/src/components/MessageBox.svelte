@@ -45,6 +45,15 @@
     } else {
       msgboxDOM.focus();
     }
+    let exit = false;
+    items.forEach((item) => {
+      if (item.name === "spinner") {
+        if (item.value === "100") exit = true;
+      }
+    });
+    if (exit) {
+      cancel();
+    }
   });
 
   function updateSpinners(spins) {
@@ -325,8 +334,8 @@
       {:else}
         <p>System Error</p>
       {/if}
-      {#if typeof config.noShowButton !== "undefined" && !config.noShowButton}
-        <div id="butRow">
+      <div id="butRow">
+        {#if typeof config.noShowButton !== "undefined" && !config.noShowButton}
           <button
             on:click={() => {
               if (items[0].type === "picker") {
@@ -338,9 +347,9 @@
           >
             Okay
           </button>
-          <button on:click={cancel}> Cancel </button>
-        </div>
-      {/if}
+        {/if}
+        <button on:click={cancel}> Cancel </button>
+      </div>
     {/if}
   </div>
 </div>
@@ -372,7 +381,9 @@
   #butRow {
     display: flex;
     flex-direction: row;
-    margin: 20px 0px 0px 0px;
+    align-items: center;
+    align-content: center;
+    margin: 20px auto 0px auto;
   }
 
   #butRow button:first-child {
