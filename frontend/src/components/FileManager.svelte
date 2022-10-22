@@ -1628,7 +1628,7 @@
           //
           clearSpinners();
         }
-        if (i >= entries.length - 1) {
+        if (i === (entries.length - 1)) {
           showMessageBox = false;
           $keyProcess = true;
 
@@ -1712,7 +1712,7 @@
             // Remove the spinner from being checked.
             //
             clearSpinners();
-          } else if (i == entries.length - 1) {
+          } else if (i === (entries.length - 1)) {
             showMessageBox = false;
             $keyProcess = true;
 
@@ -1891,7 +1891,7 @@
             // Remove the spinner from being checked.
             //
             clearSpinners();
-          } else if (i >= entries.length - 1) {
+          } else if (i === (entries.length - 1)) {
             showMessageBox = false;
             $keyProcess = true;
 
