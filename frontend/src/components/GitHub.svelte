@@ -5,7 +5,6 @@
   import { config } from "../stores/config.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import util from "../modules/util.js";
-//  import { Octokit } from "@octokit/rest";
 
   const dispatch = createEventDispatcher();
 
@@ -23,9 +22,10 @@
   onMount(async () => {
     keyProcess.set(false);
     width = window.innerWidth - 30;
- //   octok = new Octokit();
-//    await loadRepoInfo();
     timeOut = setTimeout(focusInput, 1000);
+    //
+    // #TODO - change the GitHub queries to the golang since Octokit no longer works.
+    //
     return () => {
       hiddenInput = null;
       clearTimeout(timeOut);

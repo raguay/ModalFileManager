@@ -184,7 +184,7 @@ var OS = {
     // Move the entries.
     //
     await App.MoveEntries(fromName, toName);
-    var err = await GetError();
+    var err = await App.GetError();
 
     //
     // Run the callback if given.

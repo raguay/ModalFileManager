@@ -1589,7 +1589,7 @@
   }
 
   async function deleteEntriesCommand(entries) {
-    msgBoxConfig = {
+/*    msgBoxConfig = {
       title: "Deleting Entries",
       noShowButton: true,
     };
@@ -1610,44 +1610,47 @@
       showMessageBox = false;
     };
     addSpinner("progress1", 1);
-
     //
     // It is all set up. Show the message box.
     //
     showMessageBox = true;
+*/
 
     for (var i = 0; i < entries.length; i++) {
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
         if (err) {
-          updateSpinner("progress1", 100);
+//          updateSpinner("progress1", 100);
           refreshPanes();
 
           //
           // Remove the spinner from being checked.
           //
-          clearSpinners();
+//          clearSpinners();
         }
         if (i === (entries.length - 1)) {
-          showMessageBox = false;
-          $keyProcess = true;
-
-          //
-          // Refresh the side deleted from.
-          //
-          if (localCurrentCursor.pane === "left") {
-            refreshLeftPane();
-          } else {
-            refreshRightPane();
-          }
+//          showMessageBox = false;
 
           //
           // Remove the spinner from being checked.
           //
-          removeSpinner("progress1");
+//          removeSpinner("progress1");
         }
       });
     }
+    //
+    // Refresh the side deleted from.
+    //
+    if (localCurrentCursor.pane === "left") {
+      refreshLeftPane();
+    } else {
+      refreshRightPane();
+    }
+
+    //
+    // Make sure key processing is on.
+    //
+    $keyProcess = true;
   }
 
   function copyEntries() {
@@ -1671,7 +1674,7 @@
   }
 
   async function copyEntriesCommand(entries, otherPane, sel) {
-    msgBoxConfig = {
+/*    msgBoxConfig = {
       title: "Copying Entries",
       noShowButton: true,
     };
@@ -1697,23 +1700,23 @@
     // It is all set up. Show the message box.
     //
     showMessageBox = true;
-
+*/
     for (var i = 0; i < entries.length; i++) {
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.copyEntries(
         entries[i],
         otherPane,
         (err, stdout) => {
           if (err) {
-            updateSpinner("progress1", 100);
+//            updateSpinner("progress1", 100);
             refreshPanes();
 
             //
             // Remove the spinner from being checked.
             //
-            clearSpinners();
+//            clearSpinners();
           } else if (i === (entries.length - 1)) {
-            showMessageBox = false;
+//            showMessageBox = false;
             $keyProcess = true;
 
             //
@@ -1733,7 +1736,7 @@
             //
             // Remove the spinner from being checked.
             //
-            removeSpinner("progress1");
+//            removeSpinner("progress1");
           }
         }
       );
@@ -1846,7 +1849,7 @@
   }
 
   async function moveEntriesCommand(entries, otherPane) {
-    msgBoxConfig = {
+/*    msgBoxConfig = {
       title: "Moving Entries",
       noShowButton: true,
     };
@@ -1872,15 +1875,15 @@
     // It is all set up. Show the message box.
     //
     showMessageBox = true;
-
+*/
     for (var i = 0; i < entries.length; i++) {
-      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
+//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
       await entries[i].fileSystem.moveEntries(
         entries[i],
         otherPane,
         (err, stdout) => {
           if (err) {
-            updateSpinner("progress1", 100);
+//            updateSpinner("progress1", 100);
 
             //
             // Refresh both sides.
@@ -1890,10 +1893,9 @@
             //
             // Remove the spinner from being checked.
             //
-            clearSpinners();
+//            clearSpinners();
           } else if (i === (entries.length - 1)) {
-            showMessageBox = false;
-            $keyProcess = true;
+//            showMessageBox = false;
 
             //
             // Refresh both sides.
@@ -1903,11 +1905,13 @@
             //
             // Remove the spinner from being checked.
             //
-            removeSpinner("progress1");
+//            removeSpinner("progress1");
           }
         }
       );
     }
+    refreshPanes();
+    $keyProcess = true;
   }
 
   async function refreshRightPane() {
