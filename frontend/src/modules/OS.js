@@ -5,7 +5,7 @@
 //                functions that would be OS dependent. Now, most OS
 //                dependent items have been moved to go main program.
 //
-import * as App from '../../wailsjs/go/main/App.js';
+import * as App from '../../dist/wailsjs/go/main/App.js';
 
 var OS = {
   dirFirst: true,

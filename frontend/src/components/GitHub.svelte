@@ -5,6 +5,7 @@
   import { config } from "../stores/config.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import util from "../modules/util.js";
+  import * as ap from '../../dist/wailsjs/go/main/App.js';
 
   const dispatch = createEventDispatcher();
 
@@ -23,9 +24,7 @@
     keyProcess.set(false);
     width = window.innerWidth - 30;
     timeOut = setTimeout(focusInput, 1000);
-    //
-    // #TODO - change the GitHub queries to the golang since Octokit no longer works.
-    //
+    await loadRepoInfo();
     return () => {
       hiddenInput = null;
       clearTimeout(timeOut);
@@ -46,36 +45,16 @@
   }
 
   async function loadRepoInfo() {
-    if (repos === null && themes === null) {
-      loading = true;
-      if (typeof repos !== "undefined") {
-        repos = {};
-      }
-      if (typeof themes !== "undefined") {
-        themes = {};
-      }
-      var repost = await octok.search.repos({
-        q: "topic:modalfilemanager+topic:extension+topic:v2",
-      });
-      if (check(repost)) {
-        repost = repost.data.items;
-        for (var i = 0; i < repost.length; i++) {
-          repost[i].loaded = await extExists(repost[i]);
-        }
-        repos = repost;
-      }
-      var themest = await octok.search.repos({
-        q: "topic:modalfilemanager+topic:theme",
-      });
-      if (check(themest)) {
-        themest = themest.data.items;
-        for (var i = 0; i < themest.length; i++) {
-          themest[i].loaded = await themeExists(themest[i]);
-        }
-        themes = themest;
-      }
-      loading = false;
+    loading = true;
+    repos = await ap.GetGitHubScripts();
+    for (var i = 0; i < repos.length; i++) {
+      repos[i].loaded = await extExists(repos[i]);
     }
+    themes = await ap.GetGitHubThemes();
+    for (var i = 0; i < themes.length; i++) {
+      themes[i].loaded = await themeExists(themes[i]);
+    }
+    loading = false;
     repos = repos;
     themes = themes;
   }
@@ -93,14 +72,6 @@
     dispatch("closeGitHub", {});
   }
 
-  function check(val) {
-    return (
-      typeof val !== "undefined" &&
-      typeof val.data !== "undefined" &&
-      typeof val.data.items !== "undefined"
-    );
-  }
-
   async function installTheme(thm) {
     var confg = get(config);
     var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
@@ -109,7 +80,7 @@
       await confg.OS.createDir(thmDir);
     }
     await confg.OS.runCommandLine(
-      "git clone '" + thm.git_url + "' '" + thmDir + "';",
+      "git clone '" + thm.url + "' '" + thmDir + "';",
       [],
       (err, stdin, stdout) => {
         //
@@ -175,7 +146,7 @@
       await confg.OS.createDir(extDir);
     }
     await confg.OS.runCommandLine(
-      "git clone '" + ext.git_url + "' '" + extDir + "';",
+      "git clone '" + ext.url + "' '" + extDir + "';",
       [],
       (err, stdin, stdout) => {
         addMsg(ext, "Restart the program to use this extension.");
@@ -307,12 +278,15 @@
               {repo.name}
             </p>
             <p class="repostars" style="color: {$theme.Yellow};">
-              {repo.stargazers_count} ⭐️s
+              {repo.stars} ⭐️s
             </p>
           </div>
           <div class="reporow">
-            <p class="repodisc">
+            <p class="repodisc" style="width: 70%;">
               {repo.description}
+            </p>
+            <p class="repodisc" style="width: 30%;">
+              Created by: {repo.owner}
             </p>
           </div>
           {#if hasMsg(repo)}
@@ -350,12 +324,15 @@
               {thm.name}
             </p>
             <p class="repostars" style="color: {$theme.Yellow};">
-              {thm.stargazers_count} ⭐️ s
+              {thm.stars} ⭐️s
             </p>
           </div>
           <div class="reporow">
-            <p class="repodisc">
+            <p class="repodisc" style="width: 70%;">
               {thm.description}
+            </p>
+            <p class="repodisc" style="width: 30%;">
+              Created by: {thm.owner}
             </p>
           </div>
           {#if hasMsg(thm)}
@@ -449,11 +426,11 @@
   }
 
   .repostars {
-    margin: 0px 0px 0px auto;
+    margin: 0px 20px 0px auto;
   }
 
   .repodisc {
-    margin: 0px 0px 0px 15px;
+    margin: 0px 20px 0px 15px;
   }
 
   .repoblock {

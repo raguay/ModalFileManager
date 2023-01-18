@@ -1,7 +1,7 @@
 <script>
   import { onMount, tick, createEventDispatcher } from "svelte";
   import { get } from "svelte/store";
-  import * as App from "../../wailsjs/go/main/App.js";
+  import * as App from "../../dist/wailsjs/go/main/App.js";
   import Pane from "../components/Pane.svelte";
   import MessageBox from "../components/MessageBox.svelte";
   import DirectoryListing from "../components/DirectoryListing.svelte";

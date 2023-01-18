@@ -7,6 +7,7 @@ import (
 	clip "github.com/atotto/clipboard"
 	cp "github.com/otiai10/copy"
 	watcher "github.com/radovskyb/watcher"
+	github "github.com/google/go-github/v49/github"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
@@ -48,6 +49,15 @@ type WatcherInfo struct {
 	Path        string
 	WatcherType int // if 0, a nonrecursive watch. 1 is a AddRecursive watch
 	SigName     string
+}
+
+type GitHubRepos struct {
+	Name        string `json:"name"`
+	URL	    string `json:"url"`
+	Stars       int    `json:"stars"`
+	Owner       string `json:"owner"`
+	ID          int64  `json:"id"`
+	Description string `json:"description"`
 }
 
 // NewApp creates a new App application struct
@@ -395,3 +405,43 @@ func (b *App) GetOSName() string {
 	}
 	return result
 }
+
+func (b *App) GetGitHubThemes() []GitHubRepos {
+	var result []GitHubRepos
+	client := github.NewClient(nil)
+	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic theme", nil)
+	if err == nil {
+		total := *topics.Total;
+		result = make([]GitHubRepos, total, total)
+		for i := 0; i<total; i++ {
+			result[i].ID = *topics.Repositories[i].ID
+			result[i].Name = *topics.Repositories[i].Name
+			result[i].Owner = *topics.Repositories[i].Owner.Login
+			result[i].URL = *topics.Repositories[i].CloneURL
+			result[i].Stars = *topics.Repositories[i].StargazersCount
+			result[i].Description = *topics.Repositories[i].Description
+		}
+	}
+	return result
+}
+
+func (b *App) GetGitHubScripts() []GitHubRepos {
+	var result []GitHubRepos
+	client := github.NewClient(nil)
+	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic V2 in:topic extension", nil)
+	if err == nil {
+		total := *topics.Total;
+		result = make([]GitHubRepos, total, total)
+		for i := 0; i<total; i++ {
+			result[i].ID = *topics.Repositories[i].ID
+			result[i].Name = *topics.Repositories[i].Name
+			result[i].Owner = *topics.Repositories[i].Owner.Login
+			result[i].URL = *topics.Repositories[i].CloneURL
+			result[i].Stars = *topics.Repositories[i].StargazersCount
+			result[i].Description = *topics.Repositories[i].Description
+		}
+	}
+	return result
+}
+
+
