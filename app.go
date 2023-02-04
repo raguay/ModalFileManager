@@ -5,29 +5,33 @@ import (
 	"errors"
 	"fmt"
 	clip "github.com/atotto/clipboard"
-	cp "github.com/otiai10/copy"
-	watcher "github.com/radovskyb/watcher"
 	github "github.com/google/go-github/v49/github"
-	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	cp "github.com/otiai10/copy"
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
+	"strconv"
 	"time"
 )
 
 // App application struct and other structs
 type App struct {
-	ctx          context.Context
-	err          string
-	proc         *os.Process
-	watcher      *watcher.Watcher
-	lastRightDir string
-	lastLeftDir  string
-	watchers     []WatcherInfo
-	Commands     []string
+	ctx           context.Context
+	err           string
+	proc          *os.Process
+	lastRightDir  string
+	lastLeftDir   string
+	Commands      []string
+	Timer         *time.Timer
+	Stopped       bool
+	LenLeftFiles  int
+	LenRightFiles int
+	LeftHash      string
+	RightHash     string
 }
 
 type FileParts struct {
@@ -43,21 +47,17 @@ type FileInfo struct {
 	IsDir     bool
 	Size      int64
 	Modtime   string
-}
-
-type WatcherInfo struct {
-	Path        string
-	WatcherType int // if 0, a nonrecursive watch. 1 is a AddRecursive watch
-	SigName     string
+	Index     int
 }
 
 type GitHubRepos struct {
-	Name        string `json:"name"`
-	URL	    string `json:"url"`
-	Stars       int    `json:"stars"`
-	Owner       string `json:"owner"`
-	ID          int64  `json:"id"`
-	Description string `json:"description"`
+	Name        string           `json:"name"`
+	URL         string           `json:"url"`
+	Stars       int              `json:"stars"`
+	Owner       string           `json:"owner"`
+	ID          int64            `json:"id"`
+	Description string           `json:"description"`
+	UpdatedAt   github.Timestamp `json:"updatedat"`
 }
 
 // NewApp creates a new App application struct
@@ -67,72 +67,116 @@ func NewApp() *App {
 
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
-	//
-	// Create the file system watcher and get it running.
-	//
 	b.ctx = ctx
-	b.watcher = watcher.New()
-	b.watchers = make([]WatcherInfo, 0, 0)
-	go func() {
-		for {
-			select {
-			case event := <-b.watcher.Event:
-				{
-					if (b.lastLeftDir == b.lastRightDir) && (b.lastLeftDir == event.Path) {
-						wailsruntime.EventsEmit(b.ctx, "leftDirChange", event.Path)
-						wailsruntime.EventsEmit(b.ctx, "rightDirChange", event.Path)
-					} else {
-						if b.lastLeftDir == event.Path {
-							wailsruntime.EventsEmit(b.ctx, "leftDirChange", event.Path)
-						} else if b.lastRightDir == event.Path {
-							wailsruntime.EventsEmit(b.ctx, "rightDirChange", event.Path)
-						} else {
-							//
-							// See if it is in watchers list
-							//
-							found := false
-							for i := 0; i < len(b.watchers); i++ {
-								if b.watchers[i].Path == event.Path {
-									wailsruntime.EventsEmit(b.ctx, b.watchers[i].SigName, event.Path)
-									found = true
-								}
-							}
-
-							//
-							// It's not the left or right directory or watchers list. Remove it.
-							//
-							if !found && b.DirExists(event.Path) {
-								b.watcher.Remove(event.Path)
-							}
-						}
-					}
-				}
-			case err := <-b.watcher.Error:
-				b.err = err.Error()
-			case <-b.watcher.Closed:
-				return
-			}
-		}
-	}()
-
-	//
-	// Start the file system watcher.
-	//
-	if err := b.watcher.Start(time.Millisecond * 100); err != nil {
-		b.err = err.Error()
-	}
 }
 
 // domReady is called after the front-end dom has been loaded
 func (b *App) domReady(ctx context.Context) {
+	//
+	// Start watching the directories.
+	//
+	b.lastLeftDir = ""
+	b.lastRightDir = ""
+	b.Stopped = false
+	go b.StartWatcher()
 }
 
 // shutdown is called at application termination
 func (b *App) shutdown(ctx context.Context) {
 	//
-	// Close the file system watcher.
+	// Stop watching directories.
 	//
-	b.watcher.Close()
+	b.lastLeftDir = ""
+	b.lastRightDir = ""
+	b.Stopped = true
+	b.StopWatcher()
+}
+
+// These functions are for watching the current directories in the file manager.
+func (b *App) SetRightDirWatch(path string) {
+	b.lastRightDir = path
+}
+
+func (b *App) SetLeftDirWatch(path string) {
+	b.lastLeftDir = path
+}
+
+func (b *App) CloseRightWatch() {
+	b.lastRightDir = ""
+}
+
+func (b *App) CloseLeftWatch() {
+	b.lastLeftDir = ""
+}
+
+func (b *App) StartWatcher() {
+	for !b.Stopped {
+		//
+		// Create the timer.
+		//
+		b.Timer = time.NewTimer(time.Second)
+
+		//
+		// Do the Job. check for changes in the current directories.
+		//
+		if b.lastLeftDir != "" {
+			leftFiles := b.ReadDir(b.lastLeftDir)
+			LenLeftFiles := len(leftFiles)
+			if LenLeftFiles != b.LenLeftFiles {
+				//
+				// The number of files have changed. Reload the directory.
+				//
+				b.LenLeftFiles = LenLeftFiles
+				rt.EventsEmit(b.ctx, "leftSideChange", "")
+			} else {
+				//
+				// See if a file name changed. This takes longer.
+				//
+				fileNames := ""
+				for i := 0; i < LenLeftFiles; i++ {
+					fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
+				}
+				if b.LeftHash != fileNames {
+					b.LeftHash = fileNames
+					rt.EventsEmit(b.ctx, "leftSideChange", "")
+				}
+			}
+		}
+		if b.lastRightDir != "" {
+			rightFiles := b.ReadDir(b.lastRightDir)
+			LenRightFiles := len(rightFiles)
+			if LenRightFiles != b.LenRightFiles {
+				//
+				// The number of files have changed. Reload the directory.
+				//
+				b.LenRightFiles = LenRightFiles
+				rt.EventsEmit(b.ctx, "RightSideChange", "")
+			} else {
+				//
+				// See if a file name changed. This takes longer.
+				//
+				fileNames := ""
+				for i := 0; i < LenRightFiles; i++ {
+					fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
+				}
+				if b.RightHash != fileNames {
+					b.RightHash = fileNames
+					rt.EventsEmit(b.ctx, "rightSideChange", "")
+				}
+			}
+		}
+
+		//
+		// Wait for the timer to finish.
+		//
+		<-b.Timer.C
+	}
+}
+
+func (b *App) StopWatcher() {
+	b.lastLeftDir = ""
+	b.lastRightDir = ""
+	b.Timer.Stop()
 }
 
 func (b *App) GetCommandLineCommands() []string {
@@ -196,7 +240,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 	if err != nil {
 		b.err = err.Error()
 	} else {
-		for _, file := range files {
+		for index, file := range files {
 			var fileInfo FileInfo
 			fileInfo.Name = file.Name()
 			fileInfo.Size = file.Size()
@@ -204,6 +248,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Modtime = file.ModTime().Format(time.ANSIC)
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
+			fileInfo.Index = index
 			result = append(result, fileInfo)
 		}
 	}
@@ -321,61 +366,6 @@ func (b *App) SetClip(msg string) {
 	}
 }
 
-func (b *App) SetRightDirWatch(path string) {
-	b.lastRightDir = path
-	if err := b.watcher.Add(path); err != nil {
-		b.err = err.Error()
-	}
-}
-
-func (b *App) SetLeftDirWatch(path string) {
-	b.lastLeftDir = path
-	if err := b.watcher.Add(path); err != nil {
-		b.err = err.Error()
-	}
-}
-
-func (b *App) CloseRightWatch() {
-	b.watcher.Remove(b.lastRightDir)
-}
-
-func (b *App) CloseLeftWatch() {
-	b.watcher.Remove(b.lastLeftDir)
-}
-
-func (b *App) AddWatcher(path string, wtype int, signame string) {
-	if wtype == 0 {
-		b.watcher.Add(path)
-	} else {
-		b.watcher.AddRecursive(path)
-	}
-	b.watchers = append(b.watchers, WatcherInfo{
-		Path:        path,
-		WatcherType: wtype,
-		SigName:     signame,
-	})
-}
-
-func (b *App) RemoveWatcher(path string, wtype int) {
-	if wtype == 0 {
-		b.watcher.Remove(path)
-	} else {
-		b.watcher.RemoveRecursive(path)
-	}
-
-	//
-	// Remove the watcher from the list of watchers
-	//
-	for i := 0; i < len(b.watchers); i++ {
-		if b.watchers[i].Path == path {
-			wailsruntime.EventsOff(b.ctx, b.watchers[i].SigName)
-			copy(b.watchers[i:], b.watchers[i+1:])
-			b.watchers[len(b.watchers)-1] = WatcherInfo{} // or the zero value of T
-			b.watchers = b.watchers[:len(b.watchers)-1]
-		}
-	}
-}
-
 func (b *App) GetEnvironment() []string {
 	return os.Environ()
 }
@@ -385,8 +375,7 @@ func (b *App) AppendPath(dir string, name string) string {
 }
 
 func (b *App) Quit() {
-	b.watcher.Close()
-	wailsruntime.Quit(b.ctx)
+	rt.Quit(b.ctx)
 }
 
 func (b *App) GetOSName() string {
@@ -411,15 +400,16 @@ func (b *App) GetGitHubThemes() []GitHubRepos {
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic theme", nil)
 	if err == nil {
-		total := *topics.Total;
+		total := *topics.Total
 		result = make([]GitHubRepos, total, total)
-		for i := 0; i<total; i++ {
+		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
 			result[i].Owner = *topics.Repositories[i].Owner.Login
 			result[i].URL = *topics.Repositories[i].CloneURL
 			result[i].Stars = *topics.Repositories[i].StargazersCount
 			result[i].Description = *topics.Repositories[i].Description
+			result[i].UpdatedAt = *topics.Repositories[i].UpdatedAt
 		}
 	}
 	return result
@@ -430,18 +420,17 @@ func (b *App) GetGitHubScripts() []GitHubRepos {
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic V2 in:topic extension", nil)
 	if err == nil {
-		total := *topics.Total;
+		total := *topics.Total
 		result = make([]GitHubRepos, total, total)
-		for i := 0; i<total; i++ {
+		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
 			result[i].Owner = *topics.Repositories[i].Owner.Login
 			result[i].URL = *topics.Repositories[i].CloneURL
 			result[i].Stars = *topics.Repositories[i].StargazersCount
 			result[i].Description = *topics.Repositories[i].Description
+			result[i].UpdatedAt = *topics.Repositories[i].UpdatedAt
 		}
 	}
 	return result
 }
-
-

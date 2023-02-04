@@ -6,7 +6,6 @@ require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/google/go-github/v49 v49.1.0
 	github.com/otiai10/copy v1.7.0
-	github.com/radovskyb/watcher v1.0.7
 	github.com/wailsapp/wails/v2 v2.3.1
 )
 

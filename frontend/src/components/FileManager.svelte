@@ -35,6 +35,7 @@
   import { shiftKey } from "../stores/shiftKey.js";
   import { key } from "../stores/key.js";
   import { processKey } from "../stores/processKey.js";
+  import * as rt from "../../dist/wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   const dispatch = createEventDispatcher();
 
@@ -47,31 +48,12 @@
   let msgBoxItems = null;
   let msgCallBack = () => {};
   let configDir = "";
-  let localConfig = null;
   let setEditDirFlagLeft = false;
   let setEditDirFlagRight = false;
   let showExtra = false;
   let showCommandPrompt = false;
   let leftEntries = {};
   let rightEntries = {};
-  let localCurrentCursor = {
-    pane: "left",
-    entry: {},
-  };
-  let localCurrentLeftFile = {};
-  let localCurrentRightFile = {};
-  let localTheme = {};
-  let localState = "normal";
-  let localLeftDir = {
-    fileSystemType: "macOS",
-    fileSystem: null,
-    path: "",
-  };
-  let localRightDir = {
-    fileSystemType: "macOS",
-    fileSystem: null,
-    path: "",
-  };
   let rightDOM = null;
   let leftDOM = null;
   let containerDOM = null;
@@ -80,7 +62,6 @@
   let userEditor = ".myeditorchoice";
   let OStype = "macOS";
   let stateMaps = [];
-  let localStateMapColors = [];
   let showGitHub = false;
   let numberAcc = "";
   let lastCommand = "";
@@ -133,67 +114,42 @@
       //
       // Create the default configuration and save it.
       //
-      localConfig = await OS.getConfig();
+      $config = await OS.getConfig();
       const cfgFile = await OS.appendPath(configDir, "config.json");
-      await OS.writeFile(cfgFile, JSON.stringify(localConfig));
+      await OS.writeFile(cfgFile, JSON.stringify($config));
     } else {
       //
       // Read in the local configuration.
       //
       var configFile = await OS.appendPath(configDir, "config.json");
-      localConfig = await OS.readFile(configFile);
-      localConfig = JSON.parse(localConfig);
+      $config = await OS.readFile(configFile);
+      $config = JSON.parse($config);
     }
-
-    //
-    // Here, we are subscribing to the different stores and setting their
-    // default values;
-    //
-    var unsubscribeLeftDir = leftDir.subscribe((value) => {
-      localLeftDir = value;
-    });
-    var unsubscribeRightDir = rightDir.subscribe((value) => {
-      localRightDir = value;
-    });
 
     //
     // Setup the application to be in the user's home directory.
     //
-    localLeftDir.path = await OS.getHomeDir();
-    localLeftDir.fileSystemType = OStype;
-    localLeftDir.fileSystem = OS;
-    localRightDir.path = localLeftDir.path;
-    localRightDir.fileSystemType = OStype;
-    localRightDir.fileSystem = OS;
+    $leftDir.path = await OS.getHomeDir();
+    $leftDir.fileSystemType = OStype;
+    $leftDir.fileSystem = OS;
+    $rightDir.path = $leftDir.path;
+    $rightDir.fileSystemType = OStype;
+    $rightDir.fileSystem = OS;
 
     //
     // Get the files.
     //
-    leftEntries = await OS.getDirList(localLeftDir.path);
-    rightEntries = await OS.getDirList(localRightDir.path);
+    leftEntries = await OS.getDirList($leftDir.path);
+    rightEntries = await OS.getDirList($rightDir.path);
 
-    //
-    // Set the stores to their proper value.
-    //
-    $leftDir = localLeftDir;
-    $rightDir = localRightDir;
-
-    var unsubscribeCurrentCursor = currentCursor.subscribe((value) => {
-      localCurrentCursor = value;
-    });
     $currentCursor = {
       pane: "left",
       entry: leftEntries[0],
+      index: 0,
     };
-    var unsubscribeCurrentLeftFile = currentLeftFile.subscribe((value) => {
-      localCurrentLeftFile = value;
-    });
     $currentLeftFile = {
       entry: leftEntries[0],
     };
-    var unsubscribeCurrentRightFile = currentRightFile.subscribe((value) => {
-      localCurrentRightFile = value;
-    });
     $currentRightFile = {
       entry: rightEntries[0],
     };
@@ -203,11 +159,6 @@
       //
       if (typeof value.backgroundColor !== "undefined") {
         //
-        // Keep a local copy.
-        //
-        localTheme = value;
-
-        //
         // Save the new theme values.
         //
         const tfile = await OS.appendPath(configDir, "theme.json");
@@ -216,19 +167,12 @@
         //
         // Set the default state map colors.
         //
-        localStateMapColors["normal"] = localTheme.normalbackgroundColor;
-        localStateMapColors["insert"] = localTheme.insertbackgroundColor;
-        localStateMapColors["visual"] = localTheme.visualbackgroundColor;
-        $stateMapColors = localStateMapColors;
+        $stateMapColors["normal"] = value.normalbackgroundColor;
+        $stateMapColors["insert"] = value.insertbackgroundColor;
+        $stateMapColors["visual"] = value.visualbackgroundColor;
       }
     });
-    var unsubscriptStateMapColors = stateMapColors.subscribe((value) => {
-      localStateMapColors = value;
-    });
-    var unsubscribeInputState = inputState.subscribe((value) => {
-      localState = value;
-    });
-    $inputState = localState;
+    $inputState = "normal";
 
     //
     // Setup the user editor data file.
@@ -250,13 +194,13 @@
     $config = {
       configDir: configDir,
       OS: OS,
-      configuration: localConfig,
+      configuration: $config,
       commands: commands,
       extensions: extensions,
       userEditor: userEditor,
     };
-    OS.setConfig(localConfig);
-    extensions.setConfig(localConfig);
+    OS.setConfig($config);
+    extensions.setConfig($config);
 
     //
     // Load the extensions, keyboard, and theme.
@@ -297,18 +241,20 @@
     }
 
     //
+    // Listen for events from the backend.
+    //
+    rt.EventsOn("leftSideChange", () => {
+      refreshLeftPane();
+    });
+    rt.EventsOn("rightSideChange", () => {
+      refreshRightPane();
+    });
+
+    //
     // return a command to unsubscribe from everything.
     //
     return () => {
-      unsubscribeKeyProcess();
-      unsubscribeInputState();
       unsubscribeTheme();
-      unsubscribeCurrentRightFile();
-      unsubscribeCurrentLeftFile();
-      unsubscribeCurrentCursor();
-      unsubscribeRightDir();
-      unsubscribeLeftDir();
-      unsubscriptStateMapColors();
     };
   });
 
@@ -326,7 +272,7 @@
       //
       // Setup the Dracula Pro as default theme colors:
       //
-      localTheme = {
+      $theme = {
         font: "Fira Code, Menlo",
         fontSize: "12pt",
         cursorColor: "#363443",
@@ -350,27 +296,26 @@
       //
       // Save the default theme.
       //
-      await OS.writeFile(thFile, JSON.stringify(localTheme));
+      await OS.writeFile(thFile, JSON.stringify($theme));
     } else {
       //
       // Load the theme saved.
       //
       const rawThFile = await OS.readFile(thFile);
-      localTheme = JSON.parse(rawThFile);
+      $theme = JSON.parse(rawThFile);
     }
 
     //
     // Get the stateMapColors setup.
     //
-    localStateMapColors["normal"] = localTheme.normalbackgroundColor;
-    localStateMapColors["insert"] = localTheme.insertbackgroundColor;
-    localStateMapColors["visual"] = localTheme.visualbackgroundColor;
-    stateMapColors.set(localStateMapColors);
+    $stateMapColors["normal"] = $theme.normalbackgroundColor;
+    $stateMapColors["insert"] = $theme.insertbackgroundColor;
+    $stateMapColors["visual"] = $theme.visualbackgroundColor;
 
     //
     // Set the theme.
     //
-    theme.set(localTheme);
+    $theme = $theme;
 
     //
     // Setup Extensions.
@@ -391,7 +336,7 @@
     extensions.setExtensionDir(extDir);
     extensions.setCommands(commands);
     extensions.setFileSystems(filesystems);
-    await extensions.load(localConfig, OS);
+    await extensions.load($config, OS);
     installDefaultExtCommands();
     extensions.init();
   }
@@ -927,7 +872,7 @@
       //
 
       const command = getCommand(
-        stateMaps[localState],
+        stateMaps[$inputState],
         key,
         cKey,
         sKey,
@@ -961,8 +906,7 @@
 
   function createNewMode(name, color) {
     stateMaps[name] = [];
-    localStateMapColors[name] = color;
-    stateMapColors.set(localStateMapColors);
+    $stateMapColors[name] = color;
   }
 
   function getCommand(map, key, cKey, sKey, mKey, aKey) {
@@ -988,7 +932,7 @@
   }
 
   function selectAll() {
-    if (localCurrentCursor.pane == "left") {
+    if ($currentCursor.pane == "left") {
       leftEntries.forEach((item) => {
         item.selected = true;
       });
@@ -1002,7 +946,7 @@
   }
 
   function unselectAll() {
-    if (localCurrentCursor.pane == "left") {
+    if ($currentCursor.pane == "left") {
       leftEntries.forEach((item) => {
         item.selected = false;
       });
@@ -1034,74 +978,80 @@
     $saved.sideqs = null;
   }
 
-  function setCursor(fname) {
+  async function setCursor(fname) {
     var index = 0;
-    if (localCurrentCursor.pane == "left") {
+    if ($currentCursor.pane == "left") {
+      leftEntries = await OS.getDirList($leftDir.path);
       index = leftEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
-      currentCursor.set({
+      $currentCursor = {
         pane: "left",
         entry: leftEntries[index],
-      });
-      currentLeftFile.set({
+        index: index,
+      };
+      $currentLeftFile = {
         entry: leftEntries[index],
-      });
+      };
     } else {
+      rightEntries = await OS.getDirList($rightDir.path);
       index = rightEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
-      currentCursor.set({
+      $currentCursor = {
         pane: "right",
         entry: rightEntries[index],
-      });
-      currentRightFile.set({
+        index: index,
+      };
+      $currentRightFile = {
         entry: rightEntries[index],
-      });
+      };
     }
   }
 
   function moveCursorDown() {
     var index = 0;
-    if (localCurrentCursor.pane.includes("left")) {
-      if (leftEntries.length !== 0) {
+    if ($currentCursor.pane.includes("left")) {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index < leftEntries.length - 1) {
           index += 1;
         }
-        currentCursor.set({
+        $currentCursor = {
           pane: "left",
           entry: leftEntries[index],
-        });
-        currentLeftFile.set({
+          index: index,
+        };
+        $currentLeftFile = {
           entry: leftEntries[index],
-        });
+        };
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index < rightEntries.length - 1) {
           index += 1;
         }
-        currentCursor.set({
+        $currentCursor = {
           pane: "right",
           entry: rightEntries[index],
-        });
-        currentRightFile.set({
+          index: index,
+        };
+        $currentRightFile = {
           entry: rightEntries[index],
-        });
+        };
       }
     }
   }
 
   function moveCursorDownWithSelect() {
     var index = 0;
-    if (localCurrentCursor.pane.includes("left")) {
-      if (leftEntries.length !== 0) {
+    if ($currentCursor.pane.includes("left")) {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
         var entry = leftEntries[index];
@@ -1111,18 +1061,19 @@
           index += 1;
         }
         entry = leftEntries[index];
-        currentCursor.set({
+        $currentCursor = {
           pane: "left",
           entry: entry,
-        });
-        currentLeftFile.set({
+          index: index,
+        };
+        $currentLeftFile = {
           entry: entry,
-        });
+        };
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
         var entry = rightEntries[index];
@@ -1132,62 +1083,65 @@
           index += 1;
         }
         entry = rightEntries[index];
-        currentCursor.set({
+        $currentCursor = {
           pane: "right",
           entry: entry,
-        });
-        currentRightFile.set({
+          index: index,
+        };
+        $currentRightFile = {
           entry: entry,
-        });
+        };
       }
     }
   }
 
   function moveCursorUp() {
     var index = 0;
-    if (localCurrentCursor.pane.includes("left")) {
-      if (leftEntries.length !== 0) {
+    if ($currentCursor.pane.includes("left")) {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index > 0) {
           index -= 1;
         }
         if (index === -1) index = 0;
-        currentCursor.set({
+        $currentCursor = {
           pane: "left",
           entry: leftEntries[index],
-        });
-        currentLeftFile.set({
+          index: index,
+        };
+        $currentLeftFile = {
           entry: leftEntries[index],
-        });
+        };
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index > 0) {
           index -= 1;
         }
         if (index === -1) index = 0;
-        currentCursor.set({
+        $currentCursor = {
           pane: "right",
           entry: rightEntries[index],
-        });
-        currentRightFile.set({
+          index: index,
+        };
+        $currentRightFile = {
           entry: rightEntries[index],
-        });
+        };
       }
     }
   }
 
   function moveCursorUpWithSelect() {
     var index = 0;
-    if (localCurrentCursor.pane.includes("left")) {
-      if (leftEntries.length !== 0) {
+    if ($currentCursor.pane.includes("left")) {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
         var entry = leftEntries[index];
@@ -1197,18 +1151,19 @@
           index -= 1;
         }
         entry = leftEntries[index];
-        currentCursor.set({
+        $currentCursor = {
           pane: "left",
           entry: entry,
-        });
-        currentLeftFile.set({
+          index: index,
+        };
+        $currentLeftFile = {
           entry: entry,
-        });
+        };
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == localCurrentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
         var entry = rightEntries[index];
@@ -1218,20 +1173,20 @@
           index -= 1;
         }
         entry = rightEntries[index];
-        currentCursor.set({
+        $currentCursor = {
           pane: "right",
           entry: entry,
-        });
-        currentRightFile.set({
+          index: index,
+        };
+        $currentRightFile = {
           entry: entry,
-        });
+        };
       }
     }
   }
 
   function changeMode(newMode) {
-    inputState.set(newMode);
-    localState = newMode;
+    $inputState = newMode;
   }
 
   function changeModeNormal() {
@@ -1247,15 +1202,15 @@
   }
 
   async function openOppositePanel() {
-    var nEntry = localCurrentCursor.entry.dir;
-    if (localCurrentCursor.entry.type === 1) {
-      nEntry = await localCurrentCursor.entry.fileSystem.appendPath(
-        localCurrentCursor.entry.dir,
-        localCurrentCursor.entry.name
+    var nEntry = $currentCursor.entry.dir;
+    if ($currentCursor.entry.type === 1) {
+      nEntry = await $currentCursor.entry.fileSystem.appendPath(
+        $currentCursor.entry.dir,
+        $currentCursor.entry.name
       );
     }
-    if (localCurrentCursor.pane === "right") {
-      changeDir(
+    if ($currentCursor.pane === "right") {
+      await changeDir(
         {
           path: nEntry,
           cursor: true,
@@ -1264,7 +1219,7 @@
         ""
       );
     } else {
-      changeDir(
+      await changeDir(
         {
           path: nEntry,
           cursor: true,
@@ -1277,8 +1232,8 @@
 
   async function goHome() {
     var entry = await OS.getHomeDir();
-    if (localCurrentCursor.pane === "right") {
-      changeDir(
+    if ($currentCursor.pane === "right") {
+      await changeDir(
         {
           path: entry,
           cursor: true,
@@ -1287,7 +1242,7 @@
         ""
       );
     } else {
-      changeDir(
+      await changeDir(
         {
           path: entry,
           cursor: true,
@@ -1300,29 +1255,45 @@
 
   function cursorToPane(npane) {
     if (npane == "right") {
-      currentCursor.set({
+      let index = rightEntries.findIndex(
+        (item) => item.name === $currentCursor.entry.name
+      );
+      $currentCursor = {
         pane: "right",
-        entry: localCurrentRightFile.entry,
-      });
+        entry: $currentRightFile.entry,
+        index: index,
+      };
     } else {
-      currentCursor.set({
+      let index = leftEntries.findIndex(
+        (item) => item.name === $currentCursor.entry.name
+      );
+      $currentCursor = {
         pane: "left",
-        entry: localCurrentLeftFile.entry,
-      });
+        entry: $currentLeftFile.entry,
+        index: index,
+      };
     }
   }
 
   function cursorToNextPane() {
-    if (localCurrentCursor.pane == "left") {
-      currentCursor.set({
+    if ($currentCursor.pane == "left") {
+      let index = rightEntries.findIndex(
+        (item) => item.name === $currentCursor.entry.name
+      );
+      $currentCursor = {
         pane: "right",
-        entry: localCurrentRightFile.entry,
-      });
+        entry: $currentRightFile.entry,
+        index: index,
+      };
     } else {
-      currentCursor.set({
+      let index = leftEntries.findIndex(
+        (item) => item.name === $currentCursor.entry.name
+      );
+      $currentCursor = {
         pane: "left",
-        entry: localCurrentLeftFile.entry,
-      });
+        entry: $currentLeftFile.entry,
+        index: index,
+      };
     }
   }
 
@@ -1333,29 +1304,29 @@
     }
   }
 
-  function reloadPane() {
-    changeDir(
+  async function reloadPane() {
+    await changeDir(
       {
-        path: localCurrentCursor.entry.dir,
+        path: $currentCursor.entry.dir,
         cursor: true,
       },
-      localCurrentCursor.pane,
-      localCurrentCursor.entry.name
+      $currentCursor.pane,
+      $currentCursor.entry.name
     );
   }
 
   async function changeDir(dirOb, npane, name) {
     var ndir = dirOb.path;
-    if (typeof npane === "undefined") npane = localCurrentCursor.pane;
+    if (typeof npane === "undefined") npane = $currentCursor.pane;
     if (typeof dirOb.cursor === "undefined") dirOb.cursor = true;
     if (typeof name === "undefined") name = "";
     if (npane == "left") {
-      leftDir.set({
+      $leftDir = {
         path: ndir,
-        fileSystemType: localLeftDir.fileSystemType,
-        fileSystem: localLeftDir.fileSystem,
-      });
-      leftEntries = await localLeftDir.fileSystem.getDirList(ndir);
+        fileSystemType: $leftDir.fileSystemType,
+        fileSystem: $leftDir.fileSystem,
+      };
+      leftEntries = await $leftDir.fileSystem.getDirList(ndir);
 
       if ($saved.lockqs && $saved.sideqs === "left") {
         leftEntries = leftEntries.filter((item) =>
@@ -1363,59 +1334,63 @@
         );
       }
 
-      if (leftEntries.length !== 0) {
-        var entry = leftEntries.filter((item) => item.name === name);
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
+        let index = leftEntries.findIndex((item) => item.name === name);
+        if (index === -1) index = 0;
+        let entry = leftEntries[index];
         if (entry.length !== 0) {
-          currentLeftFile.set({
-            entry: entry[0],
+          $currentLeftFile = {
+            entry: entry,
             pane: npane,
-          });
+          };
           if (dirOb.cursor) {
-            currentCursor.set({
-              entry: entry[0],
+            $currentCursor = {
+              entry: entry,
               pane: npane,
-            });
+              index: index,
+            };
           }
         } else {
-          currentLeftFile.set({ entry: leftEntries[0], pane: npane });
+          $currentLeftFile = { entry: leftEntries[0], pane: npane };
           if (dirOb.cursor) {
-            currentCursor.set({ entry: leftEntries[0], pane: npane });
+            $currentCursor = { entry: leftEntries[0], pane: npane, index: 0 };
           }
         }
       } else {
-        currentLeftFile.set({
+        $currentLeftFile = {
           entry: {
             name: "",
             size: "",
-            type: localLeftDir.fileSystemType,
-            fileSystem: localLeftDir.fileSystem,
+            type: $leftDir.fileSystemType,
+            fileSystem: $leftDir.fileSystem,
             dir: ndir,
             datetime: "",
             selected: false,
           },
-        });
+        };
         if (dirOb.cursor) {
-          currentCursor.set({
+          $currentCursor = {
             entry: {
               name: "",
               size: "",
-              type: localLeftDir.fileSystemType,
-              fileSystem: localLeftDir.fileSystem,
+              type: $leftDir.fileSystemType,
+              fileSystem: $leftDir.fileSystem,
               dir: ndir,
               datetime: "",
               selected: false,
             },
             pane: npane,
-          });
+            index: 0,
+          };
         }
       }
     } else {
-      rightDir.set({
+      $rightDir = {
         path: ndir,
-        fileSystemType: localRightDir.fileSystemType,
-        fileSystem: localRightDir.fileSystem,
-      });
-      rightEntries = await localRightDir.fileSystem.getDirList(ndir);
+        fileSystemType: $rightDir.fileSystemType,
+        fileSystem: $rightDir.fileSystem,
+      };
+      rightEntries = await $rightDir.fileSystem.getDirList(ndir);
 
       if ($saved.lockqs && $saved.sideqs === "right") {
         rightEntries = rightEntries.filter((item) =>
@@ -1423,50 +1398,57 @@
         );
       }
 
-      if (rightEntries.length !== 0) {
-        var entry = rightEntries.filter((item) => item.name === name);
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
+        let index = rightEntries.findIndex((item) => item.name === name);
+        let entry = rightEntries[index];
         if (entry.length !== 0) {
-          currentRightFile.set({
-            entry: entry[0],
+          $currentRightFile = {
+            entry: entry,
             pane: npane,
-          });
+          };
           if (dirOb.cursor) {
-            currentCursor.set({
-              entry: entry[0],
+            $currentCursor = {
+              entry: entry,
               pane: npane,
-            });
+              index: index,
+            };
           }
         } else {
-          currentRightFile.set({ entry: rightEntries[0], pane: npane });
+          $currentRightFile = { entry: rightEntries[0], pane: npane };
           if (dirOb.cursor) {
-            currentCursor.set({ entry: rightEntries[0], pane: npane });
+            $currentCursor = {
+              entry: rightEntries[0],
+              pane: npane,
+              index: 0,
+            };
           }
         }
       } else {
-        currentRightFile.set({
+        $currentRightFile = {
           entry: {
             name: "",
             size: "",
-            type: localRightDir.fileSystemType,
-            fileSystem: localRightDir.fileSystem,
+            type: $rightDir.fileSystemType,
+            fileSystem: $rightDir.fileSystem,
             dir: ndir,
             datetime: "",
             selected: false,
           },
-        });
+        };
         if (dirOb.cursor) {
-          currentCursor.set({
+          $currentCursor = {
             entry: {
               name: "",
               size: "",
-              type: localRightDir.fileSystemType,
-              fileSystem: localRightDir.fileSystem,
+              type: $rightDir.fileSystemType,
+              fileSystem: $rightDir.fileSystem,
               dir: ndir,
               datetime: "",
               selected: false,
             },
             pane: npane,
-          });
+            index: 0,
+          };
         }
       }
     }
@@ -1477,99 +1459,99 @@
   }
 
   async function actionEntry() {
-    if (localCurrentCursor.entry.type === 0) {
+    if ($currentCursor.entry.type === 0) {
       //
       // It is a file. Open it.
       //
-      openFile(localCurrentCursor.entry);
+      openFile($currentCursor.entry);
     } else {
       //
       // It is a directory. Go down a level.
       //
-      var ndir = await localCurrentCursor.entry.fileSystem.appendPath(
-        localCurrentCursor.entry.dir,
-        localCurrentCursor.entry.name
+      var ndir = await $currentCursor.entry.fileSystem.appendPath(
+        $currentCursor.entry.dir,
+        $currentCursor.entry.name
       );
-      changeDir(
+      await changeDir(
         {
           path: ndir,
           cursor: true,
         },
-        localCurrentCursor.pane,
+        $currentCursor.pane,
         ""
       );
     }
   }
 
-  function goUpDir() {
-    var sep = localCurrentCursor.entry.fileSystem.sep;
-    var parts = localCurrentCursor.entry.dir.split(sep);
+  async function goUpDir() {
+    var sep = $currentCursor.entry.fileSystem.sep;
+    var parts = $currentCursor.entry.dir.split(sep);
     if (parts.length > 0) {
       var newDir = parts.slice(0, parts.length - 1).join(sep);
       if (newDir == "") newDir = sep;
-      changeDir(
+      await changeDir(
         {
           path: newDir,
           cursor: true,
         },
-        localCurrentCursor.pane,
+        $currentCursor.pane,
         parts[parts.length - 1]
       );
-      setCursor(parts[parts.length - 1]);
+      await setCursor(parts[parts.length - 1]);
     }
   }
 
   async function goDownDir() {
-    if (localCurrentCursor.entry.type === 1) {
-      var newDir = await localCurrentCursor.entry.fileSystem.appendPath(
-        localCurrentCursor.entry.dir,
-        localCurrentCursor.entry.name
+    if ($currentCursor.entry.type === 1) {
+      var newDir = await $currentCursor.entry.fileSystem.appendPath(
+        $currentCursor.entry.dir,
+        $currentCursor.entry.name
       );
-      changeDir(
+      await changeDir(
         {
           path: newDir,
           cursor: true,
         },
-        localCurrentCursor.pane,
+        $currentCursor.pane,
         ""
       );
     }
   }
 
-  function goBottomFile() {
-    if (localCurrentCursor.pane == "left") {
-      if (leftEntries.length !== 0) {
+  async function goBottomFile() {
+    if ($currentCursor.pane == "left") {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         const last = leftEntries[leftEntries.length - 1];
-        setCursor(last.name);
+        await setCursor(last.name);
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         const last = rightEntries[rightEntries.length - 1];
-        setCursor(last.name);
+        await setCursor(last.name);
       }
     }
   }
 
-  function goTopFile() {
-    if (localCurrentCursor.pane == "left") {
-      if (leftEntries.length !== 0) {
+  async function goTopFile() {
+    if ($currentCursor.pane == "left") {
+      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         var top = leftEntries[0];
-        setCursor(top.name);
+        await setCursor(top.name);
       }
     } else {
-      if (rightEntries.length !== 0) {
+      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         var top = rightEntries[0];
-        setCursor(top.name);
+        await setCursor(top.name);
       }
     }
   }
 
   function getCurrentFile() {
-    return localCurrentCursor.entry;
+    return $currentCursor.entry;
   }
 
   function getCurrentPane() {
-    return localCurrentCursor.pane;
+    return $currentCursor.pane;
   }
 
   function getLastError() {
@@ -1578,70 +1560,29 @@
 
   function deleteEntries() {
     var entries = getSelectedFiles();
-    if (entries.length === 0) {
+    if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
-      entries.push(localCurrentCursor.entry);
-      localCurrentCursor.entry = null;
+      entries.push($currentCursor.entry);
     }
     deleteEntriesCommand(entries);
   }
 
   async function deleteEntriesCommand(entries) {
-/*    msgBoxConfig = {
-      title: "Deleting Entries",
-      noShowButton: true,
-    };
-    msgBoxItems = [];
-    msgBoxItems.push({
-      type: "label",
-      name: "msgboxMain",
-      for: "progress1",
-      text: "Deleting " + entries.length + " Entries...",
-    });
-    msgBoxItems.push({
-      type: "spinner",
-      name: "progress1",
-      value: 1,
-    });
-    msgBoxItems = msgBoxItems;
-    msgCallBack = () => {
-      showMessageBox = false;
-    };
-    addSpinner("progress1", 1);
-    //
-    // It is all set up. Show the message box.
-    //
-    showMessageBox = true;
-*/
-
-    for (var i = 0; i < entries.length; i++) {
-//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
-      await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
-        if (err) {
-//          updateSpinner("progress1", 100);
-          refreshPanes();
-
-          //
-          // Remove the spinner from being checked.
-          //
-//          clearSpinners();
-        }
-        if (i === (entries.length - 1)) {
-//          showMessageBox = false;
-
-          //
-          // Remove the spinner from being checked.
-          //
-//          removeSpinner("progress1");
-        }
-      });
+    if (typeof entries !== 0) {
+      for (var i = 0; i < entries.length; i++) {
+        await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
+          if (err) {
+            refreshPanes();
+          }
+        });
+      }
     }
     //
     // Refresh the side deleted from.
     //
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -1656,101 +1597,64 @@
   function copyEntries() {
     var entries = getSelectedFiles();
     var sel = true;
-    if (entries.length === 0) {
+    if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
-      entries.push(localCurrentCursor.entry);
+      entries.push($currentCursor.entry);
       sel = false;
     }
     var otherPane;
-    if (localCurrentCursor.pane === "left") {
-      otherPane = { ...localCurrentRightFile.entry };
+    if ($currentCursor.pane === "left") {
+      otherPane = { ...$currentRightFile.entry };
     } else {
-      otherPane = { ...localCurrentLeftFile.entry };
+      otherPane = { ...$currentLeftFile.entry };
     }
     otherPane.name = "";
     copyEntriesCommand(entries, otherPane, sel);
   }
 
   async function copyEntriesCommand(entries, otherPane, sel) {
-/*    msgBoxConfig = {
-      title: "Copying Entries",
-      noShowButton: true,
-    };
-    msgBoxItems = [];
-    msgBoxItems.push({
-      type: "label",
-      name: "msgboxMain",
-      for: "progress1",
-      text: "Copying " + entries.length + " Entries...",
-    });
-    msgBoxItems.push({
-      type: "spinner",
-      name: "progress1",
-      value: 1,
-    });
-    msgBoxItems = msgBoxItems;
-    msgCallBack = () => {
-      showMessageBox = false;
-    };
-    addSpinner("progress1", 1);
+    if (typeof entries !== "undefined") {
+      for (var i = 0; i < entries.length; i++) {
+        await entries[i].fileSystem.copyEntries(
+          entries[i],
+          otherPane,
+          (err, stdout) => {
+            if (err) {
+              refreshPanes();
+            } else if (i === entries.length - 1) {
+              //            showMessageBox = false;
+              $keyProcess = true;
 
-    //
-    // It is all set up. Show the message box.
-    //
-    showMessageBox = true;
-*/
-    for (var i = 0; i < entries.length; i++) {
-//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
-      await entries[i].fileSystem.copyEntries(
-        entries[i],
-        otherPane,
-        (err, stdout) => {
-          if (err) {
-//            updateSpinner("progress1", 100);
-            refreshPanes();
+              //
+              // Refresh the side copied to.
+              //
+              if ($currentCursor.pane === "left") {
+                refreshRightPane();
+              } else {
+                refreshLeftPane();
+              }
 
-            //
-            // Remove the spinner from being checked.
-            //
-//            clearSpinners();
-          } else if (i === (entries.length - 1)) {
-//            showMessageBox = false;
-            $keyProcess = true;
-
-            //
-            // Refresh the side copied to.
-            //
-            if (localCurrentCursor.pane === "left") {
-              refreshRightPane();
-            } else {
-              refreshLeftPane();
+              //
+              // clear out the selections.
+              //
+              if (sel) clearSelectedFiles();
             }
-
-            //
-            // clear out the selections.
-            //
-            if (sel) clearSelectedFiles();
-
-            //
-            // Remove the spinner from being checked.
-            //
-//            removeSpinner("progress1");
           }
-        }
-      );
+        );
+      }
     }
   }
 
   function swapPanels() {
-    var npane = localCurrentCursor.pane === "left" ? "right" : "left";
-    tmp = localCurrentLeftFile;
-    currentLeftFile.set(localCurrentRightFile);
-    currentRightFile.set(tmp);
-    tmp = localLeftDir;
-    leftDir.set(localRightDir);
-    rightDir.set(tmp);
+    var npane = $currentCursor.pane === "left" ? "right" : "left";
+    tmp = $currentLeftFile;
+    $currentLeftFile = $currentRightFile;
+    $currentRightFile = tmp;
+    tmp = $leftDir;
+    $leftDir = $rightDir;
+    $rightDir = tmp;
     var tmp = rightEntries;
     rightEntries = leftEntries;
     leftEntries = tmp;
@@ -1759,7 +1663,7 @@
   }
 
   function editEntry() {
-    editEntryCommand(localCurrentCursor.entry);
+    editEntryCommand($currentCursor.entry);
   }
 
   async function editEntryCommand(entry) {
@@ -1806,27 +1710,27 @@
 
   async function duplicateEntry() {
     var newName = "";
-    if (localCurrentCursor.entry.name[0] === ".") {
-      newName = localCurrentCursor.entry.name + "-copy";
+    if ($currentCursor.entry.name[0] === ".") {
+      newName = $currentCursor.entry.name + "-copy";
     } else {
-      newName = localCurrentCursor.entry.name.split(".");
+      newName = $currentCursor.entry.name.split(".");
       if (newName.length >= 2) {
         newName[newName.length - 2] = newName[newName.length - 2] + "-copy";
         newName = newName.join(".");
       } else {
-        newName = localCurrentCursor.entry.name + "-copy";
+        newName = $currentCursor.entry.name + "-copy";
       }
     }
-    var nEntry = { ...localCurrentCursor.entry };
+    var nEntry = { ...$currentCursor.entry };
     nEntry.name = newName;
-    await localCurrentCursor.entry.fileSystem.copyEntries(
-      localCurrentCursor.entry,
+    await $currentCursor.entry.fileSystem.copyEntries(
+      $currentCursor.entry,
       nEntry
     );
     //
     // Refresh the file list.
     //
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -1835,80 +1739,40 @@
 
   function moveEntries() {
     var entries = getSelectedFiles();
-    if (entries.length === 0) {
+    if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
-      entries.push(localCurrentCursor.entry);
+      entries.push($currentCursor.entry);
     }
     var otherPane =
-      localCurrentCursor.pane === "left"
-        ? localCurrentRightFile.entry
-        : localCurrentLeftFile.entry;
+      $currentCursor.pane === "left"
+        ? $currentRightFile.entry
+        : $currentLeftFile.entry;
     moveEntriesCommand(entries, otherPane);
   }
 
   async function moveEntriesCommand(entries, otherPane) {
-/*    msgBoxConfig = {
-      title: "Moving Entries",
-      noShowButton: true,
-    };
-    msgBoxItems = [];
-    msgBoxItems.push({
-      type: "label",
-      name: "msgboxMain",
-      for: "progress1",
-      text: "Moving " + entries.length + " Entries...",
-    });
-    msgBoxItems.push({
-      type: "spinner",
-      name: "progress1",
-      value: 1,
-    });
-    msgBoxItems = msgBoxItems;
-    msgCallBack = () => {
-      showMessageBox = false;
-    };
-    addSpinner("progress1", 1);
-
-    //
-    // It is all set up. Show the message box.
-    //
-    showMessageBox = true;
-*/
-    for (var i = 0; i < entries.length; i++) {
-//      updateSpinner("progress1", ((i + 1) / entries.length) * 100);
-      await entries[i].fileSystem.moveEntries(
-        entries[i],
-        otherPane,
-        (err, stdout) => {
-          if (err) {
-//            updateSpinner("progress1", 100);
-
-            //
-            // Refresh both sides.
-            //
-            refreshPanes();
-
-            //
-            // Remove the spinner from being checked.
-            //
-//            clearSpinners();
-          } else if (i === (entries.length - 1)) {
-//            showMessageBox = false;
-
-            //
-            // Refresh both sides.
-            //
-            refreshPanes();
-
-            //
-            // Remove the spinner from being checked.
-            //
-//            removeSpinner("progress1");
+    if (typeof entries !== "undefined") {
+      for (var i = 0; i < entries.length; i++) {
+        await entries[i].fileSystem.moveEntries(
+          entries[i],
+          otherPane,
+          (err, stdout) => {
+            if (err) {
+              //
+              // Refresh both sides.
+              //
+              refreshPanes();
+            } else if (i === entries.length - 1) {
+              //
+              // Refresh both sides.
+              //
+              refreshPanes();
+            }
           }
-        }
-      );
+        );
+      }
     }
     refreshPanes();
     $keyProcess = true;
@@ -1918,9 +1782,7 @@
     //
     // Refresh right pane.
     //
-    rightEntries = await localRightDir.fileSystem.getDirList(
-      localRightDir.path
-    );
+    rightEntries = await $rightDir.fileSystem.getDirList($rightDir.path);
 
     if ($saved.lockqs && $saved.sideqs === "right") {
       rightEntries = rightEntries.filter((item) =>
@@ -1928,44 +1790,69 @@
       );
     }
 
-    var current = currentRightFile.entry;
-    if (rightEntries.length == 0) {
+    var current = $currentRightFile.entry;
+    if (
+      typeof rightEntries !== "undefined" &&
+      (rightEntries.length == 0 ||
+        typeof current === "undefined" ||
+        current === null)
+    ) {
       current = {
         name: "",
-        dir: localRightDir.path,
-        fileSystemType: localRightDir.fileSystemType,
-        fileSystem: localRightDir.fileSystem,
+        dir: $rightDir.path,
+        fileSystemType: $rightDir.fileSystemType,
+        fileSystem: $rightDir.fileSystem,
         selected: false,
         datetime: "",
         type: 0,
         size: 0,
         stats: null,
+        index: 0,
       };
     } else {
-      if (
-        typeof current === "undefined" ||
-        current === null ||
-        rightEntries.filter((item) => item.name === current.name).length === 0
-      ) {
-        current = rightEntries[0];
+      if (typeof current.index === "undefined") {
+        current.index = 0;
+      }
+      //
+      // Try to find the original file.
+      //
+      let newIndex = rightEntries.findIndex(
+        (item) => item.name === current.name
+      );
+      if (newIndex === -1) {
+        //
+        // original file has disappeared. Set to the closest match.
+        //
+        newIndex = current.index;
+        while (newIndex >= 0 && typeof rightEntries[newIndex] === "undefined") {
+          newIndex--;
+        }
+        current = rightEntries[newIndex];
+        current.index = newIndex;
+      } else {
+        //
+        // It is found! Set the new index value.
+        //
+        current.index = newIndex;
       }
     }
-    if (localCurrentCursor.pane == "right") {
-      currentCursor.set({
+    if ($currentCursor.pane === "right") {
+      $currentCursor = {
         entry: current,
         pane: "right",
-      });
+        index: current.index,
+      };
     }
-    currentRightFile.set({
+    $currentRightFile = {
       entry: current,
-    });
+    };
   }
 
   async function refreshLeftPane() {
     //
     // Refresh left pane.
     //
-    leftEntries = await localLeftDir.fileSystem.getDirList(localLeftDir.path);
+    leftEntries = await $leftDir.fileSystem.getDirList($leftDir.path);
 
     if ($saved.lockqs && $saved.sideqs === "left") {
       leftEntries = leftEntries.filter((item) =>
@@ -1973,38 +1860,66 @@
       );
     }
 
-    var current = currentLeftFile.entry;
-    if (leftEntries.length === 0) {
+    var current = $currentLeftFile.entry;
+    if (
+      typeof leftEntries !== "undefined" &&
+      (leftEntries.length === 0 ||
+        typeof current === "undefined" ||
+        current === null)
+    ) {
+      //
+      // If there are no entries, set current to a blank.
+      //
       current = {
         name: "",
-        dir: localLeftDir.path,
-        fileSystemType: localLeftDir.fileSystemType,
-        fileSystem: localLeftDir.fileSystem,
+        dir: $leftDir.path,
+        fileSystemType: $leftDir.fileSystemType,
+        fileSystem: $leftDir.fileSystem,
         selected: false,
         datetime: "",
         type: 0,
         size: 0,
         stats: null,
+        index: 0,
       };
     } else {
-      if (
-        typeof current === "undefined" ||
-        current === null ||
-        leftEntries.filter((item) => item.name === current.name).length === 0
-      ) {
-        current = leftEntries[0];
+      if (typeof current.index === "undefined") {
+        current.index = 0;
+      }
+      //
+      // Try to find the original file.
+      //
+      let newIndex = leftEntries.findIndex(
+        (item) => item.name === current.name
+      );
+      if (newIndex === -1) {
+        //
+        // original file has disappeared. Set to the closest match.
+        //
+        newIndex = current.index;
+        while (newIndex >= 0 && typeof leftEntries[newIndex] === "undefined") {
+          newIndex--;
+        }
+        current = leftEntries[newIndex];
+        current.index = newIndex;
+      } else {
+        //
+        // It is found! Set the new index value.
+        //
+        current.index = newIndex;
       }
     }
 
-    if (localCurrentCursor.pane == "left") {
-      currentCursor.set({
+    if ($currentCursor.pane === "left") {
+      $currentCursor = {
         entry: current,
         pane: "left",
-      });
+        index: current.index,
+      };
     }
-    currentLeftFile.set({
+    $currentLeftFile = {
       entry: current,
-    });
+    };
   }
 
   function refreshPanes() {
@@ -2114,14 +2029,14 @@
     //
     // Create the new file.
     //
-    var nfile = { ...localCurrentCursor.entry };
+    var nfile = { ...$currentCursor.entry };
     nfile.name = nfname;
-    await localCurrentCursor.entry.fileSystem.createFile(nfile);
+    await $currentCursor.entry.fileSystem.createFile(nfile);
 
     //
     // Refresh the file list.
     //
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -2130,7 +2045,7 @@
     //
     // Set the new file as the cursor point.
     //
-    setCursor(nfname);
+    await setCursor(nfname);
   }
 
   function newDirectory() {
@@ -2161,14 +2076,14 @@
     //
     // Create the new file.
     //
-    var ndir = { ...localCurrentCursor.entry };
+    var ndir = { ...$currentCursor.entry };
     ndir.name = ndname;
-    await localCurrentCursor.entry.fileSystem.createDir(ndir);
+    await $currentCursor.entry.fileSystem.createDir(ndir);
 
     //
     // Refresh the file list.
     //
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -2177,7 +2092,7 @@
     //
     // Set the new file as the cursor point.
     //
-    setCursor(ndname);
+    await setCursor(ndname);
   }
 
   function renameEntry() {
@@ -2189,7 +2104,7 @@
       {
         type: "input",
         msg: "What name do you want to change to?",
-        value: localCurrentCursor.entry.name,
+        value: $currentCursor.entry.name,
         id: "msgboxMain",
       },
     ];
@@ -2207,17 +2122,17 @@
     //
     // Create the new file.
     //
-    var nentry = { ...localCurrentCursor.entry };
+    var nentry = { ...$currentCursor.entry };
     nentry.name = nname;
-    await localCurrentCursor.entry.fileSystem.renameEntry(
-      localCurrentCursor.entry,
+    await $currentCursor.entry.fileSystem.renameEntry(
+      $currentCursor.entry,
       nentry
     );
 
     //
     // Refresh the file list.
     //
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       refreshLeftPane();
     } else {
       refreshRightPane();
@@ -2226,11 +2141,11 @@
     //
     // Set the new file as the cursor point.
     //
-    setCursor(nname);
+    await setCursor(nname);
   }
 
   function clearSelectedFiles() {
-    if (localCurrentCursor.pane == "left") {
+    if ($currentCursor.pane == "left") {
       //
       // Clear the left pane's selected files
       //
@@ -2251,7 +2166,7 @@
 
   function getSelectedFiles() {
     var selected = [];
-    if (localCurrentCursor.pane == "left") {
+    if ($currentCursor.pane == "left") {
       //
       // Get the left pane's selected files
       //
@@ -2280,39 +2195,41 @@
     } else {
       rightEntries = e.detail.entries;
     }
-    if (localCurrentCursor.pane == "left") {
-      currentCursor.set({
+    if ($currentCursor.pane == "left") {
+      $currentCursor = {
         entry: leftEntries[0],
         pane: "left",
-      });
-      currentLeftFile.set({
+        index: 0,
+      };
+      $currentLeftFile = {
         entry: leftEntries[0],
-      });
+      };
     } else {
-      currentCursor.set({
+      $currentCursor = {
         entry: rightEntries[0],
         pane: "right",
-      });
-      currentRightFile.set({
+        index: 0,
+      };
+      $currentRightFile = {
         entry: rightEntries[0],
-      });
+      };
     }
   }
 
   function getCursor() {
-    return localCurrentCursor;
+    return $currentCursor;
   }
 
   function getLeftFile() {
-    return localCurrentLeftFile;
+    return $currentLeftFile;
   }
 
   function getRightFile() {
-    return localCurrentRightFile;
+    return $currentRightFile;
   }
 
   function editDirLoc() {
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       setEditDirFlagLeft = true;
     } else {
       setEditDirFlagRight = true;
@@ -2336,17 +2253,15 @@
   }
 
   function setTheme(thm) {
-    theme.set(thm);
+    $theme = thm;
   }
 
   function getTheme() {
-    return localTheme;
+    return $theme;
   }
 
   function addDirectoryListener(listener) {
-    var dl = get(directoryListeners);
-    dl.push(listener);
-    directoryListeners.set(dl);
+    $directoryListeners.push(listener);
   }
 
   function toggleCommandPrompt() {
@@ -2404,7 +2319,7 @@
     }
     saveRegExpSelectHistory(value);
     var selRegExp = new RegExp(value);
-    if (localCurrentCursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       leftEntries.map((item) => {
         if (item.name.match(selRegExp) !== null) {
           item.selected = true;
@@ -2904,7 +2819,7 @@
     //
     // Load key maps from the config directory.
     //
-    var keyMapDir = { ...localCurrentCursor.entry };
+    var keyMapDir = { ...$currentCursor.entry };
     keyMapDir.dir = configDir;
     keyMapDir.name = "keyMaps";
 
@@ -2962,7 +2877,7 @@
   }
 
   function getRightDir() {
-    return localRightDir;
+    return $rightDir;
   }
 
   function setRightDir(path) {
@@ -2971,7 +2886,7 @@
   }
 
   function getLeftDir() {
-    return localLeftDir;
+    return $leftDir;
   }
 
   function setLeftDir(path) {
@@ -2980,9 +2895,7 @@
   }
 
   function addExtraPanelProcessor(panelProc) {
-    var lextraPanel = get(extraPanel);
-    lextraPanel.push(panelProc);
-    extraPanel.set(lextraPanel);
+    $extraPanel.push(panelProc);
   }
 
   async function addWatcher(path, wtype, signame, sigFunction) {
@@ -2995,7 +2908,7 @@
   }
 
   function saveDefaultKeymaps() {
-    var keyMapDir = { ...localCurrentCursor.entry };
+    var keyMapDir = { ...$currentCursor.entry };
     keyMapDir.dir = configDir;
     keyMapDir.name = "keyMaps";
 
@@ -3069,15 +2982,15 @@
   {/if}
 
   <div id="leftSide" bind:this={leftDOM}>
-    {#if localCurrentCursor.pane === "right" && showExtra}
+    {#if $currentCursor.pane === "right" && showExtra}
       <ExtraPanel side="left" />
     {:else}
       <DirectoryListing
-        path={localLeftDir}
+        path={$leftDir}
         edit={setEditDirFlagLeft}
         side="left"
-        on:dirChange={(e) => {
-          changeDir(e.detail, "left", "");
+        on:dirChange={async (e) => {
+          await changeDir(e.detail, "left", "");
           setEditDirFlagLeft = false;
         }}
         on:updateDir={() => {
@@ -3087,12 +3000,12 @@
       <Pane
         pane="left"
         entries={leftEntries}
-        utilities={localLeftDir.fileSystem}
-        on:changeDir={(e) => {
-          changeDir(e.detail.dir, e.detail.pane, "");
+        utilities={$leftDir.fileSystem}
+        on:changeDir={async (e) => {
+          await changeDir(e.detail.dir, e.detail.pane, "");
         }}
-        on:openFile={(e) => {
-          openFile(e.detail.entry);
+        on:openFile={async (e) => {
+          await openFile(e.detail.entry);
         }}
       />
     {/if}
@@ -3103,30 +3016,30 @@
     }}
   />
   <div id="rightSide" bind:this={rightDOM}>
-    {#if localCurrentCursor.pane === "left" && showExtra}
+    {#if $currentCursor.pane === "left" && showExtra}
       <ExtraPanel side="right" />
     {:else}
       <DirectoryListing
-        path={localRightDir}
+        path={$rightDir}
         edit={setEditDirFlagRight}
         side="right"
-        on:dirChange={(e) => {
-          changeDir(e.detail, "right", "");
+        on:dirChange={async (e) => {
+          await changeDir(e.detail, "right", "");
           setEditDirFlagRight = false;
         }}
-        on:updateDir={() => {
-          refreshRightPane();
+        on:updateDir={async () => {
+          await refreshRightPane();
         }}
       />
       <Pane
         pane="right"
         entries={rightEntries}
-        utilities={localRightDir.fileSystem}
-        on:changeDir={(e) => {
-          changeDir(e.detail.dir, e.detail.pane, "");
+        utilities={$rightDir.fileSystem}
+        on:changeDir={async (e) => {
+          await changeDir(e.detail.dir, e.detail.pane, "");
         }}
-        on:openFile={(e) => {
-          openFile(e.detail.entry);
+        on:openFile={async (e) => {
+          await openFile(e.detail.entry);
         }}
       />
     {/if}
