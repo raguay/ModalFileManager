@@ -1400,6 +1400,7 @@
 
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         let index = rightEntries.findIndex((item) => item.name === name);
+        if (index === -1) index = 0;
         let entry = rightEntries[index];
         if (entry.length !== 0) {
           $currentRightFile = {
