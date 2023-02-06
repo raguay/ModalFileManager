@@ -9,7 +9,6 @@
 
   const dispatch = createEventDispatcher();
 
-  let localConfig = null;
   let showMsgBox = false;
   let msgText = "";
   let msgTitle = "";
@@ -29,21 +28,13 @@ return({{extName}});
   let scrollDOM = null;
   let first = true;
 
-  onMount(() => {
-    const unsubConfig = config.subscribe(async (value) => {
-      localConfig = value;
-      if (typeof localConfig.OS !== "undefined") {
-        var edir = await localConfig.OS.appendPath(
-          localConfig.configDir,
-          "extensions"
-        );
-        extensionList = await localConfig.OS.getDirList(edir);
-      }
-    });
+  onMount(async () => {
+    if (typeof $config.OS !== "undefined") {
+      var edir = await $config.OS.appendPath($config.configDir, "extensions");
+      extensionList = await $config.OS.getDirList(edir);
+    }
 
-    return () => {
-      unsubConfig();
-    };
+    return () => {};
   });
 
   afterUpdate(() => {
@@ -56,24 +47,18 @@ return({{extName}});
   });
 
   async function reloadExtensions() {
-    const efile = await localConfig.OS.appendPath(
-      localConfig.configDir,
-      "extensions"
-    );
-    extensionList = await localConfig.OS.getDirList(efile);
+    const efile = await $config.OS.appendPath($config.configDir, "extensions");
+    extensionList = await $config.OS.getDirList(efile);
   }
 
   async function editExtension(ext) {
     //
     // Get the extensions file.
     //
-    var extDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
-      "extensions"
-    );
-    extDir = await localConfig.OS.appendPath(extDir, ext.name);
-    const pfile = await localConfig.OS.appendPath(extDir, "package.json");
-    var pkgConfig = await localConfig.OS.readFile(pfile);
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    extDir = await $config.OS.appendPath(extDir, ext.name);
+    const pfile = await $config.OS.appendPath(extDir, "package.json");
+    var pkgConfig = await $config.OS.readFile(pfile);
     pkgConfig = JSON.parse(pkgConfig);
     if (typeof pkgConfig.mfmextension !== "undefined") {
       var extFile = pkgConfig.mfmextension.main;
@@ -81,35 +66,34 @@ return({{extName}});
       //
       // Put the unused pane with the extension's directory
       //
-      var curcursor = get(currentCursor);
-      curcursor.entry.dir = extDir;
-      curcursor.entry.name = extFile;
-      if (curcursor.pane === "left") {
-        rightDir.set({
+      $currentCursor.entry.dir = extDir;
+      $currentCursor.entry.name = extFile;
+      if ($currentCursor.pane === "left") {
+        $rightDir = {
           path: extDir,
-          fileSystem: localConfig.OS,
+          fileSystem: $config.OS,
           fileSystemType: "local",
-        });
-        curcursor.pane = "right";
+        };
+        $currentCursor.pane = "right";
       } else {
-        leftDir.set({
+        $leftDir = {
           path: extDir,
-          fileSystem: localConfig.OS,
+          fileSystem: $config.OS,
           fileSystemType: "local",
-        });
-        curcursor.pane = "left";
+        };
+        $currentCursor.pane = "left";
       }
-      currentCursor.set(curcursor);
+      $currentCursor = $currentCursor;
 
-      if (await localConfig.OS.fileExists(localConfig.userEditor)) {
+      if (await $config.OS.fileExists($config.userEditor)) {
         //
         // There is an editor defined by the user. Use it.
         //
-        var file = await localConfig.OS.appendPath(extDir, extFile);
-        var editor = await localConfig.OS.readFile(localConfig.userEditor);
+        var file = await $config.OS.appendPath(extDir, extFile);
+        var editor = await $config.OS.readFile($config.userEditor);
         editor = editor.toString().trim();
         if (editor.endsWith(".app")) {
-          await localConfig.OS.openFileWithProgram(editor, file);
+          await $config.OS.openFileWithProgram(editor, file);
         } else {
           //
           // It is a command line editor. Open specially.
@@ -118,7 +102,7 @@ return({{extName}});
             //
             // Open emacs.
             //
-            await localConfig.OS.runCommandLine(
+            await $config.OS.runCommandLine(
               'emacsclient -n -q "' + file + '"',
               [],
               (err, result) => {},
@@ -128,14 +112,14 @@ return({{extName}});
             //
             // Open in a terminal program.
             //
-            await localConfig.OS.openInTerminal(editor, file);
+            await $config.OS.openInTerminal(editor, file);
           }
         }
       } else {
         //
         // Open with the system default editor.
         //
-        await localConfig.OS.runCommandLine(
+        await $config.OS.runCommandLine(
           'open "' + file + '"',
           [],
           (err, result) => {},
@@ -162,14 +146,11 @@ return({{extName}});
   }
 
   async function createExtension() {
-    var extDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
-      "extensions"
-    );
-    extDir = await localConfig.OS.appendPath(extDir, extensionName);
-    if (!(await localConfig.OS.dirExists(extDir))) {
-      await localConfig.OS.createDir(extDir);
-      await localConfig.OS.runCommandLine(
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    extDir = await $config.OS.appendPath(extDir, extensionName);
+    if (!(await $config.OS.dirExists(extDir))) {
+      await $config.OS.createDir(extDir);
+      await $config.OS.runCommandLine(
         'cd "' + extDir + '"; npm init -y;',
         [],
         (err, stdout) => {
@@ -204,17 +185,14 @@ return({{extName}});
     // Svelte compiler will not pull from the local closure for some reason. Therefore,
     // I have to create this variable.
     //
-    var extDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
-      "extensions"
-    );
-    extDir = await localConfig.OS.appendPath(extDir, extensionName);
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    extDir = await $config.OS.appendPath(extDir, extensionName);
 
     //
     // Add the needed fields to the package.json file for Modal File Manager.
     //
-    var fileName = await localConfig.OS.appendPath(extDir, "package.json");
-    var pkgConfig = await localConfig.OS.readFile(fileName);
+    var fileName = await $config.OS.appendPath(extDir, "package.json");
+    var pkgConfig = await $config.OS.readFile(fileName);
     pkgConfig = JSON.parse(pkgConfig);
 
     //
@@ -232,18 +210,15 @@ return({{extName}});
       github: "",
       main: extensionName + ".js",
     };
-    const pfile = await localConfig.OS.appendPath(extDir, "package.json");
-    await localConfig.OS.writeFile(pfile, JSON.stringify(pkgConfig));
+    const pfile = await $config.OS.appendPath(extDir, "package.json");
+    await $config.OS.writeFile(pfile, JSON.stringify(pkgConfig));
 
     //
     // Create the actual extension file.
     //
-    var extFile = await localConfig.OS.appendPath(
-      extDir,
-      extensionName + ".js"
-    );
+    var extFile = await $config.OS.appendPath(extDir, extensionName + ".js");
     var newExt = extTemplate.replaceAll("{{extName}}", extensionName);
-    await localConfig.OS.writeFile(extFile, newExt);
+    await $config.OS.writeFile(extFile, newExt);
 
     //
     // Edit the extension.
@@ -255,15 +230,12 @@ return({{extName}});
   }
 
   async function deleteExtension(ext) {
-    var extDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
-      "extensions"
-    );
-    await localConfig.OS.deleteEntries(
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    await $config.OS.deleteEntries(
       {
         dir: extDir,
         name: ext.name,
-        fileSystem: localConfig.OS,
+        fileSystem: $config.OS,
       },
       (err, stdout) => {
         if (!err) {

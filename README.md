@@ -50,11 +50,11 @@ I started my programming career with Emacs as my main text editor on a main fram
 
 With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is [OniVim2](https://github.com/onivim/oni2) which is the fastest programming editor I've ever used. It is great!
 
-But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. I also don't really like python, it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was, but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
+But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. It is very slow in large directories and I also don't really like python: it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was (if anyone remembers it), but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
 
-Modal File Manager is also somewhat minimal in the UI. Many graphical file managers have buttons, shelves, etc. all over the place with information everywhere. I decided to make the main interface as low keyed as possible with all other information in the status line or extras panel. Extra file information is on the status line for the current cursor location. More information is displayed in extras panel as well.
+Modal File Manager is also somewhat minimal in the UI. Many graphical file managers have buttons, shelves, etc. all over the place with information everywhere. I decided to make the main interface as low keyed as possible with all other information in the status line or extras panel. Extra file information is on the status line for the current cursor location. More information is displayed in the extras panel as well (the side opposite the current pointer shows extra information instead of the other file pane. When turned off, it automatically goes back to the file pane that was showing before switching.).
 
-Since there are so many dual pane file managers available, I knew this would never be a marketable product (and I did not want the hassle of endless customer complaint over a feature not working the way they want it). Therefore, I'm making this an open source project to hopefully get some help from other to really making this thing shine.
+Since there are so many dual pane file managers available, I knew this would never be a marketable product (and I did not want the hassle of endless customer complaint over a feature not working the way they want it). Therefore, I'm making this an open source project to hopefully get some help from others to help really make this thing shine.
 
 Therefore, I hope you enjoy this little program as much as I have. Feel free to sponsor the project, help code some of it (just send in the pull requests), or just give me some tips along the way. Any help is appreciated.
 
@@ -75,7 +75,7 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Watches for changes in the current directory and updates accordingly.
 - Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory.
 - File editor is configurable by the `~/.myeditorchoice` file (see `Editing Files` below). Otherwise, the system editor for the file type will be used.
-- Integrated with ScriptPad - another project of mine coming soon!
+- Integrated with [EmailIt](https://github.com/raguay/EmailIt).
 - Quick Search - a input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quick search.
 - Toggle System files/folders visibility
 - Optionally deletes to the OS's trashcan (external program has to be installed)
@@ -105,6 +105,7 @@ All Dracula based themes are here with permission from the author. Please suppor
 Because this is a web technologies application, there are certain things that it just can't do and I'm not sure if they can be done at this level. Therefore, this will not completely remove your dependency on using the Finder application. But, these instances are not everyday items for which we use a file manager. As I see it, these items are not doable, but I would love for someone to prove me wrong:
 
 - Install applications that the macOS Gatekeeper will allow.
+- Drad and drop with other programs.
 
 ## Installation
 
@@ -468,7 +469,7 @@ This list of tutorials are with the latest version of Modal File Manager:
 
 I finally made my first attempt at an icon for Modal File Manager. The files are in the `frontend/icons` directory. Any constructive criticizm is welcome.
 
-![Icon](https://github.com/raguay/ModalFileManager/blob/main/appicon.png)
+![Icon](https://github.com/raguay/ModalFileManager/blob/main/build/appicon.png)
 
 ## Sponsor this project
 

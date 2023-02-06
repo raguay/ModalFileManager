@@ -20,13 +20,11 @@
 
   let qsInput = "";
   let qsInputDOM = null;
-  let cursor = null;
-  let localTheme = null;
   let position = null;
   let origEntries = null;
 
   beforeUpdate(() => {
-    if (cursor === null) {
+    if ($currentCursor === null) {
       getDefaults();
     }
   });
@@ -38,7 +36,7 @@
   });
 
   onMount(() => {
-    if (cursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       position = leftDOM.clientWidth - 110;
     } else {
       position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
@@ -46,14 +44,12 @@
   });
 
   function getDefaults() {
-    cursor = get(currentCursor);
-    localTheme = get(theme);
-    keyProcess.set(false);
+    $keyProcess = false;
     origEntries = usingEntry(leftEntries, rightEntries);
   }
 
   function usingEntry(leftE, rightE) {
-    if (cursor.pane === "left") {
+    if ($currentCursor.pane === "left") {
       return leftE;
     } else {
       return rightE;
@@ -62,7 +58,7 @@
 
   function exitQS(skip) {
     if (typeof skip === "undefined") skip = false;
-    cursor = null;
+    $currentCursor = null;
     dispatch("closeQuickSearch", {
       skip: skip,
     });
@@ -84,7 +80,7 @@
   }
 
   function processInput() {
-    if (cursor === null) {
+    if ($currentCursor === null) {
       getDefaults();
     }
 
@@ -103,7 +99,7 @@
     //
     if (entries.length > 0) {
       dispatch("changeEntries", {
-        pane: cursor.pane,
+        pane: $currentCursor.pane,
         entries: entries,
       });
     }
@@ -120,8 +116,8 @@
     on:blur={(e) => {
       exitQS();
     }}
-    style="background-color: {localTheme.textColor};
-                text-color: {localTheme.backgroundColor};"
+    style="background-color: {$theme.textColor};
+                text-color: {$theme.backgroundColor};"
   />
 </div>
 

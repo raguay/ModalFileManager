@@ -17,12 +17,10 @@
   let newPath;
   let inputPath;
   let dirlist = [];
-  let localTheme = {};
   let dirListDOM;
   let tryagain = false;
   let pending = false;
   let dirIndex = 0;
-  let localDirListeners = [];
   let lastDir = "";
   let rightSet = false;
   let leftSet = false;
@@ -31,15 +29,6 @@
   $: setEditFlag(edit);
 
   onMount(() => {
-    const unsubscribeTheme = theme.subscribe((value) => {
-      localTheme = value;
-    });
-    const unsubscribeDirectoryListeners = directoryListeners.subscribe(
-      (value) => {
-        localDirListeners = value;
-      }
-    );
-    localTheme = get(theme);
     newPath = shortenPath(path);
     if (side === "left") {
       window.runtime.EventsOn("leftDirChange", () => {
@@ -56,10 +45,7 @@
         });
       });
     }
-    return () => {
-      unsubscribeTheme();
-      unsubscribeDirectoryListeners();
-    };
+    return () => {};
   });
 
   afterUpdate(async () => {
@@ -94,7 +80,7 @@
     if (typeof pth !== "undefined") {
       if (lastDir !== pth) {
         lastDir = pth;
-        localDirListeners.map((value) => {
+        $directoryListeners.map((value) => {
           value(pth, "");
         });
       }
@@ -107,7 +93,7 @@
     }
   }
 
-  function setEdit(e) {
+  function setEdit() {
     show = false;
     inputPath = path.path;
     dirIndex = 0;
@@ -118,14 +104,14 @@
     if (inputPath[inputPath.length - 1] !== sep) {
       inputPath = inputPath + sep;
     }
-    keyProcess.set(false);
+    $keyProcess = false;
   }
 
   async function editOff() {
     if (await path.fileSystem.dirExists(inputPath)) {
       show = true;
       dirlist = [];
-      keyProcess.set(true);
+      $keyProcess = true;
       dispatch("dirChange", {
         path: inputPath,
         cursor: true,
@@ -137,7 +123,7 @@
       inputPath = dirlist[dirIndex];
       show = true;
       dirlist = [];
-      keyProcess.set(true);
+      $keyProcess = true;
       if (await path.fileSystem.dirExists(inputPath)) {
         dispatch("dirChange", {
           path: inputPath,
@@ -169,9 +155,7 @@
       //
       // Add to the history.
       //
-      var hist = get(dirHistory);
-      hist.addHistory(result);
-      dirHistory.set(hist);
+      $dirHistory.addHistory(result);
 
       //
       // Fixing the path.
@@ -252,8 +236,7 @@
           //
           // Get matches from history.
           //
-          var hist = get(dirHistory);
-          dirlist = hist.searchHistory(inputPath);
+          dirlist = $dirHistory.searchHistory(inputPath);
           if (dirlist === null) dirlist = [];
           numleft -= dirlist.length;
           if (numleft > 0) {
@@ -317,7 +300,7 @@
     {#if dirlist.length > 0 && dirListDOM !== null && dirInputDOM !== null}
       <div
         id="searchList"
-        style="background-color: {localTheme.backgroundColor}; color: {localTheme.textColor}; top: {dirInputDOM.offsetTop +
+        style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; top: {dirInputDOM.offsetTop +
           dirListDOM.offsetHeight}px; left: {dirListDOM.offsetLeft}px;"
       >
         <ul>
@@ -325,8 +308,8 @@
             {#if item !== ""}
               <li
                 style="color: {key === dirIndex
-                  ? localTheme.selectedColor
-                  : localTheme.textColor}"
+                  ? $theme.selectedColor
+                  : $theme.textColor}"
                 on:click={() => {
                   processListItem(key);
                 }}

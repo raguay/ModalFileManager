@@ -4,8 +4,8 @@
             width: 10px;
             max-width: 10px;
             min-width: 10px;
-            border-left: 3px solid {localTheme.borderColor};
-            border-right: 3px solid {localTheme.borderColor};"
+            border-left: 3px solid {$theme.borderColor};
+            border-right: 3px solid {$theme.borderColor};"
       on:mousedown={e => {
         dispatch('mouseDown', true);
       }}
@@ -30,14 +30,8 @@
 
   const dispatch = createEventDispatcher();
   
-  let localTheme = {};
-
   onMount(() => {
-    var unsubscribeTheme = theme.subscribe(value => {
-      localTheme = value;
-    });
     return(() => {
-      unsubscribeTheme();
     })
   });
 </script>

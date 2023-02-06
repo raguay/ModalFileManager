@@ -6,8 +6,6 @@
 
   const dispatch = createEventDispatcher();
 
-  let localTheme = null;
-  let localConfig = null;
   let themeName = "";
   let showMsgBox = false;
   let msgText = "";
@@ -17,20 +15,12 @@
   let first = true;
 
   onMount(async () => {
-    const unsubTheme = theme.subscribe((value) => {
-      localTheme = value;
-    });
-
-    const unsubConfig = config.subscribe(async (value) => {
-      localConfig = value;
-      if (typeof localConfig.OS !== "undefined") {
-        await loadThemeList();
-      }
-    });
+    $config = value;
+    if (typeof $config.OS !== "undefined") {
+      await loadThemeList();
+    }
 
     return () => {
-      unsubTheme();
-      unsubConfig();
     };
   });
 
@@ -44,11 +34,11 @@
   });
 
   async function loadThemeList() {
-    var themedir = await localConfig.OS.appendPath(
-      localConfig.configDir,
+    var themedir = await $config.OS.appendPath(
+      $config.configDir,
       "themes"
     );
-    themeList = await localConfig.OS.getDirList(themedir);
+    themeList = await $config.OS.getDirList(themedir);
     themeName = "";
   }
 
@@ -59,19 +49,19 @@
   }
 
   function changeValue(kv, e) {
-    localTheme[kv[0]] = e.detail.value;
-    theme.set(localTheme);
+    $theme[kv[0]] = e.detail.value;
+    $theme = $theme;
   }
 
   async function createTheme() {
-    var thmDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
+    var thmDir = await $config.OS.appendPath(
+      $config.configDir,
       "themes"
     );
-    thmDir = await localConfig.OS.appendPath(thmDir, themeName);
-    if (!(await localConfig.OS.dirExists(thmDir))) {
-      await localConfig.OS.createDir(thmDir);
-      await localConfig.OS.runCommandLine(
+    thmDir = await $config.OS.appendPath(thmDir, themeName);
+    if (!(await $config.OS.dirExists(thmDir))) {
+      await $config.OS.createDir(thmDir);
+      await $config.OS.runCommandLine(
         'cd "' + thmDir + '"; npm init -y;',
         [],
         async (err, stdout) => {
@@ -85,11 +75,11 @@
             //
             // Add the needed fields to the package.json file for Modal File Manager.
             //
-            const pfile = await localConfig.OS.appendPath(
+            const pfile = await $config.OS.appendPath(
               thmDir,
               "package.json"
             );
-            var pkgConfig = JSON.parse(await localConfig.OS.readFile(pfile));
+            var pkgConfig = JSON.parse(await $config.OS.readFile(pfile));
             pkgConfig.mfmtheme = {
               name: themeName,
               description: "",
@@ -97,16 +87,16 @@
               github: "",
               main: themeName + ".json",
             };
-            await localConfig.OS.writeFile(pfile, JSON.stringify(pkgConfig));
+            await $config.OS.writeFile(pfile, JSON.stringify(pkgConfig));
           }
           //
           // Create the actual theme file.
           //
-          var thmFile = await localConfig.OS.appendPath(
+          var thmFile = await $config.OS.appendPath(
             thmDir,
             themeName + ".json"
           );
-          await localConfig.OS.writeFile(thmFile, JSON.stringify(localTheme));
+          await $config.OS.writeFile(thmFile, JSON.stringify($theme));
           loadThemeList();
         },
         "."
@@ -125,39 +115,39 @@
   }
 
   async function updateTheme(thm) {
-    var thmDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
+    var thmDir = await $config.OS.appendPath(
+      $config.configDir,
       "themes"
     );
-    thmDir = await localConfig.OS.appendPath(thmDir, thm.name);
-    const pfile = await localConfig.OS.appendPath(thmDir, "package.json");
-    var pkgConfig = await localConfig.OS.readFile(pfile);
+    thmDir = await $config.OS.appendPath(thmDir, thm.name);
+    const pfile = await $config.OS.appendPath(thmDir, "package.json");
+    var pkgConfig = await $config.OS.readFile(pfile);
     pkgConfig = JSON.parse(pkgConfig);
-    var thmFile = await localConfig.OS.appendPath(
+    var thmFile = await $config.OS.appendPath(
       thmDir,
       pkgConfig.mfmtheme.main
     );
-    await localConfig.OS.writeFile(thmFile, JSON.stringify(localTheme));
+    await $config.OS.writeFile(thmFile, JSON.stringify($theme));
   }
 
   async function deleteTheme(thm) {
-    var thmDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
+    var thmDir = await $config.OS.appendPath(
+      $config.configDir,
       "themes"
     );
-    await localConfig.OS.deleteEntries(
+    await $config.OS.deleteEntries(
       {
         dir: thmDir,
         name: thm.name,
-        fileSystem: localConfig.OS,
+        fileSystem: $config.OS,
       },
       async (err, stdout) => {
         if (!err) {
-          var themedir = await localConfig.OS.appendPath(
-            localConfig.configDir,
+          var themedir = await $config.OS.appendPath(
+            $config.configDir,
             "themes"
           );
-          themeList = await localConfig.OS.getDirList(themedir);
+          themeList = await $config.OS.getDirList(themedir);
         } else {
           msgText = "The theme, " + thm.name + ", can't be deleted.";
           msgTitle = "Theme Preferences";
@@ -169,27 +159,26 @@
   }
 
   async function setTheme(thm) {
-    var thmDir = await localConfig.OS.appendPath(
-      localConfig.configDir,
+    var thmDir = await $config.OS.appendPath(
+      $config.configDir,
       "themes"
     );
-    thmDir = await localConfig.OS.appendPath(thmDir, thm.name);
-    const pfile = await localConfig.OS.appendPath(thmDir, "package.json");
-    var pkgConfig = await localConfig.OS.readFile(pfile);
+    thmDir = await $config.OS.appendPath(thmDir, thm.name);
+    const pfile = await $config.OS.appendPath(thmDir, "package.json");
+    var pkgConfig = await $config.OS.readFile(pfile);
     pkgConfig = JSON.parse(pkgConfig);
-    var thmFile = await localConfig.OS.appendPath(
+    var thmFile = await $config.OS.appendPath(
       thmDir,
       pkgConfig.mfmtheme.main
     );
-    localTheme = await localConfig.OS.readFile(thmFile);
-    localTheme = JSON.parse(localTheme);
-    theme.set(localTheme);
+    $theme = await $config.OS.readFile(thmFile);
+    $theme = JSON.parse($theme);
   }
 </script>
 
 <div id="theme" bind:this={scrollDOM}>
   <h3>Current Theme Values</h3>
-  {#if localTheme !== null}
+  {#if $theme !== null}
     <table>
       <thead>
         <tr>
@@ -198,7 +187,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each Object.entries(localTheme) as kv}
+        {#each Object.entries($theme) as kv}
           <ThemeItem
             label={kv[0]}
             value={kv[1]}

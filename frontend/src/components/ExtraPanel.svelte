@@ -29,7 +29,7 @@
     </p>
   {/if}
   <div class='stats'>
-    <p>Date: {localCurrentCursor.entry.datetime}</p>
+    <p>Date: {$currentCursor.entry.datetime}</p>
     <p>Size: {size}</p>
   </div>
 </div>
@@ -69,11 +69,6 @@
   export let side = '';
 
   let extraPDOM = null;
-  let localCurrentCursor = {
-    pane: 'left',
-    entry: {}
-  };
-  let localExtraPanel = [];
   let fullPath = '';
   let extension = '';
   let size = '';
@@ -84,43 +79,28 @@
 
   onMount(async () => {
     // 
-    // Subscribe to the current cursor in order to get the file information.
+    // Get the file information needed.
     //
-    var unsubscribeCurrentCursor = currentCursor.subscribe(async (value) => {
-      // 
-      // Get the file information needed.
-      //
-      localCurrentCursor = value;
-      fullPath = await localCurrentCursor.entry.fileSystem.appendPath(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
-      extension = localCurrentCursor.entry.ext;
-      size = util.readableSize(localCurrentCursor.entry.size);
+    fullPath = await $currentCursor.entry.fileSystem.appendPath($currentCursor.entry.dir, $currentCursor.entry.name);
+    extension = $currentCursor.entry.ext;
+    size = util.readableSize($currentCursor.entry.size);
 
-      //
-      // Check the new cursor for extra panel items.
-      //
-      isExtra = checkExtraPanel();
-    });
+    //
+    // Check the new cursor for extra panel items.
+    //
+    isExtra = checkExtraPanel();
 
     // 
-    // See if the exta panel has information.
-    //
-    var unsubscribeExtraPanel = extraPanel.subscribe(value => {
-      localExtraPanel = value;
-    });
-
-    // 
-    // Return the function to unsubscribe to the stores.
+    // Return the function
     //
     return(() => {
-      unsubscribeCurrentCursor();
-      unsubscribeExtraPanel();
     })
   });
   
   afterUpdate(async () => {
     if(isMovie()) {
       await tick();
-      var file = new File(localCurrentCursor.entry.dir, localCurrentCursor.entry.name);
+      var file = new File($currentCursor.entry.dir, $currentCursor.entry.name);
       var fileURL = window.URL.createObjectURL(file);
       var videoNode = window.document.getElementById('videoItem');
       if(videoNode !== null) {
@@ -129,7 +109,7 @@
       getDimensions(fullPath);
     }
     if(isExtra) {
-      localExtraPanel.forEach(item => {
+      $extraPanel.forEach(item => {
         item.after();
       });
     }
@@ -137,8 +117,8 @@
 
   function checkExtraPanel() {
     extraHTML = '';
-    localExtraPanel.forEach(async item => {
-      isExtra = await item.check(localCurrentCursor.entry.dir, localCurrentCursor.entry.name, localCurrentCursor.fileSystem, side);
+    $extraPanel.forEach(async item => {
+      isExtra = await item.check($currentCursor.entry.dir, $currentCursor.entry.name, $currentCursor.fileSystem, side);
       if(isExtra) {
         var newContent = await item.createHTML();
         extraHTML = extraHTML.concat('\n',newContent);
@@ -161,7 +141,7 @@
 
   function getDimensions(fileName) {
     var com = 'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' + fileName + '"';
-    localCurrentCursor.entry.fileSystem.runCommandLine(com, [], (err, stdout) => {
+    $currentCursor.entry.fileSystem.runCommandLine(com, [], (err, stdout) => {
       if(err) {
         console.log(err);
       } else {

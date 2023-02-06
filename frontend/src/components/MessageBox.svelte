@@ -26,14 +26,14 @@
     //
     // Turn off key processing.
     //
-    keyProcess.set(false);
+    $keyProcess = false;
 
     //
     // Return a function to be called when this component no longer
     // is being shown.
     //
     return () => {
-      keyProcess.set(true);
+      $keyProcess = true;
     };
   });
 
@@ -75,7 +75,7 @@
 
   function returnPickerValue(skip) {
     if (typeof skip === "undefined") skip = false;
-    keyProcess.set(true);
+    $keyProcess = true;
     var retItem = {};
     if (pickerItems.length > 0) {
       retItem.value = pickerItems[pickerNum].value;
@@ -108,7 +108,7 @@
 
   function cancel() {
     var skip = false;
-    keyProcess.set(true);
+    $keyProcess = true;
     dispatch("closeMsgBox", {
       skip: skip,
     });
@@ -192,7 +192,7 @@
     //
     // Enter key. Take the highlighted value and return.
     //
-    keyProcess.set(true);
+    $keyProcess = true;
     dispatch("msgReturn", {
       ans: {
         type: "picker",

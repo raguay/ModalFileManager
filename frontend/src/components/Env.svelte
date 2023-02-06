@@ -1,4 +1,4 @@
-{#if ((localConfig !== null) && (typeof localConfig.configuration.env !== 'undefined'))}
+{#if (($config !== null) && (typeof $config.configuration.env !== 'undefined'))}
   <table>
     <thead>
       <tr>
@@ -15,7 +15,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each Object.entries(localConfig.configuration.env) as kv}
+      {#each Object.entries($config.configuration.env) as kv}
         <EnvTableRow 
           name={kv[0]}
           value={kv[1]}
@@ -74,33 +74,24 @@
 
   let KVname = '';
   let KVvalue = '';
-  let localConfig = null;
   let addNew = false;
    
   onMount(() => {
-    const unsubConfig = config.subscribe(value => {
-      localConfig = value;
-    });
-
     return(() => {
-      unsubConfig();
     });
   });
   
   function deleteCell(kv) {
-    delete localConfig.configuration.env[kv[0]];
-    config.set(localConfig);
+    delete $config.configuration.env[kv[0]];
   }
 
   function saveCell(kv, e) {
-    localConfig.configuration.env[kv[0]] = e.detail.value;
-    config.set(localConfig);
+    $config.configuration.env[kv[0]] = e.detail.value;
   }
 
   function addKV(e) {
-    localConfig.configuration.env[KVname] = KVvalue;
+    $config.configuration.env[KVname] = KVvalue;
     addNew = false;
-    config.set(localConfig);
     KVname = '';
     KVvalue = '';
   }

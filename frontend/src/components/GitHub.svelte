@@ -9,7 +9,6 @@
 
   const dispatch = createEventDispatcher();
 
-  let octok;
   let repos = null;
   let themes = null;
   let width = null;
@@ -21,7 +20,7 @@
   let loading = true;
 
   onMount(async () => {
-    keyProcess.set(false);
+    $keyProcess = false;
     width = window.innerWidth - 30;
     timeOut = setTimeout(focusInput, 1000);
     await loadRepoInfo();
@@ -36,7 +35,7 @@
   });
 
   function focusInput() {
-    if (once) keyProcess.set(false);
+    if (once) $keyProcess = false;
     once = false;
     clearTimeout(timeOut);
     if (typeof hiddenInput !== "undefined" && hiddenInput !== null)
@@ -67,19 +66,18 @@
   }
 
   function exitGitHub() {
-    keyProcess.set(true);
+    $keyProcess = true;
     inputHidden = null;
     dispatch("closeGitHub", {});
   }
 
   async function installTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    if (!(await confg.OS.dirExists(thmDir))) {
-      await confg.OS.createDir(thmDir);
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
+    thmDir = await $config.OS.appendPath(thmDir, thm.name);
+    if (!(await $config.OS.dirExists(thmDir))) {
+      await $config.OS.createDir(thmDir);
     }
-    await confg.OS.runCommandLine(
+    await $config.OS.runCommandLine(
       "git clone '" + thm.url + "' '" + thmDir + "';",
       [],
       (err, stdin, stdout) => {
@@ -94,15 +92,14 @@
   }
 
   async function loadTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    const pfile = await confg.OS.appendPath(thmDir, "package.json");
-    if (await confg.OS.fileExists(pfile)) {
-      var manifest = await confg.OS.readFile(pfile);
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
+    thmDir = await $config.OS.appendPath(thmDir, thm.name);
+    const pfile = await $config.OS.appendPath(thmDir, "package.json");
+    if (await $config.OS.fileExists(pfile)) {
+      var manifest = await $config.OS.readFile(pfile);
       manifest = JSON.parse(manifest);
-      const mfile = await confg.OS.appendPath(thmDir, manifest.mfmtheme.main);
-      var newTheme = await confg.OS.readFile(mfile);
+      const mfile = await $config.OS.appendPath(thmDir, manifest.mfmtheme.main);
+      var newTheme = await $config.OS.readFile(mfile);
       newTheme = JSON.parse(newTheme);
       theme.set(newTheme);
       addMsg(thm, "This theme is now being used.");
@@ -112,17 +109,15 @@
   }
 
   async function themeExists(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
-    thmDir = await confg.OS.appendPath(thmDir, thm.name);
-    var result = await confg.OS.dirExists(thmDir);
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
+    thmDir = await $config.OS.appendPath(thmDir, thm.name);
+    var result = await $config.OS.dirExists(thmDir);
     return result;
   }
 
   async function deleteTheme(thm) {
-    var confg = get(config);
-    var thmDir = await confg.OS.appendPath(confg.configDir, "themes");
-    await confg.OS.deleteEntries(
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
+    await $config.OS.deleteEntries(
       {
         name: thm.name,
         dir: thmDir,
@@ -139,13 +134,12 @@
   }
 
   async function installExtension(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    if (!(await confg.OS.dirExists(extDir))) {
-      await confg.OS.createDir(extDir);
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    extDir = await $config.OS.appendPath(extDir, ext.name);
+    if (!(await $config.OS.dirExists(extDir))) {
+      await $config.OS.createDir(extDir);
     }
-    await confg.OS.runCommandLine(
+    await $config.OS.runCommandLine(
       "git clone '" + ext.url + "' '" + extDir + "';",
       [],
       (err, stdin, stdout) => {
@@ -157,17 +151,15 @@
   }
 
   async function extExists(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
-    extDir = await confg.OS.appendPath(extDir, ext.name);
-    var flag = await confg.OS.dirExists(extDir);
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    extDir = await $config.OS.appendPath(extDir, ext.name);
+    var flag = await $config.OS.dirExists(extDir);
     return flag;
   }
 
   async function deleteExtension(ext) {
-    var confg = get(config);
-    var extDir = await confg.OS.appendPath(confg.configDir, "extensions");
-    await confg.OS.deleteEntries(
+    var extDir = await $config.OS.appendPath($config.configDir, "extensions");
+    await $config.OS.deleteEntries(
       {
         name: ext.name,
         dir: extDir,

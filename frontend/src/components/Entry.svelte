@@ -126,8 +126,8 @@
   }
 
   async function dragStart(e) {
-    const lconfig = get(config);
-    var flist = lconfig.extensions.getExtCommand("getSelectedFiles").command();
+    const $config = get(config);
+    var flist = $config.extensions.getExtCommand("getSelectedFiles").command();
     var included = false;
     var data = [];
     flist.map(async (item) => {
@@ -175,7 +175,6 @@
         // Create the entries from the drop.
         //
         const dataTransArray = e.dataTransfer.getData("text/plain").split("\n");
-        const lconfig = get(config);
         var fromEntries = [];
         for (var i = 0; i < dataTransArray.length; i++) {
           var parts = dataTransArray[i].split("|");
@@ -201,11 +200,11 @@
           });
         }
         if (shiftKey) {
-          await lconfig.extensions
+          await $config.extensions
             .getExtCommand("moveEntriesCommand")
             .command(fromEntries, toEntry);
         } else {
-          await lconfig.extensions
+          await $config.extensions
             .getExtCommand("copyEntriesCommand")
             .command(fromEntries, toEntry);
         }

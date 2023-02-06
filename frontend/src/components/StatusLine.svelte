@@ -7,17 +7,6 @@
 
   import util from "../modules/util.js";
 
-  let localInputState = "normal";
-  let localCurrentCursor = {
-    entry: {
-      name: "test.txt",
-      size: "",
-      datetime: "",
-    },
-    pane: "",
-  };
-  let localStateMapColors = [];
-  let stateColor = "#6fb1e9";
   let size = 0;
   let DT;
 
@@ -26,41 +15,29 @@
     // Here, we are subscribing to the different stores and setting their
     // default values;
     //
-    var unSubscribeInputState = inputState.subscribe((value) => {
-      localInputState = value;
-      stateColor = localStateMapColors[localInputState];
-    });
-    var unSubscribeCurrentCursor = currentCursor.subscribe((value) => {
-      localCurrentCursor = value;
+    let unsubscribeCurrentCursor = currentCursor.subscribe((value) => {
       if (typeof value.entry === "undefined") {
-        localCurrentCursor = {
+        $currentCursor = {
           entry: {
             name: "",
             size: "",
             datetime: "",
           },
-          pane: localCurrentCursor.pane,
+          pane: value.pane,
         };
         size = "";
       } else {
-        size = util.readableSize(localCurrentCursor.entry.size);
-
+        size = util.readableSize(value.entry.size);
         //
         // Setup a locale dependent way to show date and time.
         // #TODO: make more programmable?
         //
-        DT = new Date(localCurrentCursor.entry.datetime).toLocaleString();
+        DT = new Date(value.entry.datetime).toLocaleString();
         if (DT === "Invalid Date") DT = "";
       }
     });
-    var unSubscribeStateMapColors = stateMapColors.subscribe((value) => {
-      localStateMapColors = value;
-      stateColor = localStateMapColors[localInputState];
-    });
     return () => {
-      unSubscribeCurrentCursor();
-      unSubscribeInputState();
-      unSubscribeStateMapColors();
+      unsubscribeCurrentCursor();
     };
   });
 </script>
@@ -73,21 +50,24 @@
          font-size: {$theme.fontSize};
          border-top: 3px solid {$theme.borderColor};"
 >
-  <span class="state" style="color: 'black'; background-color: {stateColor};">
-    {localInputState}
+  <span
+    class="state"
+    style="color: 'black'; background-color: {$stateMapColors[$inputState]};"
+  >
+    {$inputState}
   </span>
   <span
     class="pane"
     style="color: {$theme.Cyan}; background-color: {$theme.backgroundColor};"
   >
-    {localCurrentCursor.pane}
+    {$currentCursor.pane}
   </span>
   <span
     class="file customdata"
     style="color: {$theme.textColor}; background-color: {$theme.backgroundColor};"
-    data-tooltip={localCurrentCursor.entry.name}
+    data-tooltip={$currentCursor.entry.name}
   >
-    {localCurrentCursor.entry.name}
+    {$currentCursor.entry.name}
   </span>
   <span
     class="file customdata"
@@ -99,8 +79,8 @@
   <span
     class="file"
     style="color: {$theme.Green}; 
-               background-color: {$theme.backgroundColor};
-               flex-grow: 2;"
+           background-color: {$theme.backgroundColor};
+           flex-grow: 2;"
   >
     {size}
   </span>

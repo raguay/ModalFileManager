@@ -19,7 +19,7 @@
 
   onMount(() => {
     width = window.innerWidth - 30;
-    keyProcess.set(false);
+    $keyProcess = false;
     if (commands != null) filtered = commands.commandList;
   });
 
