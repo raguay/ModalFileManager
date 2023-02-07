@@ -1,6 +1,5 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { get } from "svelte/store";
   import Entry from "./Entry.svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";

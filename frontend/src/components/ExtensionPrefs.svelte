@@ -1,6 +1,5 @@
 <script>
   import { onMount, afterUpdate, createEventDispatcher } from "svelte";
-  import { get } from "svelte/store";
   import { rightDir } from "../stores/rightDir.js";
   import { leftDir } from "../stores/leftDir.js";
   import { currentCursor } from "../stores/currentCursor.js";

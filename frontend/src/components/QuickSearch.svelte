@@ -5,7 +5,6 @@
     createEventDispatcher,
     afterUpdate,
   } from "svelte";
-  import { get } from "svelte/store";
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { keyProcess } from "../stores/keyProcess.js";
@@ -24,7 +23,7 @@
   let origEntries = null;
 
   beforeUpdate(() => {
-    if ($currentCursor === null) {
+    if (origEntries === null) {
       getDefaults();
     }
   });
@@ -42,7 +41,6 @@
       position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
     }
   });
-
   function getDefaults() {
     $keyProcess = false;
     origEntries = usingEntry(leftEntries, rightEntries);
@@ -58,7 +56,8 @@
 
   function exitQS(skip) {
     if (typeof skip === "undefined") skip = false;
-    $currentCursor = null;
+    $keyProcess = true;
+    origEntries = null;
     dispatch("closeQuickSearch", {
       skip: skip,
     });

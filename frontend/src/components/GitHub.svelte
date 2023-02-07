@@ -1,11 +1,10 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
-  import { get } from "svelte/store";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import util from "../modules/util.js";
-  import * as ap from '../../dist/wailsjs/go/main/App.js';
+  import * as ap from "../../dist/wailsjs/go/main/App.js";
 
   const dispatch = createEventDispatcher();
 

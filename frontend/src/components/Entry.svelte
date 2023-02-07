@@ -1,6 +1,5 @@
 <script>
   import { onMount, createEventDispatcher, tick } from "svelte";
-  import { get } from "svelte/store";
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";

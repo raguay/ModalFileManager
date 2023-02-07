@@ -1,6 +1,5 @@
 <script>
   import { onMount, tick, createEventDispatcher } from "svelte";
-  import { get } from "svelte/store";
   import * as App from "../../dist/wailsjs/go/main/App.js";
   import Pane from "../components/Pane.svelte";
   import MessageBox from "../components/MessageBox.svelte";
@@ -129,6 +128,7 @@
     //
     // Setup the application to be in the user's home directory.
     //
+    OStype = await OS.getOSname();
     $leftDir.path = await OS.getHomeDir();
     $leftDir.fileSystemType = OStype;
     $leftDir.fileSystem = OS;

@@ -1,6 +1,5 @@
 <script>
   import { tick, afterUpdate, onMount, createEventDispatcher } from "svelte";
-  import { get } from "svelte/store";
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
