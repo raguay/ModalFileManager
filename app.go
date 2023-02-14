@@ -9,6 +9,7 @@ import (
 	cp "github.com/otiai10/copy"
 	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -48,6 +49,7 @@ type FileInfo struct {
 	Size      int64
 	Modtime   string
 	Index     int
+	Mode      fs.FileMode
 }
 
 type GitHubRepos struct {
@@ -249,6 +251,21 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
 			fileInfo.Index = index
+			fileInfo.Mode = file.Mode()
+
+			//
+			// Determine if it is a symlink and if so if it's a directory.
+			//
+			if fileInfo.Mode&fs.ModeSymlink.Type() != 0 {
+				link, err := os.Readlink(b.AppendPath(path, fileInfo.Name))
+				if err == nil && b.DirExists(link) {
+					fileInfo.IsDir = true
+				}
+			}
+
+			//
+			// Add it to the rest.
+			//
 			result = append(result, fileInfo)
 		}
 	}

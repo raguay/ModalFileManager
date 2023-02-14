@@ -81,7 +81,7 @@
     $leftDir = {};
     $directoryListeners = [];
     $stateMapColors = [];
-    $config = {};
+    $config = null;
     $processKey = processKeyFunction;
 
     //
@@ -116,6 +116,7 @@
       $config = await OS.getConfig();
       const cfgFile = await OS.appendPath(configDir, "config.json");
       await OS.writeFile(cfgFile, JSON.stringify($config));
+      $config.OS = OS;
     } else {
       //
       // Read in the local configuration.
@@ -123,7 +124,73 @@
       var configFile = await OS.appendPath(configDir, "config.json");
       $config = await OS.readFile(configFile);
       $config = JSON.parse($config);
+      $config.OS = OS;
     }
+
+    //
+    // Setup the dirHistory store.
+    //
+    $dirHistory = {
+      histStore: [],
+      addHistory: function (dir) {
+        dir = new String(dir);
+        var el = this.histStore.find((item) =>
+          item.toLowerCase().includes(dir.toLowerCase())
+        );
+        if (typeof el === "undefined" || el === null) {
+          this.histStore.push(dir);
+          this.saveHistory();
+        }
+      },
+      searchHistory: function (pat) {
+        return this.histStore.filter((item) =>
+          item.toLowerCase().includes(pat.toLowerCase())
+        );
+      },
+      saveHistory: async function () {
+        if (
+          typeof $config !== null &&
+          typeof $config.configDir !== "undefined" &&
+          $config.configDir !== "" &&
+          typeof $config.OS !== "undefined"
+        ) {
+          //
+          // Save the history.
+          //
+          const hFile = await $config.OS.appendPath(
+            $config.configDir,
+            "history.json"
+          );
+          await $config.OS.writeFile(hFile, JSON.stringify(this.histStore));
+        }
+      },
+      loadHistory: async function () {
+        if (
+          typeof $config !== null &&
+          $config.configDir !== "" &&
+          typeof $config.OS !== "undefined"
+        ) {
+          //
+          // load the history.
+          //
+          const hf = await $config.OS.appendPath(
+            $config.configDir,
+            "history.json"
+          );
+          if (await $config.OS.fileExists(hf)) {
+            try {
+              this.histStore = await $config.OS.readFile(hf);
+              this.histStore = JSON.parse(this.histStore);
+            } catch (e) {
+              //
+              // Something was wrong with the history. Just forget it.
+              //
+              this.histStore = [];
+            }
+          }
+        }
+      },
+    };
 
     //
     // Setup the application to be in the user's home directory.
@@ -139,6 +206,7 @@
     //
     // Get the files.
     //
+    leftEntries = await OS.getDirList($leftDir.path);
     leftEntries = await OS.getDirList($leftDir.path);
     rightEntries = await OS.getDirList($rightDir.path);
 
@@ -208,13 +276,6 @@
     await loadExtensionsKeyboard();
 
     //
-    // Setup the directory history.
-    //
-    var dhist = get(dirHistory);
-    dhist.loadHistory();
-    $dirHistory = dhist;
-
-    //
     // Setup emmiters from the go code.
     //
     var commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
@@ -251,6 +312,11 @@
     });
 
     //
+    // Load the directory history.
+    //
+    $dirHistory.loadHistory();
+
+    //
     // return a command to unsubscribe from everything.
     //
     return () => {
@@ -267,7 +333,7 @@
     //
     // load the theme.
     //
-    const thFile = await OS.appendPath(configDir, "theme.json");
+    const thFile = await OS.appendPath($config.configDir, "theme.json");
     if (!(await OS.fileExists(thFile))) {
       //
       // Setup the Dracula Pro as default theme colors:
@@ -327,8 +393,7 @@
     // an extension command is being used.
     //
     await loadKeyMaps();
-    const ldKeyMaps = extensions.installKeyMaps;
-    await ldKeyMaps();
+    await extensions.installKeyMaps();
   }
 
   async function setUpExt() {
@@ -543,16 +608,6 @@
       "addExtraPanelProcessor",
       "Add a processor for creating extra panel html.",
       addExtraPanelProcessor
-    );
-    extensions.addExtCommand(
-      "addWatcher",
-      "Add a file or directory watcher",
-      addWatcher
-    );
-    extensions.addExtCommand(
-      "removeWatcher",
-      "Remove a file or directory watcher",
-      removeWatcher
     );
   }
 
@@ -2820,9 +2875,7 @@
     //
     // Load key maps from the config directory.
     //
-    var keyMapDir = { ...$currentCursor.entry };
-    keyMapDir.dir = configDir;
-    keyMapDir.name = "keyMaps";
+    let keyMapDir = await OS.appendPath(configDir, "keyMaps");
 
     if (!(await OS.dirExists(keyMapDir))) {
       createDefaultNormalMap(keyMapDir);
@@ -2899,20 +2952,8 @@
     $extraPanel.push(panelProc);
   }
 
-  async function addWatcher(path, wtype, signame, sigFunction) {
-    await AddWatcher(path, wtype, signame);
-    window.runtime.EventsOn(signame, sigFunction);
-  }
-  async function removeWatcher(path, wtype, signame) {
-    await RemoveWatcher(path, wtype, signame);
-    window.runtime.EventsOff(signame);
-  }
-
-  function saveDefaultKeymaps() {
-    var keyMapDir = { ...$currentCursor.entry };
-    keyMapDir.dir = configDir;
-    keyMapDir.name = "keyMaps";
-
+  async function saveDefaultKeymaps() {
+    var keyMapDir = await OS.appendPath(configDir, "keyMaps");
     createDefaultNormalMap(keyMapDir);
     createDefaultVisualMap(keyMapDir);
     createDefaultInsertMap(keyMapDir);

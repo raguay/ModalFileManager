@@ -1,13 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 
-var confg = {
-  configDir: '',
-  localFS: {},
-  configuration: {},
-  commands: {},
-  extensions: {},
-  userEditor: ''
-}
-
-export const config = writable(confg);
+export const config = writable(null);
 

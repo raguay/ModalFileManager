@@ -1,0 +1,1 @@
+{"layers": ["note-1815", "note-a98b"], "note-a98b": {"title": "test", "body": "This is a test note", "pos": [7, 4], "color": "#B989FF", "size": [20.0, 14.0], "type": "note"}, "note-1815": {"body": "This is just a box text.", "pos": [47, 8], "color": "#FFAA00", "border_color": "#FFAA00", "border_type": "outer", "size": [61.0, 26.0], "type": "box"}}
