@@ -379,11 +379,6 @@
     $stateMapColors["visual"] = $theme.visualbackgroundColor;
 
     //
-    // Set the theme.
-    //
-    $theme = $theme;
-
-    //
     // Setup Extensions.
     //
     await setUpExt();
@@ -434,10 +429,6 @@
 
   function showPreferences() {
     switchView("preferences");
-  }
-
-  function getOS() {
-    return "macOS";
   }
 
   function installDefaultExtCommands() {
