@@ -338,7 +338,6 @@ return({{extName}});
       on:mouseover={() => {
         setFocus(false);
       }}
-      on:focus={() => {}}
       on:mouseleave={() => {
         setFocus(true);
       }}

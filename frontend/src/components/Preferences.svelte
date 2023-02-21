@@ -1,50 +1,37 @@
 <script>
   import { onMount, createEventDispatcher } from "svelte";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
   import GeneralPrefs from "./GeneralPrefs.svelte";
   import ThemePrefs from "./ThemePrefs.svelte";
   import ExtensionPrefs from "./ExtensionPrefs.svelte";
-  import OS from "../modules/OS.js";
 
   const dispatch = createEventDispatcher();
 
-  let localFS;
-  let configDir;
-  let osNames = ["macOS", "linux", "windows"];
   let showPanel = "general";
   let vimInput = null;
   let keepBlur = true;
   let scrollDOM = null;
-  let timeOut;
+  let timeOut = null;
+  const timeOutValue = 500;
 
   onMount(async () => {
     //
-    // Get the local file system utilities.
-    //
-    localFS = OS;
-
-    //
-    // Initialize local.
-    //
-    localFS.init();
-
-    //
     // Setup the configuration directory.
     //
-    configDir = await localFS.getConfigDir();
-    if (!(await localFS.dirExists(configDir))) {
-      await localFS.makeDir(configDir);
-      await localFS.makeDir({
-        dir: configDir,
+    if (!(await $config.OS.dirExists($config.configDir))) {
+      await $config.OS.makeDir($config.configDir);
+      await $config.OS.makeDir({
+        dir: $config.configDir,
         name: "extensions",
-        fileSystem: localFS,
+        fileSystem: $config.OS,
       });
     }
 
     //
     // keep the input focused.
     //
-    timeOut = setTimeout(focusInput, 1000);
+    timeOut = setTimeout(focusInput, timeOutValue);
 
     //
     // return a command to unsubscribe from everything.
@@ -54,14 +41,11 @@
     };
   });
 
-  function getOS() {
-    var result = osNames[0];
-
-    return result;
-  }
-
   function switchView(view) {
-    if (view === "filemanager" || view === "preferences") {
+    //
+    // Only switch if going to the filemanager.
+    //
+    if (view === "filemanager") {
       dispatch("switchView", {
         view: view,
       });
@@ -85,7 +69,7 @@
     if (vimInput !== null && keepBlur) {
       vimInput.focus();
     }
-    timeOut = setTimeout(focusInput, 1000);
+    timeOut = setTimeout(focusInput, timeOutValue);
   }
 </script>
 
@@ -135,7 +119,7 @@
       }
     }}
   />
-  <h2>Preferences</h2>
+  <h2 style="--wails-draggable: drag;">Modal File Manager: Preferences</h2>
   <ul>
     {#if showPanel === "general"}
       <li
@@ -214,7 +198,8 @@
       }}
       on:setKeyProcess={(e) => {
         keepBlur = e.detail.blur;
-        if (keepBlur) timeOut = setTimeout(focusInput, 1000);
+        if (timeOut !== null) clearTimeout(timeOut);
+        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
       }}
     />
   {:else if showPanel === "theme"}
@@ -224,7 +209,8 @@
       }}
       on:setKeyProcess={(e) => {
         keepBlur = e.detail.blur;
-        if (keepBlur) timeOut = setTimeout(focusInput, 1000);
+        if (timeOut !== null) clearTimeout(timeOut);
+        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
       }}
     />
   {:else if showPanel === "extension"}
@@ -237,7 +223,7 @@
       }}
       on:setKeyProcess={(e) => {
         keepBlur = e.detail.blur;
-        if (keepBlur) timeOut = setTimeout(focusInput, 1000);
+        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
       }}
     />
   {/if}

@@ -68,6 +68,7 @@
   let selRegExpHist = null;
 
   onMount(async () => {
+    console.log("Initialize everything: ", commands);
     //
     // Initialize all the stores with minimal settings.
     //
@@ -253,20 +254,19 @@
         //
         // They don't have this file setup. TODO: Set it up or not?
         //
+        userEditor = null;
       }
     }
 
     //
     // Set the configuration store.
     //
-    $config = {
-      configDir: configDir,
-      OS: OS,
-      configuration: $config,
-      commands: commands,
-      extensions: extensions,
-      userEditor: userEditor,
-    };
+    $config.configDir = configDir;
+    $config.OS = OS;
+    $config.commands = commands;
+    $config.extensions = extensions;
+    $config.userEditor = userEditor;
+    console.log("Setting the config: ", $config, commands);
     OS.setConfig($config);
     extensions.setConfig($config);
 
@@ -279,10 +279,10 @@
     // Setup emmiters from the go code.
     //
     var commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
-    window.runtime.EventsOn("runCommands", (commands) => {
-      if (typeof commands === "string" && commands.length > 0) {
-        for (var i = 0; i < commands.length; i++) {
-          var parts = commands[i].match(commandParse);
+    window.runtime.EventsOn("runCommands", (cmds) => {
+      if (typeof cmds === "string" && cmds.length > 0) {
+        for (var i = 0; i < cmds.length; i++) {
+          var parts = cmds[i].match(commandParse);
           if (parts[2][0] == "'") {
             parts[2] = parts[2].slice(1, -1);
           }
@@ -290,10 +290,10 @@
         }
       }
     });
-    var commands = await App.GetCommandLineCommands();
-    if (commands !== null) {
-      for (var i = 0; i < commands.length; i++) {
-        var parts = commands[i].match(commandParse);
+    var cmds = await App.GetCommandLineCommands();
+    if (cmds !== null) {
+      for (var i = 0; i < cmds.length; i++) {
+        var parts = cmds[i].match(commandParse);
         if (parts[2][0] == "'") {
           parts[2] = parts[2].slice(1, -1);
         }
@@ -315,6 +315,8 @@
     // Load the directory history.
     //
     $dirHistory.loadHistory();
+
+    window.config = $config; // debugging
 
     //
     // return a command to unsubscribe from everything.
@@ -2948,6 +2950,10 @@
     createDefaultNormalMap(keyMapDir);
     createDefaultVisualMap(keyMapDir);
     createDefaultInsertMap(keyMapDir);
+  }
+
+  async function getOS() {
+    return OStype;
   }
 </script>
 

@@ -9,18 +9,6 @@
   let first = true;
 
   onMount(async () => {
-    if ($config !== null) {
-      const nfile = await $config.localFS.appendPath(
-        $config.configDir,
-        "config.json"
-      );
-      await $config.localFS.writeFile(
-        nfile,
-        JSON.stringify(value.configuration)
-      );
-      $config.localFS.setConfig(value.configuration);
-    }
-
     return () => {};
   });
 
@@ -34,19 +22,29 @@
   });
 
   function trashChanged(e) {
-    $config.configuration.useTrash = e.target.checked;
+    $config.useTrash = e.target.checked;
+  }
+
+  function setFocus(flag) {
+    dispatch("setKeyProcess", {
+      blur: flag,
+    });
   }
 </script>
 
 <div id="general" bind:this={scrollDOM}>
   {#if $config !== null}
     <h3>Environment for Launching Programs</h3>
-    <Env />
+    <Env
+      on:setKeyProcess={(e) => {
+        setFocus(e.detail.blur);
+      }}
+    />
 
     <h3>Other Configuration Items</h3>
     <div class="row">
       <label for="trashcanans"> Use the Trashcan? </label>
-      {#if $config.configuration.useTrash}
+      {#if $config.useTrash}
         <input
           id="trashcanans"
           type="checkbox"

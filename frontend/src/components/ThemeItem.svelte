@@ -1,7 +1,7 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { afterUpdate, createEventDispatcher } from "svelte";
   import { theme } from "../stores/theme.js";
-  import { HsvPicker } from "svelte-color-picker";
+  import ColorPicker from "svelte-awesome-color-picker";
 
   const dispatch = createEventDispatcher();
 
@@ -10,6 +10,11 @@
 
   let changeColor = false;
   let changeString = false;
+  let hex;
+
+  afterUpdate(() => {
+    hex = value;
+  });
 
   function changeValue() {
     if (value[0] === "#") {
@@ -17,6 +22,7 @@
     } else {
       changeString = true;
     }
+    setFocus(false);
   }
 
   function changeStringValue(val) {
@@ -26,28 +32,21 @@
     });
   }
 
-  function colorCallback(rgba) {
-    const newvalue = rgbToHex(
-      parseInt(rgba.r),
-      parseInt(rgba.g),
-      parseInt(rgba.b)
-    );
+  function colorCallback(hex) {
     dispatch("change", {
-      value: newvalue,
+      value: hex,
     });
   }
 
   function setValue() {
     changeColor = false;
+    setFocus(true);
   }
 
-  function componentToHex(c) {
-    let hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-
-  function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  function setFocus(flag) {
+    dispatch("setKeyProcess", {
+      blur: flag,
+    });
   }
 </script>
 
@@ -70,6 +69,10 @@
           bind:value
           on:blur={() => {
             changeStringValue(value);
+            setFocus(true);
+          }}
+          on:mouseover={() => {
+            setFocus(false);
           }}
         />
       {:else}
@@ -86,11 +89,14 @@
 </tr>
 {#if changeColor}
   <div class="cpicker">
-    <HsvPicker
-      on:colorChange={(e) => {
-        colorCallback(e.detail);
+    <ColorPicker
+      on:input={(e) => {
+        colorCallback(e.detail.hex);
       }}
-      startColor={value}
+      bind:hex
+      {label}
+      isOpen="true"
+      isPopup="false"
     />
     <button on:click={setValue}> Set Value </button>
   </div>

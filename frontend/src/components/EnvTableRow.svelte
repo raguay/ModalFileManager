@@ -17,6 +17,7 @@
   function saveInput() {
     value = inputValue;
     editValue = false;
+    setFocus(true);
     dispatch("save", {
       value: inputValue,
     });
@@ -24,6 +25,12 @@
 
   function deleteCell() {
     dispatch("delete", {});
+  }
+
+  function setFocus(flag) {
+    dispatch("setKeyProcess", {
+      blur: flag,
+    });
   }
 </script>
 
@@ -36,7 +43,14 @@
   </td>
   <td>{name}</td>
   {#if editValue}
-    <input bind:value={inputValue} on:blur={saveInput} />
+    <input
+      bind:value={inputValue}
+      on:blur={saveInput}
+      on:mouseover={() => {
+        setFocus(false);
+      }}
+      on:mouseleave={saveInput}
+    />
   {:else}
     <td>{value}</td>
   {/if}

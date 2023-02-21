@@ -15,13 +15,11 @@
   let first = true;
 
   onMount(async () => {
-    $config = value;
     if (typeof $config.OS !== "undefined") {
       await loadThemeList();
     }
 
-    return () => {
-    };
+    return () => {};
   });
 
   afterUpdate(() => {
@@ -34,12 +32,10 @@
   });
 
   async function loadThemeList() {
-    var themedir = await $config.OS.appendPath(
-      $config.configDir,
-      "themes"
-    );
+    var themedir = await $config.OS.appendPath($config.configDir, "themes");
     themeList = await $config.OS.getDirList(themedir);
     themeName = "";
+    themeList = themeList;
   }
 
   function setFocus(flag) {
@@ -54,10 +50,7 @@
   }
 
   async function createTheme() {
-    var thmDir = await $config.OS.appendPath(
-      $config.configDir,
-      "themes"
-    );
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
     thmDir = await $config.OS.appendPath(thmDir, themeName);
     if (!(await $config.OS.dirExists(thmDir))) {
       await $config.OS.createDir(thmDir);
@@ -75,10 +68,7 @@
             //
             // Add the needed fields to the package.json file for Modal File Manager.
             //
-            const pfile = await $config.OS.appendPath(
-              thmDir,
-              "package.json"
-            );
+            const pfile = await $config.OS.appendPath(thmDir, "package.json");
             var pkgConfig = JSON.parse(await $config.OS.readFile(pfile));
             pkgConfig.mfmtheme = {
               name: themeName,
@@ -115,26 +105,17 @@
   }
 
   async function updateTheme(thm) {
-    var thmDir = await $config.OS.appendPath(
-      $config.configDir,
-      "themes"
-    );
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
     thmDir = await $config.OS.appendPath(thmDir, thm.name);
     const pfile = await $config.OS.appendPath(thmDir, "package.json");
     var pkgConfig = await $config.OS.readFile(pfile);
     pkgConfig = JSON.parse(pkgConfig);
-    var thmFile = await $config.OS.appendPath(
-      thmDir,
-      pkgConfig.mfmtheme.main
-    );
+    var thmFile = await $config.OS.appendPath(thmDir, pkgConfig.mfmtheme.main);
     await $config.OS.writeFile(thmFile, JSON.stringify($theme));
   }
 
   async function deleteTheme(thm) {
-    var thmDir = await $config.OS.appendPath(
-      $config.configDir,
-      "themes"
-    );
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
     await $config.OS.deleteEntries(
       {
         dir: thmDir,
@@ -159,18 +140,12 @@
   }
 
   async function setTheme(thm) {
-    var thmDir = await $config.OS.appendPath(
-      $config.configDir,
-      "themes"
-    );
+    var thmDir = await $config.OS.appendPath($config.configDir, "themes");
     thmDir = await $config.OS.appendPath(thmDir, thm.name);
     const pfile = await $config.OS.appendPath(thmDir, "package.json");
     var pkgConfig = await $config.OS.readFile(pfile);
     pkgConfig = JSON.parse(pkgConfig);
-    var thmFile = await $config.OS.appendPath(
-      thmDir,
-      pkgConfig.mfmtheme.main
-    );
+    var thmFile = await $config.OS.appendPath(thmDir, pkgConfig.mfmtheme.main);
     $theme = await $config.OS.readFile(thmFile);
     $theme = JSON.parse($theme);
   }
@@ -193,6 +168,9 @@
             value={kv[1]}
             on:change={(e) => {
               changeValue(kv, e);
+            }}
+            on:setKeyProcess={(e) => {
+              setFocus(e.detail.blur);
             }}
           />
         {/each}

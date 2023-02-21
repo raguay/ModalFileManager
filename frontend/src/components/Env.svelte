@@ -14,22 +14,74 @@
   });
 
   function deleteCell(kv) {
-    delete $config.configuration.env[kv[0]];
+    delete $config.env[kv[0]];
+    $config = $config;
+    saveConfig();
   }
 
   function saveCell(kv, e) {
-    $config.configuration.env[kv[0]] = e.detail.value;
+    $config.env[kv[0]] = e.detail.value;
+    $config = $config;
+    saveConfig();
   }
 
-  function addKV(e) {
-    $config.configuration.env[KVname] = KVvalue;
+  async function saveConfig() {
+    if ($config !== null) {
+      //
+      // Save the important by cyclic structures.
+      //
+      let cpyOS = $config.OS;
+      let cpyExt = $config.extensions;
+      let cpyCmd = $config.commands;
+
+      //
+      // Null them before trying to make a copy.
+      //
+      $config.OS = null;
+      $config.commands = null;
+      $config.extensions = null;
+
+      //
+      // Make a copy.
+      //
+      let svConfig = JSON.parse(JSON.stringify($config));
+
+      //
+      // Restore the structures.
+      //
+      $config.OS = cpyOS;
+      $config.commands = cpyCmd;
+      $config.extensions = cpyExt;
+
+      //
+      // Save the configuration.
+      //
+      const cfgFile = await $config.OS.appendPath(
+        $config.configDir,
+        "config.json"
+      );
+      await $config.OS.writeFile(cfgFile, JSON.stringify(svConfig));
+    }
+  }
+
+  function addKV() {
+    $config.env[KVname] = KVvalue;
     addNew = false;
+    setFocus(true);
     KVname = "";
     KVvalue = "";
+    $config = $config;
+    saveConfig();
+  }
+
+  function setFocus(flag) {
+    dispatch("setKeyProcess", {
+      blur: flag,
+    });
   }
 </script>
 
-{#if $config !== null && typeof $config.configuration.env !== "undefined"}
+{#if $config !== null && typeof $config.env !== "undefined"}
   <table>
     <thead>
       <tr>
@@ -40,15 +92,18 @@
       </tr>
     </thead>
     <tbody>
-      {#each Object.entries($config.configuration.env) as kv}
+      {#each Object.entries($config.env) as kv}
         <EnvTableRow
           name={kv[0]}
           value={kv[1]}
-          on:delete={(e) => {
+          on:delete={() => {
             deleteCell(kv);
           }}
           on:save={(e) => {
             saveCell(kv, e);
+          }}
+          on:setKeyProcess={(e) => {
+            setFocus(e.detail.blur);
           }}
         />
       {/each}
@@ -57,7 +112,14 @@
           <td />
           <td />
           <td>
-            <input class="inputKV" type="text" bind:value={KVname} />
+            <input
+              class="inputKV"
+              type="text"
+              bind:value={KVname}
+              on:mouseover={() => {
+                setFocus(false);
+              }}
+            />
           </td>
           <td>
             <input
@@ -65,6 +127,10 @@
               type="text"
               bind:value={KVvalue}
               on:blur={addKV}
+              on:mouseover={() => {
+                setFocus(false);
+              }}
+              on:mouseleave={addKV}
             />
           </td>
         </tr>
