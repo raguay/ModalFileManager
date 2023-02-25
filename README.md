@@ -6,7 +6,7 @@ This project is for creating a file manager using web technologies. My original 
 
 Currently, it can't transfer files to other programs with Drag and Drop due to a limitation of the web technologies used. I should be able to get past this limitation soon by using lower level commands to the operating system which I will be exploring with this new Wails 2 implementation.
 
-This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers.
+This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers. The Favorites extensions shows a good example of extending the number of states by adding a “fav” state.
 
 This picture shows Modal File Manager in it's default theme.
 
@@ -48,13 +48,13 @@ A small gif showing Modal File Manager in action.
 
 I started my programming career with Emacs as my main text editor on a main frame computer in college (after they quit using punch cards!). I really loved Emacs, but had a very hard time remembering all the key commands.  I ended up using Vim once for a class I had (the teacher loved Vim) and hit the perverbial Vim wall -- How do I exit this thing! I finally had to kill the process. So, I went back to Emacs.
 
-With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is [OniVim2](https://github.com/onivim/oni2) which is the fastest programming editor I've ever used. It is great!
+With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is NeoVim with the LazyVim configuration which is the fastest programming editor I've ever used. It is great!
 
 But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. It is very slow in large directories and I also don't really like python: it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was (if anyone remembers it), but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
 
 Modal File Manager is also somewhat minimal in the UI. Many graphical file managers have buttons, shelves, etc. all over the place with information everywhere. I decided to make the main interface as low keyed as possible with all other information in the status line or extras panel. Extra file information is on the status line for the current cursor location. More information is displayed in the extras panel as well (the side opposite the current pointer shows extra information instead of the other file pane. When turned off, it automatically goes back to the file pane that was showing before switching.).
 
-Since there are so many dual pane file managers available, I knew this would never be a marketable product (and I did not want the hassle of endless customer complaint over a feature not working the way they want it). Therefore, I'm making this an open source project to hopefully get some help from others to help really make this thing shine.
+Since there are so many dual pane file managers available, I knew this would never be a marketable product (and I did not want the hassle of endless customer complaint over a feature not working the way they want it). Therefore, I'm making this an open source project to hopefully get some help from others to help really make this thing shine. To date, I haven't received any comments or help with this program. But, my number of stars on GitHub climb every week!
 
 Therefore, I hope you enjoy this little program as much as I have. Feel free to sponsor the project, help code some of it (just send in the pull requests), or just give me some tips along the way. Any help is appreciated.
 
@@ -68,15 +68,14 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Fully extendable with extensions using the extensions API
 - Fully theme-able. 
 - Launching with paths on the command line will open in the specified directories. See [Command Line](#command-line).
-- A file details side panel can be shown to overlay the panel not currently focused (`toggleExtraPanel` command). It shows video previews and stats with the ffmpeg programs installed. Extensions can place special content in this panel as well.
-- Hot keys are programmable
+- A file details side panel can be shown to overlay the panel not currently focused (`toggleExtraPanel` command or “s” in normal mode). It is fairly bare right now due to changing from NW.js to the Wails 2. I have lot of ideals, but haven't added them yet. Extensions can place special content in this panel as well (Project Manager extension is a good example).
+- Hot keys are programmable. Currently by editing the key map files, or writing an extension.
 - Select entries by regular expressions. The regular expressions are saved and can be reused.
 - A number before a hot key runs it's associated command that many times (ex: `5j` will move the cursor 5 entries down the list).
 - Watches for changes in the current directory and updates accordingly.
 - Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory.
 - File editor is configurable by the `~/.myeditorchoice` file (see `Editing Files` below). Otherwise, the system editor for the file type will be used.
-- Integrated with [EmailIt](https://github.com/raguay/EmailIt).
-- Quick Search - a input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quick search.
+- Quick Search - an input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quick search.
 - Toggle System files/folders visibility
 - Optionally deletes to the OS's trashcan (external program has to be installed)
 - Change the environment used to execute external programs using the `Show Preferences` Command Prompt command.
@@ -105,7 +104,7 @@ All Dracula based themes are here with permission from the author. Please suppor
 Because this is a web technologies application, there are certain things that it just can't do and I'm not sure if they can be done at this level. Therefore, this will not completely remove your dependency on using the Finder application. But, these instances are not everyday items for which we use a file manager. As I see it, these items are not doable, but I would love for someone to prove me wrong:
 
 - Install applications that the macOS Gatekeeper will allow.
-- Drad and drop with other programs.
+- Drag and drop with other programs.
 
 ## Installation
 
@@ -151,9 +150,9 @@ There are a few command line programs I use with Modal File Manager. They are:
 
 - [ffmpeg](https://ffmpeg.org/) for getting and using video information in the Extra Panel.
 - [fd](https://github.com/sharkdp/fd) for quick file finding. It's a `find` replacement written in Rust.
-- For using the macOS trashcan, you have to have (`trash`)[https://github.com/andreafrancia/trash-cli] command line program installed using `brew install trash-cli`. If the program isn't installed before installing mfm, then you will need to adjust the environment variable for PATH in the preferences to make sure it is in the path.
+- For using the macOS trashcan, you have to have (`trash`)[https://github.com/andreafrancia/trash-cli] command line program installed using `brew install trash-cli`. You have to have [HomeBrew](homebrew.sh) installed on your system to use the `brew` command line program. If the program isn't installed before installing mfm, then you will need to adjust the environment variable for PATH in the preferences to make sure it is in the path.
 
-All of the programs should be downloaded and in your shell's path. Modal File Manager doesn't assume location for anything except or it's own configuration files. But, if Modal File Manager can't find the program, you can adjust the path used in the preferences general tab (Command Prompt command is `Show Preferences`).
+All of the programs should be downloaded and in your shell's path. Modal File Manager doesn't assume location for anything except for it's own configuration files. But, if Modal File Manager can't find the program, you can adjust the path used in the preferences general tab (Command Prompt command is `Show Preferences`).
 
 ## Configuration Files
 
@@ -202,10 +201,11 @@ Files will be edited (normal mode key `e`) using editor specified in the [xBar](
 
 To use with the **xBar** plugin, you will need to have [xBar](https://xbarapp.com/) installed and the [currentFiles.1h.rb](https://xbarapp.com/docs/plugins/System/currentFiles.1h.rb.html) plugin installed and configured. You can also use the [Alfred BitBar Workflow](https://github.com/raguay/MyAlfred/blob/master/Alfred%203/BitBarWorkflow.alfredworkflow) to control the plugin.
 
-Alternatively, you can use the [TextBar](http://richsomerfield.com/apps/textbar/) program with the [Current Files and Editor](https://github.com/raguay/TextBarScripts/blob/master/Current%20Files%20and%20Editor.textbar) plugin installed. You can use the [Alfred](https://www.alfredapp.com/) with the [My Editor Workflow](https://github.com/raguay/MyAlfred/blob/master/Alfred%203/My%20Editor%20Workflow.alfredworkflow) to control the editor and edit files.
+Alternatively, you can use the [TextBar](http://richsomerfield.com/apps/textbar/) program with the [Current Files and Editor](https://github.com/raguay/TextBarScripts/blob/master/Current%20Files%20and%20Editor.textbar) plugin installed. 
 
-If the above editor setup isn't on the system, it will use the operating system to open the 
-file in the default file editor.
+You can use the [Alfred](https://www.alfredapp.com/) with the [My Editor Workflow](https://github.com/raguay/MyAlfred/blob/master/Alfred%203/My%20Editor%20Workflow.alfredworkflow) to control the editor and edit files.
+
+If the above editor setup isn't on the system, it will use the operating system defaults to open the file in the default file editor.
 
 ## Preferences
 
@@ -219,14 +219,14 @@ The Extension tab allows you to create, edit, and delete extensions from the Mod
 
 ## Things in the Works
 
-- Getting all the functionality as in the original program and defined earlier.
+- Getting all the functionality as in the original program.
   - Mostly still working on items in the Extra Panel working again.
 - Translating my fman extensions to work with Modal File Manager
 	- Dropbox File System
 	- Zip Selected Entries
 - Drag and drop with external programs 
 - Add more file views for the Extra Panel
-- Multiple windows
+- Multiple windows (waiting on Wails 3)
 - Get Windows working
 - Get Linux tested and working
 - Get audio listening in the Extras Panel.
