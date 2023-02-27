@@ -50,7 +50,7 @@ I started my programming career with Emacs as my main text editor on a main fram
 
 With Spacemacs and Doom-emacs, I learned that the Vim style keyboard was much more efficient. But, I kept going back to the Emacs key memory. I finally decided to really give Vim a run with neovim on my MacBook Air. I even installed Spacevim and really liked it. Now, I'm fully comfortable in the Vim style keyboard (but far from mastering it completely) and have adapted it to many other programs along the way. My current editor of choice is NeoVim with the LazyVim configuration which is the fastest programming editor I've ever used. It is great!
 
-But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but not actively being maintained and expanded upon. It is very slow in large directories and I also don't really like python: it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was (if anyone remembers it), but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
+But, I've never been happy with the file managers I've used. [fman](https://fman.io/) is great, but it is no longer actively being maintained and expanded upon. It is very slow in large directories and I also don't really like python: it's API language. So, I decided to jump in and make one to suit me better. This is how Modal File Manager was started. I wanted something that was as configurable as TkDesk was (if anyone remembers it), but with a modal keyboard model for hotkeys. To take it even further, new modes and keymaps can be added with extensions. 
 
 Modal File Manager is also somewhat minimal in the UI. Many graphical file managers have buttons, shelves, etc. all over the place with information everywhere. I decided to make the main interface as low keyed as possible with all other information in the status line or extras panel. Extra file information is on the status line for the current cursor location. More information is displayed in the extras panel as well (the side opposite the current pointer shows extra information instead of the other file pane. When turned off, it automatically goes back to the file pane that was showing before switching.).
 
@@ -97,7 +97,7 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
   - [Dracula "Buffy"](https://github.com/raguay/dracula-buffy-ThemeModalFileManager)
   - [Dracula "Van Helsing"](https://github.com/raguay/Dracula-Van-Helsing-ThemeModalFileManager)
 
-All Dracula based themes are here with permission from the author. Please support his great work at [Dracula Themes](https://draculatheme.com/). The Dracula "Buffy" theme is my preferred theme for everything. I'm having many issues with my eyes having light sensitivity and this theme allows me to keep working longer than other themes.
+All Dracula based themes are here with permission from the author. Please support his great work at [Dracula Themes](https://draculatheme.com/). The Dracula "Buffy" theme is my preferred theme for everything.
 
 ## Some Limitations
 
@@ -105,10 +105,13 @@ Because this is a web technologies application, there are certain things that it
 
 - Install applications that the macOS Gatekeeper will allow.
 - Drag and drop with other programs.
+- Git command line needs to be installed for downloading extensions and themes.
 
 ## Installation
 
-This project is a [Wails 2](https://wails.io/) project. You therefore need to have Wails, [go](https://go.dev/) language from Google, and [Node](https://nodejs.org/en/) installed on your computer. I've currently only build this using macOS, but it should build as is on Linux as well. I'm working on making this available for Windows, Linux, and macOS.
+This project is a [Wails 2](https://wails.io/) project. You therefore need to have Wails, [go](https://go.dev/) language from Google, and [Node](https://nodejs.org/en/) installed on your computer. You will also need a working git command line to download extensions and themes.
+
+I've currently only build this using macOS, but it should build as is on Linux as well. I'm working on making this available for Windows, Linux, and macOS.
 
 To build the program, simply type:
 
@@ -148,6 +151,7 @@ If a new version comes out with new default key mappings, you will either have t
 
 There are a few command line programs I use with Modal File Manager. They are:
 
+- git for downloading extensions and themes.
 - [ffmpeg](https://ffmpeg.org/) for getting and using video information in the Extra Panel.
 - [fd](https://github.com/sharkdp/fd) for quick file finding. It's a `find` replacement written in Rust.
 - For using the macOS trashcan, you have to have (`trash`)[https://github.com/andreafrancia/trash-cli] command line program installed using `brew install trash-cli`. You have to have [HomeBrew](homebrew.sh) installed on your system to use the `brew` command line program. If the program isn't installed before installing mfm, then you will need to adjust the environment variable for PATH in the preferences to make sure it is in the path.
@@ -347,7 +351,6 @@ These commands can be ran from the command prompt. They all act upon the current
 | `Save Default Keymaps` | Save the default keymaps over the current keymap files | saveDefaultKeymaps |
 | `Select by Regular Expression` | Select entries using a regulare expression. | selectRegExp |
 
-
 ### Extension Commands
 
 These commands require inputs and supply results. Therefore these commands can`t be used in hotkeys or the command prompt. They are loaded and used in a different way as well. Please refer to the [Creating Extensions Section](#creating-extensions) for more details.
@@ -445,7 +448,6 @@ The Theme JSON file is like this one:
   "Red": "#FF9580",
   "Yellow": "#FFFF80"
 }
-
 ```
 
 It should be a proper JSON structure with these definitions. Change the color values as you want.
