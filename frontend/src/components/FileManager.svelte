@@ -68,7 +68,6 @@
   let selRegExpHist = null;
 
   onMount(async () => {
-    console.log("Initialize everything: ", commands);
     //
     // Initialize all the stores with minimal settings.
     //
@@ -266,7 +265,6 @@
     $config.commands = commands;
     $config.extensions = extensions;
     $config.userEditor = userEditor;
-    console.log("Setting the config: ", $config, commands);
     OS.setConfig($config);
     extensions.setConfig($config);
 

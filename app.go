@@ -116,7 +116,7 @@ func (b *App) StartWatcher() {
 		//
 		// Create the timer.
 		//
-		b.Timer = time.NewTimer(time.Second)
+		b.Timer = time.NewTimer(time.Millisecond * 50)
 
 		//
 		// Do the Job. check for changes in the current directories.
