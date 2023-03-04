@@ -109,27 +109,35 @@ Because this is a web technologies application, there are certain things that it
 
 ## Installation
 
-This project is a [Wails 2](https://wails.io/) project. You therefore need to have Wails, [go](https://go.dev/) language from Google, and [Node](https://nodejs.org/en/) installed on your computer. You will also need a working git command line to download extensions and themes.
+This project is a [Wails 2](https://wails.io/) project. If you want to compile the program yourself, you will need to have Wails, [go](https://go.dev/) language from Google, and [Node](https://nodejs.org/en/) installed on your computer. You will also need a working git command line to download extensions and themes. The most recent version is what is compiled from these sources. When I have tested many changes, I will release a new version for downloading. So, if you like being on the bleeding edge, clone this repo with:
 
-I've currently only build this using macOS, but it should build as is on Linux as well. I'm working on making this available for Windows, Linux, and macOS.
+```bash
+git clone https://github.com/raguay/ModalFileManager.git
+```
 
-To build the program, simply type:
+And follow these instructions for compiling the sources. I'm currently building Modal File Manager using macOS and Debian Linux Arm Achitecture, but it should build as is on other Linuxes as well. I haven't fully debugged the Linux build yet (deleting to trash isn't working for example) and therefore I'm not giving a compiled release for it. I'm working on making this available for Windows, Linux, and macOS.
+
+Once you have the prerequisites installed, to build the program, simply type:
 
 ```bash 
 wails build 
 ```
+
 The fully compiled program should be in the `build/bin` directory.
 
-You can run a developer mode in which you can debug the frontend code by running:
+You can run in developer mode in which you can debug the frontend code by running:
 
 ```bash 
 wails dev 
 ```
-Or, you can download the latest release. You will have to give mfm permission to access directories on your system.
+
+If you right click on the background of a dev build, the popup menu has the entry to 'inspect'. Clicking on it will open the developer tools to debug the frontend code.
+
+Once Modal File Manager is installed, you will have to give mfm permission to access directories on your system.
 
 ## Command Line
 
-Modal File Manager takes command line arguments as well. I will be expanding this feature more and more to help with automation. On the macOS, you need to create an alias in your shell for the command line program. If you place the `mfm.app` file in your `/Applications` folder, you would add this to your `.zshrc` file in your home directory:
+Modal File Manager takes command line arguments as well. I will be expanding this feature more and more to help with automation. On the macOS, you need to create an alias in your shell for the command line program. If you place the `mfm.app` file in your `/Applications` folder on a macOS system, you would add this to your `.zshrc` file in your home directory:
 
 ```sh
 alias mfm='/Applications/mfm.app/Contents/MacOS/mfm'
@@ -145,13 +153,13 @@ will open the Modal File Manager in my personal dropbox folder in the left pane.
 
 ## Upgrading
 
-If a new version comes out with new default key mappings, you will either have to manually alter the key maps or delete the `keyMaps` directory in the Modal File Manager configuration directory.
+If a new version comes out with new default key mappings, you will either have to manually alter the key maps or delete the `keyMaps` directory in the Modal File Manager configuration directory. Since I haven't ever changed the default key maps, this is rarely ever needed. Just check the change log for the new version to see if you need to do that or not.
 
 ## Command Line Programs Used
 
 There are a few command line programs I use with Modal File Manager. They are:
 
-- git for downloading extensions and themes.
+- [git](https://git-scm.com/) for downloading extensions and themes.
 - [ffmpeg](https://ffmpeg.org/) for getting and using video information in the Extra Panel.
 - [fd](https://github.com/sharkdp/fd) for quick file finding. It's a `find` replacement written in Rust.
 - For using the macOS trashcan, you have to have (`trash`)[https://github.com/andreafrancia/trash-cli] command line program installed using `brew install trash-cli`. You have to have [HomeBrew](homebrew.sh) installed on your system to use the `brew` command line program. If the program isn't installed before installing mfm, then you will need to adjust the environment variable for PATH in the preferences to make sure it is in the path.
@@ -383,7 +391,6 @@ These commands require inputs and supply results. Therefore these commands can`t
 | `showMessage` | Show a message to the user. |
 | `createNewMode` | Allows the creation of a new mode for keyboard commands. |
 | `changeMode` | Change to mode given. |
-| `askQuestion` | Ask the user a question and return the answer. |
 | `switchView` | Change to new program view. Currently `filemanager` or `preferences`. |
 | `copyEntriesCommand` | Copy the entry list to the destination entry. |
 | `moveEntriesCommand` | Move the entry list to the destination entry. |
@@ -394,9 +401,8 @@ These commands require inputs and supply results. Therefore these commands can`t
 | `getLeftDir` | Get the directory path for the left panel. |
 | `setLeftDir` | Set the directory path for the left panel. |
 | `addExtraPanelProcessor` | Add a object for processing extra panel informaiton. |
-| `addWatcher` | Add a file or directory watcher |
-| `removeWatcher` | Remove a file or directory watcher |
-| `stringKeyProcessor` | Send a string of keystrokes to be ran. |
+| `addWatcher` | Add a file or directory watcher. Currently not working. |
+| `removeWatcher` | Remove a file or directory watcher. Currently not working. |
 
 ## Creating Themes
 
