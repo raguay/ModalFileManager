@@ -22,7 +22,6 @@
     //
     if (lastChecked !== $currentCursor.entry.name) {
       lastChecked = $currentCursor.entry.name;
-      console.log("beforeUpdat: ", $currentCursor);
       fullPath = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
         $currentCursor.entry.name
@@ -33,9 +32,7 @@
       //
       // Check the new cursor for extra panel items.
       //
-      console.log("Check for extra Panel info...");
       isExtra = checkExtraPanel();
-      console.log("Extra info: ", isExtra);
     }
   });
 
@@ -92,7 +89,6 @@
       'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' +
       fileName +
       '"';
-    console.log("getDimensions: ", com);
     $currentCursor.entry.fileSystem.runCommandLine(
       com,
       [],
@@ -104,7 +100,6 @@
           var width = /width=(\d+)/.exec(stdout);
           var height = /height=(\d+)/.exec(stdout);
           videoDem = parseInt(width[1]) + "x" + parseInt(height[1]);
-          console.log("get Video Dimensions: ", videoDem);
         }
       },
       "."
