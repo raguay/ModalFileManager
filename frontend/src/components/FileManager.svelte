@@ -314,8 +314,6 @@
     //
     $dirHistory.loadHistory();
 
-    window.config = $config; // debugging
-
     //
     // return a command to unsubscribe from everything.
     //

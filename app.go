@@ -152,7 +152,7 @@ func (b *App) StartWatcher() {
 				// The number of files have changed. Reload the directory.
 				//
 				b.LenRightFiles = LenRightFiles
-				rt.EventsEmit(b.ctx, "RightSideChange", "")
+				rt.EventsEmit(b.ctx, "rightSideChange", "")
 			} else {
 				//
 				// See if a file name changed. This takes longer.

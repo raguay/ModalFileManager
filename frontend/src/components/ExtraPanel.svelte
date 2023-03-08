@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate, tick } from "svelte";
+  import { beforeUpdate, afterUpdate, tick } from "svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { extraPanel } from "../stores/extraPanel.js";
   import util from "../modules/util.js";
@@ -14,38 +14,40 @@
   let isMovieFlag = false;
   let isExtra = false;
   let extraHTML = "";
+  let lastChecked = "";
 
-  onMount(async () => {
+  beforeUpdate(async () => {
     //
-    // Get the file information needed.
+    // Get the file information needed whenever the current cursor changes.
     //
-    fullPath = await $currentCursor.entry.fileSystem.appendPath(
-      $currentCursor.entry.dir,
-      $currentCursor.entry.name
-    );
-    extension = $currentCursor.entry.ext;
-    size = util.readableSize($currentCursor.entry.size);
+    if (lastChecked !== $currentCursor.entry.name) {
+      lastChecked = $currentCursor.entry.name;
+      console.log("beforeUpdat: ", $currentCursor);
+      fullPath = await $currentCursor.entry.fileSystem.appendPath(
+        $currentCursor.entry.dir,
+        $currentCursor.entry.name
+      );
+      extension = $currentCursor.entry.ext;
+      size = util.readableSize($currentCursor.entry.size);
 
-    //
-    // Check the new cursor for extra panel items.
-    //
-    isExtra = checkExtraPanel();
-
-    //
-    // Return the function
-    //
-    return () => {};
+      //
+      // Check the new cursor for extra panel items.
+      //
+      console.log("Check for extra Panel info...");
+      isExtra = checkExtraPanel();
+      console.log("Extra info: ", isExtra);
+    }
   });
 
   afterUpdate(async () => {
     if (isMovie()) {
       await tick();
-      var file = new File($currentCursor.entry.dir, $currentCursor.entry.name);
-      var fileURL = window.URL.createObjectURL(file);
-      var videoNode = window.document.getElementById("videoItem");
-      if (videoNode !== null) {
-        videoNode.src = fileURL;
-      }
+      //var file = new File($currentCursor.entry.dir, $currentCursor.entry.name);
+      //var fileURL = window.URL.createObjectURL(file);
+      //var videoNode = window.document.getElementById("videoItem");
+      //if (videoNode !== null) {
+      //  videoNode.src = fileURL;
+      //}
       getDimensions(fullPath);
     }
     if (isExtra) {
@@ -90,17 +92,19 @@
       'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' +
       fileName +
       '"';
+    console.log("getDimensions: ", com);
     $currentCursor.entry.fileSystem.runCommandLine(
       com,
       [],
       (err, stdout) => {
         if (err) {
-          console.log(err);
+          console.log("getDimensions: ffprobe error: ", err);
         } else {
           var stdout = stdout.toString("utf8");
           var width = /width=(\d+)/.exec(stdout);
           var height = /height=(\d+)/.exec(stdout);
           videoDem = parseInt(width[1]) + "x" + parseInt(height[1]);
+          console.log("get Video Dimensions: ", videoDem);
         }
       },
       "."
