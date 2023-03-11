@@ -591,6 +591,7 @@ var OS = {
 		} catch (e) {
 			console.log(e);
 			this.lastError = e.toString();
+			returnFunction("");
 		}
 	},
 	splitFilePath: async function (filePath) {
@@ -603,6 +604,13 @@ var OS = {
 	},
 	setClipBoard: async function (msg) {
 		await App.SetClip(msg);
+	},
+	setDirWatch: async function (path, pane) {
+		if (pane === "left") {
+			App.SetLeftDirWatch(path);
+		} else {
+			App.SetRightDirWatch(path);
+		}
 	},
 };
 

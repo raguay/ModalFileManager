@@ -1,10 +1,5 @@
 <script>
-  import {
-    tick,
-    afterUpdate,
-    beforeUpdate,
-    createEventDispatcher,
-  } from "svelte";
+  import { tick, afterUpdate, createEventDispatcher } from "svelte";
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
@@ -28,13 +23,70 @@
   let lastDir = "";
 
   $: checkEdit(edit);
+  $: checkPath(path);
 
-  beforeUpdate(() => {
+  async function checkPath(npath) {
     //
-    // Process the new path.
+    // Leave if the system isn't fully initialized.
     //
-    newPath = shortenPath(path);
-  });
+    if (
+      typeof npath === "undefined" ||
+      typeof npath.fileSystem === "undefined" ||
+      npath.fileSystem === null
+    ) {
+      return;
+    }
+
+    //
+    // Make sure it's a new path and fix the name for displaying.
+    //
+    var result = npath.path.toString().trim();
+    if (result !== "") {
+      //
+      // Make sure the directory is being watched.
+      //
+      await npath.fileSystem.setDirWatch(result, pane);
+
+      //
+      // Tell everyone watching directory changes that a change is occurring.
+      //
+      runDirectoryListeners(result);
+
+      //
+      // Add to the history.
+      //
+      $dirHistory.addHistory(result);
+
+      //
+      // Fixing the path.
+      //
+      const sep = npath.fileSystem.sep;
+      if (result[0] === sep) result = result.slice(1);
+      if (result[result.length - 1] === sep) result = result.slice(0, -1);
+      var parts = result.split(sep);
+      if (parts.length > 3) {
+        //
+        // If the path length is greater than the shortener length, shorten the path
+        // by just showing the first character of the upper paths.
+        //
+        const boundry = parts.length - 3;
+        for (var i = 0; i < boundry; i++) {
+          parts[i] = parts[i][0];
+        }
+        result = parts.join(sep);
+      }
+
+      //
+      // Make sure there is a path seperator on both sides of the path.
+      //
+      if (result[0] !== sep) result = sep + result;
+      if (result[result.length - 1] !== sep) result += sep;
+    }
+    //
+    // Set the new path to display.
+    //
+    newPath = result;
+  }
 
   afterUpdate(async () => {
     if (!show) {
@@ -99,73 +151,6 @@
     } else {
       dirlist = [];
     }
-  }
-
-  function shortenPath(pth) {
-    //
-    // Leave if the system isn't fully initialized.
-    //
-    if (
-      typeof pth === "undefined" ||
-      typeof pth.fileSystem === "undefined" ||
-      pth.fileSystem === null
-    ) {
-      return "File system not defined";
-    }
-
-    var result = pth.path.toString().trim();
-    if (result !== "") {
-      //
-      // Make sure the directory is being watched.
-      //
-      if (pane === "left") {
-        App.SetLeftDirWatch(result);
-      } else {
-        App.SetRightDirWatch(result);
-      }
-
-      //
-      // Tell everyone watching directory changes that a change is occurring.
-      //
-      runDirectoryListeners(result);
-
-      //
-      // Add to the history.
-      //
-      $dirHistory.addHistory(result);
-
-      //
-      // Fixing the path.
-      //
-      const sep = pth.fileSystem.sep;
-      if (result[0] === sep) result = result.slice(1);
-      if (result[result.length - 1] === sep) result = result.slice(0, -1);
-      var parts = result.split(sep);
-      if (parts.length > 3) {
-        //
-        // If the path length is greater than the shortener length, shorten the path
-        // by just showing the first character of the upper paths.
-        //
-        const boundry = parts.length - 3;
-        for (var i = 0; i < boundry; i++) {
-          parts[i] = parts[i][0];
-        }
-        result = parts.join(sep);
-      }
-
-      //
-      // Make sure there is a path seperator on both sides of the path.
-      //
-      if (result[0] !== sep) result = sep + result;
-      if (result[result.length - 1] !== sep) result += sep;
-    } else if (newPath !== "") {
-      result = newPath;
-    }
-
-    //
-    // Return the resulting path.
-    //
-    return result;
   }
 
   function processKey(e) {
