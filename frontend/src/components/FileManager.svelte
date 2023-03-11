@@ -132,27 +132,27 @@
     //
     $dirHistory = {
       histStore: [],
+      histLoaded: false,
       addHistory: function (dir) {
         dir = new String(dir);
         var el = this.histStore.find((item) =>
           item.toLowerCase().includes(dir.toLowerCase())
         );
-        if (typeof el === "undefined" || el === null) {
+        if (typeof el === "undefined") {
           this.histStore.push(dir);
           this.saveHistory();
         }
       },
       searchHistory: function (pat) {
-        return this.histStore.filter((item) =>
-          item.toLowerCase().includes(pat.toLowerCase())
-        );
+        let rgex = new RegExp(pat, "i");
+        return this.histStore.filter((item) => item.match(rgex) !== null);
       },
       saveHistory: async function () {
         if (
-          typeof $config !== null &&
-          typeof $config.configDir !== "undefined" &&
-          $config.configDir !== "" &&
-          typeof $config.OS !== "undefined"
+          this.histLoaded &&
+          typeof $config !== "undefined" &&
+          typeof $config.OS !== "undefined" &&
+          typeof $config.configDir !== "undefined"
         ) {
           //
           // Save the history.
@@ -166,9 +166,9 @@
       },
       loadHistory: async function () {
         if (
-          typeof $config !== null &&
-          $config.configDir !== "" &&
-          typeof $config.OS !== "undefined"
+          typeof $config !== "undefined" &&
+          typeof $config.OS !== "undefined" &&
+          $config.configDir !== ""
         ) {
           //
           // load the history.
@@ -181,6 +181,7 @@
             try {
               this.histStore = await $config.OS.readFile(hf);
               this.histStore = JSON.parse(this.histStore);
+              this.histLoaded = true;
             } catch (e) {
               //
               // Something was wrong with the history. Just forget it.
@@ -438,11 +439,6 @@
     extensions.addExtCommand(
       "cursorToPane",
       'Set the cursor to the pane given. Either "left" or "right", cursorToPane'
-    );
-    extensions.addExtCommand(
-      "changeDir",
-      "Change the directory of a pane and make it the current.",
-      changeDir
     );
     extensions.addExtCommand(
       "getLeftFile",
@@ -1500,7 +1496,9 @@
   }
 
   async function openFile(entry) {
-    await entry.fileSystem.openFile(entry.dir, entry.name);
+    if (typeof entry !== "undefined" && typeof entry.dir !== "undefined") {
+      await entry.fileSystem.openFile(entry.dir, entry.name);
+    }
   }
 
   async function actionEntry() {
@@ -3023,10 +3021,10 @@
       <DirectoryListing
         path={$leftDir}
         edit={setEditDirFlagLeft}
-        side="left"
+        pane="left"
         on:dirChange={async (e) => {
-          await changeDir(e.detail, "left", "");
           setEditDirFlagLeft = false;
+          await changeDir(e.detail, "left", "");
         }}
         on:updateDir={() => {
           refreshLeftPane();
@@ -3037,7 +3035,7 @@
         entries={leftEntries}
         utilities={$leftDir.fileSystem}
         on:changeDir={async (e) => {
-          await changeDir(e.detail.dir, e.detail.pane, "");
+          await changeDir(e.detail.dir, "left", "");
         }}
         on:openFile={async (e) => {
           await openFile(e.detail.entry);
@@ -3057,10 +3055,10 @@
       <DirectoryListing
         path={$rightDir}
         edit={setEditDirFlagRight}
-        side="right"
+        pane="right"
         on:dirChange={async (e) => {
-          await changeDir(e.detail, "right", "");
           setEditDirFlagRight = false;
+          await changeDir(e.detail, "right", "");
         }}
         on:updateDir={async () => {
           await refreshRightPane();
@@ -3071,7 +3069,7 @@
         entries={rightEntries}
         utilities={$rightDir.fileSystem}
         on:changeDir={async (e) => {
-          await changeDir(e.detail.dir, e.detail.pane, "");
+          await changeDir(e.detail.dir, "right", "");
         }}
         on:openFile={async (e) => {
           await openFile(e.detail.entry);

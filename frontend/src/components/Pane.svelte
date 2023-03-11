@@ -156,10 +156,9 @@
 </script>
 
 <div class="panel" bind:this={DOM}>
-  {#each entries as entry, index}
+  {#each entries as entry}
     <Entry
       {pane}
-      {index}
       {entry}
       {utilities}
       on:changeDir={changeDir}

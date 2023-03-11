@@ -1,12 +1,12 @@
 <script>
   import { beforeUpdate, afterUpdate, tick } from "svelte";
+  import ModeLine from "./ModeLine.svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { extraPanel } from "../stores/extraPanel.js";
   import util from "../modules/util.js";
 
   export let side = "";
 
-  let extraPDOM = null;
   let fullPath = "";
   let extension = "";
   let size = "";
@@ -107,7 +107,7 @@
   }
 </script>
 
-<div id="extrapanel" bind:this={extraPDOM}>
+<div id="extrapanel">
   {#if isExtra}
     {@html extraHTML}
   {/if}
@@ -125,6 +125,10 @@
   <div class="stats">
     <p>Date: {$currentCursor.entry.datetime}</p>
     <p>Size: {size}</p>
+    <div id="modeline">
+      <p>Permissions:</p>
+      <ModeLine entry={$currentCursor.entry} />
+    </div>
   </div>
 </div>
 
@@ -142,6 +146,11 @@
 
   #extrapanel img {
     width: 100%;
+  }
+
+  #modeline {
+    display: flex;
+    flex-direction: row;
   }
 
   .stats {

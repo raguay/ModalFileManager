@@ -1,5 +1,5 @@
 <script>
-  import { onMount, createEventDispatcher, tick } from "svelte";
+  import { beforeUpdate, createEventDispatcher } from "svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";
@@ -11,72 +11,35 @@
 
   export let pane;
   export let entry;
-  export let index;
   export let utilities;
 
   const dispatch = createEventDispatcher();
 
   let DOM;
-  let localCursor = {
-    pane: "right",
-    entry: {
-      name: "",
-    },
-  };
-  let localTheme = {
-    cursorColor: "pink",
-  };
 
-  onMount(() => {
-    var unsubscribeCurrentCursor = currentCursor.subscribe(async (value) => {
-      localCursor = value;
-      await tick();
-      if (typeof localCursor.entry !== "undefined") {
-        if (typeof localCursor.entry.name !== "undefined") {
-          if (
-            localCursor.pane === pane &&
-            localCursor.entry.name == entry.name
-          ) {
-            var viewable = elementInViewport(DOM);
-            if (!viewable.visible) {
-              dispatch("changeViewing", {
-                dom: DOM,
-                dir: viewable.dir,
-              });
-            }
-          }
-        } else {
-          localCursor.entry = {
-            name: "",
-            size: "",
-            type: "local",
-            dir: "",
-            datetime: "",
-            selected: false,
-          };
-        }
-      } else {
-        localCursor.entry = {
-          name: "",
-          size: "",
-          type: "local",
-          dir: "",
-          datetime: "",
-          selected: false,
-        };
+  beforeUpdate(() => {
+    if (
+      typeof DOM !== "undefined" &&
+      typeof $currentCursor.entry !== "undefined" &&
+      typeof $currentCursor.entry.name !== "undefined" &&
+      $currentCursor.pane === pane &&
+      $currentCursor.entry.name == entry.name
+    ) {
+      var viewable = elementInViewport(DOM);
+      if (typeof viewable !== "undefined" && !viewable.visible) {
+        dispatch("changeViewing", {
+          dom: DOM,
+          dir: viewable.dir,
+        });
       }
-    });
-    var unsubscribeTheme = theme.subscribe((value) => {
-      localTheme = value;
-    });
-    return () => {
-      unsubscribeCurrentCursor();
-      unsubscribeTheme();
-    };
+    }
   });
 
   function elementInViewport(el) {
-    if (typeof el.getBoundingClientRect !== "undefined") {
+    if (
+      typeof el !== "undefined" &&
+      typeof el.getBoundingClientRect !== "undefined"
+    ) {
       var windowInner = window.innerHeight - 31;
       var boundingEl = el.getBoundingClientRect();
       return {
@@ -89,7 +52,7 @@
     }
   }
 
-  function cursorToEntry(pane, entry, index) {
+  function cursorToEntry(pane, entry) {
     currentCursor.set({
       pane: pane,
       entry: entry,
@@ -106,7 +69,7 @@
     }
   }
 
-  async function openEntry(pane, entry, index) {
+  async function openEntry(entry) {
     if (entry.type === 0) {
       //
       // It is a file, open it.
@@ -125,7 +88,6 @@
   }
 
   async function dragStart(e) {
-    const $config = get(config);
     var flist = $config.extensions.getExtCommand("getSelectedFiles").command();
     var included = false;
     var data = [];
@@ -214,12 +176,12 @@
   }
 </script>
 
-{#if (localCursor.pane === pane && localCursor.entry.name == entry.name) || entry.selected}
+{#if ($currentCursor.pane === pane && $currentCursor.entry.name == entry.name) || entry.selected}
   <div
     class="entry"
-    style="background-color: {localTheme.cursorColor};"
-    on:click={cursorToEntry(pane, entry, index)}
-    on:dblclick={openEntry(pane, entry, index)}
+    style="background-color: {$theme.cursorColor};"
+    on:click={cursorToEntry(pane, entry)}
+    on:dblclick={openEntry(entry)}
     bind:this={DOM}
     draggable="true"
     on:dragstart={dragStart}
@@ -247,17 +209,16 @@
     </span>
     <span
       class="name"
-      style="color: {entry.selected
-        ? localTheme.selectedColor
-        : localTheme.textColor};">{entry.name}</span
+      style="color: {entry.selected ? $theme.selectedColor : $theme.textColor};"
+      >{entry.name}</span
     >
   </div>
 {:else}
   <div
     class="entry"
     style="background-color: 'transparent';"
-    on:click={cursorToEntry(pane, entry, index)}
-    on:dblclick={openEntry(pane, entry, index)}
+    on:click={cursorToEntry(pane, entry)}
+    on:dblclick={openEntry(entry)}
     bind:this={DOM}
     draggable="false"
     on:drop|preventDefault={(e) => {
@@ -278,9 +239,7 @@
     </span>
     <span
       class="name"
-      style="color: {entry.selected
-        ? localTheme.selectedColor
-        : localTheme.textColor};"
+      style="color: {entry.selected ? $theme.selectedColor : $theme.textColor};"
     >
       {entry.name}
     </span>

@@ -50,6 +50,7 @@ type FileInfo struct {
 	Modtime   string
 	Index     int
 	Mode      fs.FileMode
+	Link      bool
 }
 
 type GitHubRepos struct {
@@ -251,12 +252,14 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
 			fileInfo.Index = index
-			fileInfo.Mode = file.Mode()
+			fileInfo.Mode = file.Mode().Perm()
+			fileInfo.Link = false
 
 			//
 			// Determine if it is a symlink and if so if it's a directory.
 			//
-			if fileInfo.Mode&fs.ModeSymlink.Type() != 0 {
+			if file.Mode()&fs.ModeSymlink.Type() != 0 {
+				fileInfo.Link = true
 				link, err := os.Readlink(b.AppendPath(path, fileInfo.Name))
 				if err == nil && b.DirExists(link) {
 					fileInfo.IsDir = true
