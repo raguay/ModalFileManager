@@ -1,10 +1,14 @@
 <script>
-  import { tick, afterUpdate, createEventDispatcher } from "svelte";
+  import {
+    tick,
+    beforeUpdate,
+    afterUpdate,
+    createEventDispatcher,
+  } from "svelte";
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
   import { directoryListeners } from "../stores/directoryListeners.js";
-  import * as App from "../../dist/wailsjs/go/main/App.js";
 
   const dispatch = createEventDispatcher();
 
@@ -21,9 +25,66 @@
   let pending = false;
   let dirIndex = 0;
   let lastDir = "";
+  let elDOM;
+  let DOM;
 
   $: checkEdit(edit);
   $: checkPath(path);
+
+  beforeUpdate(() => {});
+
+  afterUpdate(async () => {
+    //
+    // Focus the input if visible.
+    //
+    if (!show) {
+      await tick();
+      if (typeof dirInputDOM !== "undefined") dirInputDOM.focus();
+    }
+  });
+
+  function checkVisible() {
+    //
+    // If the current element isn't visible, make it visible.
+    //
+    if (
+      typeof elDOM !== "undefined" &&
+      typeof DOM !== "undefined" &&
+      elDOM !== null &&
+      DOM !== null &&
+      dirlist.length !== 0
+    ) {
+      var viewable = elementInViewport(elDOM);
+      if (typeof viewable !== "undefined" && !viewable.visible) {
+        DOM.scrollTop += viewable.dir;
+        if (DOM.scrollTop < 0) DOM.scrollTop = 0;
+      }
+    }
+  }
+
+  function getInnerHeight(elm) {
+    var computed = getComputedStyle(elm),
+      padding =
+        parseInt(computed.paddingTop) + parseInt(computed.paddingBottom);
+
+    return elm.clientHeight - padding;
+  }
+
+  function elementInViewport(el) {
+    if (
+      typeof el !== "undefined" &&
+      el !== null &&
+      typeof el.getBoundingClientRect !== "undefined"
+    ) {
+      
+      var windowInner = getInnerHeight(DOM) - 31;
+      var boundingEl = el.getBoundingClientRect();
+      return {
+        visible: boundingEl.top >= 70 && boundingEl.bottom <= windowInner,
+        dir: boundingEl.bottom - windowInner,
+      };
+    }
+  }
 
   async function checkPath(npath) {
     //
@@ -87,13 +148,6 @@
     //
     newPath = result;
   }
-
-  afterUpdate(async () => {
-    if (!show) {
-      await tick();
-      if (typeof dirInputDOM !== "undefined") dirInputDOM.focus();
-    }
-  });
 
   function checkEdit(ed) {
     if (ed) editOn();
@@ -181,6 +235,7 @@
         e.preventDefault();
         dirIndex = dirIndex - 1;
         if (dirIndex < 0) dirIndex = 0;
+        checkVisible();
       } else if (key === "ArrowDown") {
         //
         // Move the cursor down the list.
@@ -188,6 +243,7 @@
         e.preventDefault();
         dirIndex = dirIndex + 1;
         if (dirIndex >= dirlist.length - 1) dirIndex = dirlist.length - 1;
+        checkVisible();
       }
     }
   }
@@ -267,23 +323,35 @@
     {#if dirlist.length > 0}
       <div
         id="searchList"
+        bind:this={DOM}
         style="background-color: {$theme.backgroundColor}; 
         color: {$theme.textColor};"
       >
         <ul>
           {#each dirlist as item, key}
             {#if item !== ""}
-              <li
-                style="background-color: {key === dirIndex
-                  ? $theme.cursorColor
-                  : $theme.backgroundColor};"
-                on:click={() => {
-                  processListItem(key);
-                }}
-                on:keydown={() => {}}
-              >
-                {item}
-              </li>
+              {#if key === dirIndex}
+                <li
+                  style="background-color: {$theme.cursorColor};"
+                  bind:this={elDOM}
+                  on:click={() => {
+                    processListItem(key);
+                  }}
+                  on:keydown={() => {}}
+                >
+                  {item}
+                </li>
+              {:else}
+                <li
+                  style="background-color: {$theme.backgroundColor};"
+                  on:click={() => {
+                    processListItem(key);
+                  }}
+                  on:keydown={() => {}}
+                >
+                  {item}
+                </li>
+              {/if}
             {/if}
           {/each}
         </ul>
