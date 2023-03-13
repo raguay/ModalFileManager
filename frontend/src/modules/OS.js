@@ -239,7 +239,7 @@ var OS = {
 	},
 	deleteEntries: async function (entry, callback) {
 		let item = entry;
-		if (typeof entry != "string") {
+		if (typeof entry !== "string") {
 			item = await this.appendPath(entry.dir, entry.name);
 		}
 		var that = this;
@@ -250,7 +250,7 @@ var OS = {
 				//
 				if (typeof callback === "undefined") {
 					this.runCommandLine(
-						"trash '" + item + "'",
+						`trash '${item}'`,
 						[],
 						(err, stdout) => {
 							if (err) {
@@ -261,7 +261,7 @@ var OS = {
 						".",
 					);
 				} else {
-					this.runCommandLine("trash '" + item + "'", [], callback, ".");
+					this.runCommandLine(`trash '${item}'`, [], callback, ".");
 				}
 			} else {
 				//
@@ -348,9 +348,9 @@ var OS = {
 	},
 	allFilter: function (item) {
 		//
-		// Still, don't show the Icon and DS_Store files.
+		// Still, don't show the Icon and DS_Store files on macOS.
 		//
-		return !item.name.includes("Icon") && !item.name.includes(".DS_Store");
+		return item.name.includes("Icon") || item.name.includes(".DS_Store");
 	},
 	alphaSort: function (item1, item2) {
 		const a = item1.name.toLowerCase();
@@ -395,6 +395,7 @@ var OS = {
 				env: null,
 				shell: "",
 				useTrash: true,
+				maxSearchDepth: 100,
 			};
 
 			//
@@ -412,21 +413,20 @@ var OS = {
 			// Add directories that the user's system should have.
 			//
 			if (this.local)
-				if (await this.dirExists(this.localHomeDir + "/bin")) {
-					this.config.env.PATH =
-						this.localHomeDir + "/bin:" + this.config.env.PATH;
+				if (await this.dirExists(`${this.localHomeDir}/bin`)) {
+					this.config.env.PATH = `${this.localHomeDir}/bin:${this.config.env.PATH}`;
 				}
 			if (await this.dirExists("/opt/homebrew/bin")) {
-				this.config.env.PATH = "/opt/homebrew/bin:" + this.config.env.PATH;
+				this.config.env.PATH = `/opt/homebrew/bin:${this.config.env.PATH}`;
 			}
 			if (await this.dirExists("/usr/local/bin")) {
-				this.config.env.PATH = "/usr/local/bin:" + this.config.env.PATH;
+				this.config.env.PATH = `/usr/local/bin:${this.config.env.PATH}`;
 			}
-			if (await this.dirExists(this.localHomeDir + "/.cargo/bin")) {
-				this.config.env.PATH += ":" + this.localHomeDir + "/.cargo/bin";
+			if (await this.dirExists(`${this.localHomeDir}/.cargo/bin`)) {
+				this.config.env.PATH += `:${this.localHomeDir}/.cargo/bin`;
 			}
-			if (await this.dirExists(this.localHomeDir + "/go/bin")) {
-				this.config.env.PATH += ":" + this.localHomeDir + "/go/bin";
+			if (await this.dirExists(`${this.localHomeDir}/go/bin`)) {
+				this.config.env.PATH += `:${this.localHomeDir}/go/bin`;
 			}
 
 			//
@@ -574,19 +574,8 @@ var OS = {
 		try {
 			if (dir === "") dir = this.path;
 			if (pat !== "") {
-				this.runCommandLine(
-					`fd -i --max-results ${numEntries} -t d '${pat}' '${dir}'`,
-					[],
-					(err, data) => {
-						if (err) {
-							console.log(err);
-							this.lastError = err.toString();
-						} else {
-							returnFunction(data.toString().split("\n"));
-						}
-					},
-					dir,
-				);
+				let data = await App.SearchMatchingDirectories(dir, pat, numEntries);
+				returnFunction(data);
 			}
 		} catch (e) {
 			console.log(e);

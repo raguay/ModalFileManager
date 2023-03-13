@@ -73,7 +73,7 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
 - Select entries by regular expressions. The regular expressions are saved and can be reused.
 - A number before a hot key runs it's associated command that many times (ex: `5j` will move the cursor 5 entries down the list).
 - Watches for changes in the current directory and updates accordingly.
-- Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory.
+- Changing directories in the Directory Bar (normal mode `q`) shows a list of matching entries from history and then below the current directory. Pressing `Escape` leaves the Directory Bar in the original location. If you type letters after the current directory, all subdirectories are searched to match that grouping of letters and added to the dropdown list after directories in the history are displayed.
 - File editor is configurable by the `~/.myeditorchoice` file (see `Editing Files` below). Otherwise, the system editor for the file type will be used.
 - Quick Search - an input to type text so that any entry at that level is removed that doesn't have that text in it. Just refresh the pane to get back to normal. I think of it as a quick filter more than a quick search.
 - Toggle System files/folders visibility
@@ -161,7 +161,6 @@ There are a few command line programs I use with Modal File Manager. They are:
 
 - [git](https://git-scm.com/) for downloading extensions and themes.
 - [ffmpeg](https://ffmpeg.org/) for getting and using video information in the Extra Panel.
-- [fd](https://github.com/sharkdp/fd) for quick file finding. It's a `find` replacement written in Rust.
 - For using the macOS trashcan, you have to have (`trash`)[https://github.com/andreafrancia/trash-cli] command line program installed using `brew install trash-cli`. You have to have [HomeBrew](homebrew.sh) installed on your system to use the `brew` command line program. If the program isn't installed before installing mfm, then you will need to adjust the environment variable for PATH in the preferences to make sure it is in the path.
 
 All of the programs should be downloaded and in your shell's path. Modal File Manager doesn't assume location for anything except for it's own configuration files. But, if Modal File Manager can't find the program, you can adjust the path used in the preferences general tab (Command Prompt command is `Show Preferences`).

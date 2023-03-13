@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -452,5 +453,33 @@ func (b *App) GetGitHubScripts() []GitHubRepos {
 			result[i].UpdatedAt = *topics.Repositories[i].UpdatedAt
 		}
 	}
+	return result
+}
+
+func (b *App) SearchMatchingDirectories(path string, pat string, max int) []string {
+	result := make([]string, max, max)
+	count := 0
+	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		if err == nil && info.IsDir() {
+			//
+			// check for a directory that matches the pattern.
+			//
+			if strings.Contains(path, pat) {
+				result[count] = path
+				count++
+				if count >= max {
+					return filepath.SkipAll
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		b.err = err.Error()
+	}
+
+	//
+	// Return the results.
+	//
 	return result
 }

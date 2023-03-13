@@ -8,6 +8,7 @@
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
   import { directoryListeners } from "../stores/directoryListeners.js";
 
   const dispatch = createEventDispatcher();
@@ -21,7 +22,6 @@
   let newPath = "";
   let inputPath = "";
   let dirlist = [];
-  let tryagain = false;
   let pending = false;
   let dirIndex = 0;
   let lastDir = "";
@@ -76,7 +76,6 @@
       el !== null &&
       typeof el.getBoundingClientRect !== "undefined"
     ) {
-      
       var windowInner = getInnerHeight(DOM) - 31;
       var boundingEl = el.getBoundingClientRect();
       return {
@@ -250,16 +249,19 @@
 
   async function processInput() {
     let nPath = inputPath;
-    if (pending) {
-      tryagain = true;
-    } else {
+
+    //
+    // If we are already running it once, don't start another search.
+    //
+    if (!pending) {
       if (
         typeof path !== "undefined" &&
         typeof path.fileSystem !== "undefined"
       ) {
+        pending = true;
         const sep = path.fileSystem.sep;
         if (nPath[nPath.length - 1] !== sep) {
-          var numleft = 10;
+          var numleft = $config.maxSearchDepth;
           dirlist = [];
 
           //
@@ -275,21 +277,12 @@
           numleft -= dirlist.length;
           if (numleft > 0) {
             //
-            // Get more from dirctory.
-            //
-            tryagain = false;
-            pending = true;
-
-            //
             // Get rest from file system.
             //
             await path.fileSystem.searchdir(last, begindir, numleft, (data) => {
               dirlist = dirlist.concat(data).filter((item) => item !== "");
-              pending = false;
               dirIndex = 0;
-              if (tryagain) {
-                processInput();
-              }
+              pending = false;
             });
           }
         }

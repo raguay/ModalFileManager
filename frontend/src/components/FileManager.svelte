@@ -124,6 +124,15 @@
       var configFile = await OS.appendPath(configDir, "config.json");
       $config = await OS.readFile(configFile);
       $config = JSON.parse($config);
+
+      //
+      // Make sure this field is defined.
+      //
+      if (typeof $config.maxSearchDepth === "undefined") {
+        $config.maxSearchDepth = 100;
+        const cfgFile = await OS.appendPath(configDir, "config.json");
+        await OS.writeFile(cfgFile, JSON.stringify($config));
+      }
       $config.OS = OS;
     }
 
