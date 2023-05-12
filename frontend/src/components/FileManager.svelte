@@ -102,7 +102,7 @@
     configDir = await OS.getConfigDir();
     if (!(await OS.dirExists(configDir))) {
       await OS.makeDir(configDir);
-      var extdir = await OS.appendPath(configDir, "extensions");
+      let extdir = await OS.appendPath(configDir, "extensions");
       await OS.makeDir(extdir);
     }
 
@@ -121,7 +121,7 @@
       //
       // Read in the local configuration.
       //
-      var configFile = await OS.appendPath(configDir, "config.json");
+      let configFile = await OS.appendPath(configDir, "config.json");
       $config = await OS.readFile(configFile);
       $config = JSON.parse($config);
 
@@ -144,7 +144,7 @@
       histLoaded: false,
       addHistory: function (dir) {
         dir = new String(dir);
-        var el = this.histStore.find((item) =>
+        let el = this.histStore.find((item) =>
           item.toLowerCase().includes(dir.toLowerCase())
         );
         if (typeof el === "undefined") {
@@ -231,7 +231,7 @@
     $currentRightFile = {
       entry: rightEntries[0],
     };
-    var unsubscribeTheme = theme.subscribe(async (value) => {
+    let unsubscribeTheme = theme.subscribe(async (value) => {
       //
       // Make sure a proper theme is being set.
       //
@@ -286,11 +286,11 @@
     //
     // Setup emmiters from the go code.
     //
-    var commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
+    let commandParse = RegExp("^([^(]*)\\(([^)]*)\\)");
     window.runtime.EventsOn("runCommands", (cmds) => {
       if (typeof cmds === "string" && cmds.length > 0) {
-        for (var i = 0; i < cmds.length; i++) {
-          var parts = cmds[i].match(commandParse);
+        for (let i = 0; i < cmds.length; i++) {
+          let parts = cmds[i].match(commandParse);
           if (parts[2][0] == "'") {
             parts[2] = parts[2].slice(1, -1);
           }
@@ -298,10 +298,10 @@
         }
       }
     });
-    var cmds = await App.GetCommandLineCommands();
+    let cmds = await App.GetCommandLineCommands();
     if (cmds !== null) {
-      for (var i = 0; i < cmds.length; i++) {
-        var parts = cmds[i].match(commandParse);
+      for (let i = 0; i < cmds.length; i++) {
+        let parts = cmds[i].match(commandParse);
         if (parts[2][0] == "'") {
           parts[2] = parts[2].slice(1, -1);
         }
@@ -896,7 +896,7 @@
   }
 
   function stringKeyProcessor(str) {
-    for (var i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i++) {
       if (str[i] >= "A" && str[i] <= "Z") {
         keyProcessor(str[i], false, true, false, false);
       } else {
@@ -932,7 +932,7 @@
       //
       // Figure the number of times to run the command.
       //
-      var num = parseInt(numberAcc, 10);
+      let num = parseInt(numberAcc, 10);
       if (num === 0 || isNaN(num)) num = 1;
       if (command.name !== "reRunLastCommand") lastCommand = numberAcc + key;
 
@@ -959,12 +959,12 @@
   }
 
   function getCommand(map, key, cKey, sKey, mKey, aKey) {
-    var result = {
+    let result = {
       command: () => {},
       name: "empty",
     };
     if (typeof aKey === "undefined") aKey = false;
-    var rmap = map.find((item) => {
+    let rmap = map.find((item) => {
       if (typeof item.alt === "undefined") item.alt = false;
       return (
         item.key == key &&
@@ -1028,7 +1028,7 @@
   }
 
   async function setCursor(fname) {
-    var index = 0;
+    let index = 0;
     if ($currentCursor.pane == "left") {
       leftEntries = await OS.getDirList($leftDir.path);
       index = leftEntries.findIndex((item) => item.name == fname);
@@ -1057,7 +1057,7 @@
   }
 
   function moveCursorDown() {
-    var index = 0;
+    let index = 0;
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
@@ -1096,14 +1096,14 @@
   }
 
   function moveCursorDownWithSelect() {
-    var index = 0;
+    let index = 0;
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
-        var entry = leftEntries[index];
+        let entry = leftEntries[index];
         entry.selected = !entry.selected;
         leftEntries[index] = entry;
         if (index < leftEntries.length - 1) {
@@ -1125,7 +1125,7 @@
           (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
-        var entry = rightEntries[index];
+        let entry = rightEntries[index];
         entry.selected = !entry.selected;
         rightEntries[index] = entry;
         if (index < rightEntries.length - 1) {
@@ -1145,7 +1145,7 @@
   }
 
   function moveCursorUp() {
-    var index = 0;
+    let index = 0;
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
@@ -1186,14 +1186,14 @@
   }
 
   function moveCursorUpWithSelect() {
-    var index = 0;
+    let index = 0;
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
-        var entry = leftEntries[index];
+        let entry = leftEntries[index];
         entry.selected = !entry.selected;
         leftEntries[index] = entry;
         if (index > 0) {
@@ -1215,7 +1215,7 @@
           (item) => item.name == $currentCursor.entry.name
         );
         if (index === -1) index = 0;
-        var entry = rightEntries[index];
+        let entry = rightEntries[index];
         entry.selected = !entry.selected;
         rightEntries[index] = entry;
         if (index > 0) {
@@ -1251,7 +1251,7 @@
   }
 
   async function openOppositePanel() {
-    var nEntry = $currentCursor.entry.dir;
+    let nEntry = $currentCursor.entry.dir;
     if ($currentCursor.entry.type === 1) {
       nEntry = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
@@ -1280,7 +1280,7 @@
   }
 
   async function goHome() {
-    var entry = await OS.getHomeDir();
+    let entry = await OS.getHomeDir();
     if ($currentCursor.pane === "right") {
       await changeDir(
         {
@@ -1365,7 +1365,7 @@
   }
 
   async function changeDir(dirOb, npane, name) {
-    var ndir = dirOb.path;
+    let ndir = dirOb.path;
     if (typeof npane === "undefined") npane = $currentCursor.pane;
     if (typeof dirOb.cursor === "undefined") dirOb.cursor = true;
     if (typeof name === "undefined") name = "";
@@ -1520,7 +1520,7 @@
       //
       // It is a directory. Go down a level.
       //
-      var ndir = await $currentCursor.entry.fileSystem.appendPath(
+      let ndir = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
         $currentCursor.entry.name
       );
@@ -1536,10 +1536,10 @@
   }
 
   async function goUpDir() {
-    var sep = $currentCursor.entry.fileSystem.sep;
-    var parts = $currentCursor.entry.dir.split(sep);
+    let sep = $currentCursor.entry.fileSystem.sep;
+    let parts = $currentCursor.entry.dir.split(sep);
     if (parts.length > 0) {
-      var newDir = parts.slice(0, parts.length - 1).join(sep);
+      let newDir = parts.slice(0, parts.length - 1).join(sep);
       if (newDir == "") newDir = sep;
       await changeDir(
         {
@@ -1555,7 +1555,7 @@
 
   async function goDownDir() {
     if ($currentCursor.entry.type === 1) {
-      var newDir = await $currentCursor.entry.fileSystem.appendPath(
+      let newDir = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
         $currentCursor.entry.name
       );
@@ -1587,12 +1587,12 @@
   async function goTopFile() {
     if ($currentCursor.pane == "left") {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        var top = leftEntries[0];
+        let top = leftEntries[0];
         await setCursor(top.name);
       }
     } else {
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        var top = rightEntries[0];
+        let top = rightEntries[0];
         await setCursor(top.name);
       }
     }
@@ -1611,7 +1611,7 @@
   }
 
   function deleteEntries() {
-    var entries = getSelectedFiles();
+    let entries = getSelectedFiles();
     if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
@@ -1623,7 +1623,7 @@
 
   async function deleteEntriesCommand(entries) {
     if (typeof entries !== 0) {
-      for (var i = 0; i < entries.length; i++) {
+      for (let i = 0; i < entries.length; i++) {
         await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
           if (err) {
             refreshPanes();
@@ -1647,8 +1647,8 @@
   }
 
   function copyEntries() {
-    var entries = getSelectedFiles();
-    var sel = true;
+    let entries = getSelectedFiles();
+    let sel = true;
     if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
@@ -1656,7 +1656,7 @@
       entries.push($currentCursor.entry);
       sel = false;
     }
-    var otherPane;
+    let otherPane;
     if ($currentCursor.pane === "left") {
       otherPane = { ...$currentRightFile.entry };
     } else {
@@ -1668,7 +1668,7 @@
 
   async function copyEntriesCommand(entries, otherPane, sel) {
     if (typeof entries !== "undefined") {
-      for (var i = 0; i < entries.length; i++) {
+      for (let i = 0; i < entries.length; i++) {
         await entries[i].fileSystem.copyEntries(
           entries[i],
           otherPane,
@@ -1700,14 +1700,14 @@
   }
 
   function swapPanels() {
-    var npane = $currentCursor.pane === "left" ? "right" : "left";
+    let npane = $currentCursor.pane === "left" ? "right" : "left";
     tmp = $currentLeftFile;
     $currentLeftFile = $currentRightFile;
     $currentRightFile = tmp;
     tmp = $leftDir;
     $leftDir = $rightDir;
     $rightDir = tmp;
-    var tmp = rightEntries;
+    let tmp = rightEntries;
     rightEntries = leftEntries;
     leftEntries = tmp;
     tick();
@@ -1723,11 +1723,11 @@
       //
       // There is an editor defined by the user. Use it.
       //
-      var file = entry;
+      let file = entry;
       if (typeof entry.dir !== "undefined") {
         file = await OS.appendPath(entry.dir, entry.name);
       }
-      var editor = await OS.readFile(userEditor);
+      let editor = await OS.readFile(userEditor);
       editor = editor.toString().trim();
       if (editor.endsWith(".app")) {
         await OS.openFileWithProgram(editor, file);
@@ -1761,7 +1761,7 @@
   }
 
   async function duplicateEntry() {
-    var newName = "";
+    let newName = "";
     if ($currentCursor.entry.name[0] === ".") {
       newName = $currentCursor.entry.name + "-copy";
     } else {
@@ -1773,7 +1773,7 @@
         newName = $currentCursor.entry.name + "-copy";
       }
     }
-    var nEntry = { ...$currentCursor.entry };
+    let nEntry = { ...$currentCursor.entry };
     nEntry.name = newName;
     await $currentCursor.entry.fileSystem.copyEntries(
       $currentCursor.entry,
@@ -1790,14 +1790,14 @@
   }
 
   function moveEntries() {
-    var entries = getSelectedFiles();
+    let entries = getSelectedFiles();
     if (typeof entries !== "undefined" && entries.length === 0) {
       //
       // Get the entry at the current cursor
       //
       entries.push($currentCursor.entry);
     }
-    var otherPane =
+    let otherPane =
       $currentCursor.pane === "left"
         ? $currentRightFile.entry
         : $currentLeftFile.entry;
@@ -1806,7 +1806,7 @@
 
   async function moveEntriesCommand(entries, otherPane) {
     if (typeof entries !== "undefined") {
-      for (var i = 0; i < entries.length; i++) {
+      for (let i = 0; i < entries.length; i++) {
         await entries[i].fileSystem.moveEntries(
           entries[i],
           otherPane,
@@ -1842,7 +1842,7 @@
       );
     }
 
-    var current = $currentRightFile.entry;
+    let current = $currentRightFile.entry;
     if (
       typeof rightEntries !== "undefined" &&
       (rightEntries.length == 0 ||
@@ -1912,7 +1912,7 @@
       );
     }
 
-    var current = $currentLeftFile.entry;
+    let current = $currentLeftFile.entry;
     if (
       typeof leftEntries !== "undefined" &&
       (leftEntries.length === 0 ||
@@ -2076,12 +2076,12 @@
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    var nfname = data.value;
+    let nfname = data.value;
 
     //
     // Create the new file.
     //
-    var nfile = { ...$currentCursor.entry };
+    let nfile = { ...$currentCursor.entry };
     nfile.name = nfname;
     await $currentCursor.entry.fileSystem.createFile(nfile);
 
@@ -2123,12 +2123,12 @@
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    var ndname = data.value;
+    let ndname = data.value;
 
     //
     // Create the new file.
     //
-    var ndir = { ...$currentCursor.entry };
+    let ndir = { ...$currentCursor.entry };
     ndir.name = ndname;
     await $currentCursor.entry.fileSystem.createDir(ndir);
 
@@ -2169,12 +2169,12 @@
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    var nname = data.value;
+    let nname = data.value;
 
     //
     // Create the new file.
     //
-    var nentry = { ...$currentCursor.entry };
+    let nentry = { ...$currentCursor.entry };
     nentry.name = nname;
     await $currentCursor.entry.fileSystem.renameEntry(
       $currentCursor.entry,
@@ -2217,7 +2217,7 @@
   }
 
   function getSelectedFiles() {
-    var selected = [];
+    let selected = [];
     if ($currentCursor.pane == "left") {
       //
       // Get the left pane's selected files
@@ -2351,7 +2351,7 @@
     if (selRegExpHist === null) {
       selRegExpHist = await getRegExpSelectHistory();
     }
-    var selectList = selRegExpHist.map((item) => {
+    let selectList = selRegExpHist.map((item) => {
       return {
         name: item,
         value: item,
@@ -2370,7 +2370,7 @@
       value = value.value;
     }
     saveRegExpSelectHistory(value);
-    var selRegExp = new RegExp(value);
+    let selRegExp = new RegExp(value);
     if ($currentCursor.pane === "left") {
       leftEntries.map((item) => {
         if (item.name.match(selRegExp) !== null) {
@@ -2394,13 +2394,13 @@
     //
     if (selRegExpHist.filter((item) => item === value).length === 0)
       selRegExpHist.push(value);
-    var regExpFile = await OS.appendPath(configDir, "regexps.json");
+    let regExpFile = await OS.appendPath(configDir, "regexps.json");
     await OS.writeFile(regExpFile, JSON.stringify(selRegExpHist));
   }
 
   async function getRegExpSelectHistory() {
-    var result = [];
-    var regExpFile = await OS.appendPath(configDir, "regexps.json");
+    let result = [];
+    let regExpFile = await OS.appendPath(configDir, "regexps.json");
     if (await OS.fileExists(regExpFile)) {
       result = await OS.readFile(regExpFile);
       result = JSON.parse(result);
@@ -2881,7 +2881,7 @@
       //
       // The keymap directory is there. let's load the files.
       //
-      var fileLoc = await OS.appendPath(keyMapDir, "normalKeyMap.json");
+      let fileLoc = await OS.appendPath(keyMapDir, "normalKeyMap.json");
       if (!(await OS.fileExists(fileLoc))) {
         createDefaultNormalMap(keyMapDir);
       }
@@ -2906,7 +2906,7 @@
 
   function processKeyMap(kmap) {
     return kmap.map((item, index, arr) => {
-      var cmd = commands.getCommand(item.command);
+      let cmd = commands.getCommand(item.command);
       if (typeof cmd === "undefined") {
         cmd = commands.getAltCommand(item.command);
       }
@@ -2949,7 +2949,7 @@
   }
 
   async function saveDefaultKeymaps() {
-    var keyMapDir = await OS.appendPath(configDir, "keyMaps");
+    let keyMapDir = await OS.appendPath(configDir, "keyMaps");
     createDefaultNormalMap(keyMapDir);
     createDefaultVisualMap(keyMapDir);
     createDefaultInsertMap(keyMapDir);

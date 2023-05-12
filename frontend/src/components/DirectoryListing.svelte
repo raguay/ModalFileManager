@@ -317,7 +317,7 @@
       <div
         id="searchList"
         bind:this={DOM}
-        style="background-color: {$theme.backgroundColor}; 
+        style="background-color: {$theme.backgroundColor};
         color: {$theme.textColor};"
       >
         <ul>

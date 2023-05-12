@@ -76,18 +76,13 @@
     if (!(await $config.OS.dirExists(thmDir))) {
       await $config.OS.createDir(thmDir);
     }
-    await $config.OS.runCommandLine(
-      "git clone '" + thm.url + "' '" + thmDir + "';",
-      [],
-      (err, stdin, stdout) => {
-        //
-        // The clone should be there. Let's load the new theme.
-        //
-        loadTheme(thm);
-        loadRepoInfo();
-      },
-      "."
-    );
+
+    //
+    // Use the go-git library to clone the theme.
+    //
+    await ap.CloneGitHub(thm.url, thmDir);
+    loadTheme(thm);
+    loadRepoInfo();
   }
 
   async function loadTheme(thm) {
@@ -138,15 +133,12 @@
     if (!(await $config.OS.dirExists(extDir))) {
       await $config.OS.createDir(extDir);
     }
-    await $config.OS.runCommandLine(
-      "git clone '" + ext.url + "' '" + extDir + "';",
-      [],
-      (err, stdin, stdout) => {
-        addMsg(ext, "Restart the program to use this extension.");
-        loadRepoInfo();
-      },
-      "."
-    );
+    //
+    // Use the go-git library to clone the extension.
+    //
+    await ap.CloneGitHub(ext.url, extDir);
+    addMsg(ext, "Restart the program to use this extension.");
+    loadRepoInfo();
   }
 
   async function extExists(ext) {
@@ -249,7 +241,7 @@
   <div id="GitHubHeader">
     <h3>GitHub Themes and Extensions Importer</h3>
     <span
-      on:click={(e) => {
+      on:click={() => {
         exitGitHub();
       }}
       style="color: {$theme.Red};"

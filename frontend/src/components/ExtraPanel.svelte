@@ -15,6 +15,7 @@
   let isExtra = false;
   let extraHTML = "";
   let lastChecked = "";
+  let lookupPath = "";
 
   beforeUpdate(async () => {
     //
@@ -26,7 +27,12 @@
         $currentCursor.entry.dir,
         $currentCursor.entry.name
       );
-      extension = $currentCursor.entry.ext;
+      let hmdir = await $currentCursor.entry.fileSystem.getHomeDir();
+      lookupPath = `http://127.0.0.1:9998/filesys/${fullPath.substr(
+        hmdir.length + 1
+      )}`;
+      lookupPath = encodeURI(lookupPath);
+      extension = $currentCursor.entry.ext.toLowerCase();
       size = util.readableSize($currentCursor.entry.size);
 
       //
@@ -39,12 +45,13 @@
   afterUpdate(async () => {
     if (isMovie()) {
       await tick();
-      //var file = new File($currentCursor.entry.dir, $currentCursor.entry.name);
-      //var fileURL = window.URL.createObjectURL(file);
-      //var videoNode = window.document.getElementById("videoItem");
-      //if (videoNode !== null) {
-      //  videoNode.src = fileURL;
-      //}
+      /* 
+      var fileURL = window.URL.createObjectURL(lookupPath);
+      var videoNode = window.document.getElementById("videoItem");
+      if (videoNode !== null) {
+        videoNode.src = fileURL;
+      }
+     */
       getDimensions(fullPath);
     }
     if (isExtra) {
@@ -99,7 +106,7 @@
           var stdout = stdout.toString("utf8");
           var width = /width=(\d+)/.exec(stdout);
           var height = /height=(\d+)/.exec(stdout);
-          videoDem = parseInt(width[1]) + "x" + parseInt(height[1]);
+          videoDem = `${parseInt(width[1])}x${parseInt(height[1])}`;
         }
       },
       "."
@@ -112,8 +119,8 @@
     {@html extraHTML}
   {/if}
   <h6>{fullPath}</h6>
-  {#if extension === ".png" || extension === ".jpg" || extension === ".svg" || extension === ".jpeg" || extension === ".gif" || extension === ".apng" || extension === ".avif" || extension === ".webp" || extension === ".avi"}
-    <img src="file://{fullPath}" alt={fullPath} />
+  {#if extension === ".png" || extension === ".heic" || extension === ".jpg" || extension === ".svg" || extension === ".jpeg" || extension === ".gif" || extension === ".apng" || extension === ".avif" || extension === ".webp" || extension === ".avi"}
+    <img src={lookupPath} alt={fullPath} />
   {:else if isMovieFlag}
     <video id="videoItem" controls>
       <track kind="captions" />

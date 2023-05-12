@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	clip "github.com/atotto/clipboard"
+	"github.com/go-git/go-git/v5"
 	github "github.com/google/go-github/v49/github"
 	cp "github.com/otiai10/copy"
 	rt "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -72,6 +73,11 @@ func NewApp() *App {
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
 	b.ctx = ctx
+
+	//
+	// We need to start the backend and setup the signaling.
+	//
+	go backend(b, ctx)
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -482,4 +488,13 @@ func (b *App) SearchMatchingDirectories(path string, pat string, max int) []stri
 	// Return the results.
 	//
 	return result
+}
+
+func (b *App) CloneGitHub(url string, dir string) {
+	_, err := git.PlainClone(dir, false, &git.CloneOptions{
+		URL: url,
+	})
+	if err != nil {
+		b.err = err.Error()
+	}
 }

@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.0.3",
-    "svelte": "^3.56.0",
-    "svelte-awesome-color-picker": "^2.4.1",
-    "vite": "^4.1.4"
+    "@sveltejs/vite-plugin-svelte": "^2.2.0",
+    "svelte": "^3.59.1",
+    "svelte-awesome-color-picker": "^2.4.2",
+    "vite": "^4.3.5"
   },
   "dependencies": {
     "svelte-icons": "^2.1.0"

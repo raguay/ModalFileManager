@@ -167,7 +167,7 @@
             <li>
               <a
                 href="/"
-                on:click|preventDefault={(e) => {
+                on:click|preventDefault={() => {
                   runCommand(command.name);
                 }}
               >
