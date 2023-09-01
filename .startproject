@@ -1,3 +1,4 @@
 #!/bin/zsh
 
 oni2 "$1"
+open workspaces://start/255F71B7-81C6-43E9-B9C7-D89583F14201
