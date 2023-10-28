@@ -1,5 +1,8 @@
 ## build
 
 ```sh
-wails build --platform "darwin/universal"
+rm -R build
+mkdir build
+cp picts/appicon.png build
+wails build
 ```

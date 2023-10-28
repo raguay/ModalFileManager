@@ -3,12 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
-	clip "github.com/atotto/clipboard"
-	"github.com/go-git/go-git/v5"
-	github "github.com/google/go-github/v49/github"
-	cp "github.com/otiai10/copy"
-	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -19,13 +13,18 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	clip "github.com/atotto/clipboard"
+	"github.com/go-git/go-git/v5"
+	github "github.com/google/go-github/v49/github"
+	cp "github.com/otiai10/copy"
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App application struct and other structs
 type App struct {
 	ctx           context.Context
 	err           string
-	proc          *os.Process
 	lastRightDir  string
 	lastLeftDir   string
 	Commands      []string
@@ -245,7 +244,7 @@ func (b *App) SplitFile(path string) FileParts {
 func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
 	var result []FileInfo
-	result = make([]FileInfo, 0, 0)
+	result = make([]FileInfo, 0)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		b.err = err.Error()
@@ -411,13 +410,12 @@ func (b *App) GetOSName() string {
 	switch os {
 	case "windows":
 		result = "windows"
-		break
 	case "darwin":
 		result = "macos"
 	case "linux":
 		result = "linux"
 	default:
-		result = fmt.Sprintf("%s", os)
+		result = os
 	}
 	return result
 }
@@ -428,7 +426,7 @@ func (b *App) GetGitHubThemes() []GitHubRepos {
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic theme", nil)
 	if err == nil {
 		total := *topics.Total
-		result = make([]GitHubRepos, total, total)
+		result = make([]GitHubRepos, total)
 		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
@@ -448,7 +446,7 @@ func (b *App) GetGitHubScripts() []GitHubRepos {
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic modalfilemanager in:topic V2 in:topic extension", nil)
 	if err == nil {
 		total := *topics.Total
-		result = make([]GitHubRepos, total, total)
+		result = make([]GitHubRepos, total)
 		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
@@ -463,7 +461,7 @@ func (b *App) GetGitHubScripts() []GitHubRepos {
 }
 
 func (b *App) SearchMatchingDirectories(path string, pat string, max int) []string {
-	result := make([]string, max, max)
+	result := make([]string, max)
 	count := 0
 	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
 		if err == nil && info.IsDir() {

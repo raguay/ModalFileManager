@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
 	"os"
 	"strings"
+
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
 )
 
 // Function:      Security

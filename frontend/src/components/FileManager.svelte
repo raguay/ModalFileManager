@@ -1612,12 +1612,6 @@
 
   function deleteEntries() {
     let entries = getSelectedFiles();
-    if (typeof entries !== "undefined" && entries.length === 0) {
-      //
-      // Get the entry at the current cursor
-      //
-      entries.push($currentCursor.entry);
-    }
     deleteEntriesCommand(entries);
   }
 
@@ -1649,13 +1643,6 @@
   function copyEntries() {
     let entries = getSelectedFiles();
     let sel = true;
-    if (typeof entries !== "undefined" && entries.length === 0) {
-      //
-      // Get the entry at the current cursor
-      //
-      entries.push($currentCursor.entry);
-      sel = false;
-    }
     let otherPane;
     if ($currentCursor.pane === "left") {
       otherPane = { ...$currentRightFile.entry };
@@ -1791,12 +1778,6 @@
 
   function moveEntries() {
     let entries = getSelectedFiles();
-    if (typeof entries !== "undefined" && entries.length === 0) {
-      //
-      // Get the entry at the current cursor
-      //
-      entries.push($currentCursor.entry);
-    }
     let otherPane =
       $currentCursor.pane === "left"
         ? $currentRightFile.entry
@@ -2081,9 +2062,11 @@
     //
     // Create the new file.
     //
-    let nfile = { ...$currentCursor.entry };
-    nfile.name = nfname;
-    await $currentCursor.entry.fileSystem.createFile(nfile);
+    nfname = await $currentCursor.entry.fileSystem.appendPath(
+      $currentCursor.entry.dir,
+      nfname
+    );
+    await $currentCursor.entry.fileSystem.createFile(nfname);
 
     //
     // Refresh the file list.
@@ -2228,6 +2211,9 @@
       // Get the right panes selected files
       //
       selected = rightEntries.filter((item) => item.selected === true);
+    }
+    if (selected.length === 0) {
+      selected.push($currentCursor.entry);
     }
     return selected;
   }

@@ -2,10 +2,10 @@
 // File:      commands.js
 //
 // Description: This file contains the commands object for dealing with commands that
-//              SvelteFileManager uses. 
+//              ModalFileManager uses. 
 //
 
-var commands = {
+const commands = {
   commandList: [],
   lastError: '',
   addCommand: function(name, altname, description, command) {
@@ -45,6 +45,7 @@ var commands = {
     return commands.commandList.map(item => {
       return {
         name: item.name,
+        altname: item.altname,
         description: item.description
       };
     })

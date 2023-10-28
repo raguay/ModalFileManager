@@ -4,7 +4,7 @@
 // Description: This object contains the extensions used and interacts with them.
 //
 
-var extensions = {
+const extensions = {
   fileSystems: null,
   commands: null,
   extCommandList: [],
@@ -34,8 +34,8 @@ var extensions = {
     //
     extensions.config = confg;
     extensions.localFS = LFS;
-    var items = await extensions.localFS.readDir(extensions.extensionDir);
-    for (var i = 0; i < items.length; i++) {
+    let items = await extensions.localFS.readDir(extensions.extensionDir);
+    for (let i = 0; i < items.length; i++) {
       const extsDir = await extensions.localFS.appendPath(extensions.extensionDir, items[i].Name);
       try {
         //
@@ -43,7 +43,7 @@ var extensions = {
         //
         const paramfile = await extensions.localFS.appendPath(extsDir, 'package.json');
         if (await extensions.localFS.fileExists(paramfile)) {
-          var parms = await extensions.localFS.readFile(paramfile);
+          let parms = await extensions.localFS.readFile(paramfile);
           parms = JSON.parse(parms.toString());
           if (typeof parms.mfmextension !== 'undefined') {
             const extfile = await extensions.localFS.appendPath(extsDir, parms.mfmextension.main);
@@ -158,7 +158,7 @@ var extensions = {
     })
   },
   removeExtension: function(ext) {
-    var exten = extensions.extensionList.filter(item => item.name === ext)[0];
+    let exten = extensions.extensionList.filter(item => item.name === ext)[0];
     exten.unload();
     extensions.extensionList = extensions.extensionList.filter(item => item.name != ext);
   },

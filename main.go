@@ -3,13 +3,14 @@ package main
 import (
 	"embed"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"log"
-	"os"
 )
 
 //go:embed frontend/dist
@@ -20,7 +21,7 @@ var icon []byte
 
 func main() {
 	var commands []string
-	commands = make([]string, 0, 0)
+	commands = make([]string, 0)
 
 	if len(os.Args) > 1 {
 		//
@@ -41,6 +42,7 @@ func main() {
 
 	// Create an instance of the app structure
 	a := NewApp()
+	a.Commands = commands
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -62,8 +64,8 @@ func main() {
 		OnStartup:         a.startup,
 		OnDomReady:        a.domReady,
 		OnShutdown:        a.shutdown,
-    CSSDragProperty:   "--wails-draggable",
-    CSSDragValue:      "drag",
+		CSSDragProperty:   "--wails-draggable",
+		CSSDragValue:      "drag",
 		Bind: []interface{}{
 			a,
 		},

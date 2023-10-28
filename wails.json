@@ -1,5 +1,5 @@
 {
-  "name": "mfm",
+  "name": "ModalFileManager",
   "frontend:build": "npm run build",
   "frontend:install": "npm install",
   "frontend:dev": "",
@@ -7,7 +7,7 @@
   "version": "2",
   "Path": "",
   "BuildDir": "",
-  "outputfilename": "mfm",
+  "outputfilename": "Modal File Manager",
   "OutputType": "",
   "Platform": "darwin/universal",
   "bundle_id": "com.customct.wails.ModalFileManager",
