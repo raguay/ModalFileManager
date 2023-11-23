@@ -61,28 +61,28 @@ let OS = {
     switch (this.type) {
       case "macos": {
         this.sep = "/";
-        this.rootDir = "/";
+        this.rootDir = "";
         this.openCommand = "open";
         this.shell = "zsh";
         break;
       }
       case "linux": {
         this.sep = "/";
-        this.rootDir = "/";
+        this.rootDir = "";
         this.openCommand = "xdg-open";
         this.shell = "bash";
         break;
       }
       case "windows": {
         this.sep = "\\";
-        this.rootDir = "C:\\";
+        this.rootDir = "C:";
         this.openCommand = "start";
         this.shell = "cmd.exe";
         break;
       }
       default: {
         this.sep = "/";
-        this.rootDir = "/";
+        this.rootDir = "";
         break;
       }
     }

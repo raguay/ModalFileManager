@@ -1344,6 +1344,10 @@
         index: index,
       };
     }
+    //
+    // Force run the directory listeners.
+    //
+    forceRunDirectoryListeners($currentCursor.entry.dir);
   }
 
   function mouseMove(e) {
@@ -1540,7 +1544,8 @@
     let parts = $currentCursor.entry.dir.split(sep);
     if (parts.length > 0) {
       let newDir = parts.slice(0, parts.length - 1).join(sep);
-      if (newDir == "") newDir = sep;
+      if (newDir == "")
+        newDir = `${$currentCursor.entry.fileSystem.rootDir}${sep}`;
       await changeDir(
         {
           path: newDir,
@@ -2300,6 +2305,12 @@
 
   function addDirectoryListener(listener) {
     $directoryListeners.push(listener);
+  }
+
+  function forceRunDirectoryListeners(pth) {
+    $directoryListeners.map((value) => {
+      value(pth, "");
+    });
   }
 
   function toggleCommandPrompt() {
