@@ -476,7 +476,7 @@ This list of tutorials are with the latest version of Modal File Manager:
 
 I finally made my first attempt at an icon for Modal File Manager. The files are in the `frontend/icons` directory. Any constructive criticizm is welcome.
 
-![Icon](https://github.com/raguay/ModalFileManager/blob/main/build/appicon.png)
+![Icon](https://github.com/raguay/ModalFileManager/blob/main/picts/appicon.png)
 
 ## Sponsor this project
 
