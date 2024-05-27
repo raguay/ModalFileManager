@@ -4,5 +4,5 @@
 rm -R build
 mkdir build
 cp picts/appicon.png build
-wails build
+wails build --platform "darwin/universal"
 ```
