@@ -391,7 +391,7 @@
     height: 20px;
     margin: 0px auto 0px 10px;
     white-space: nowrap;
-    overflow-x: scroll;
+    overflow-x: hidden;
     -webkit-user-select: none;
     user-select: none;
   }

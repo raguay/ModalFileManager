@@ -188,7 +188,7 @@
     padding: 0px;
     margin: 0px;
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: hidden;
     overflow-x: hidden;
   }
 
