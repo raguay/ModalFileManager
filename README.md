@@ -43,6 +43,7 @@ A small gif showing Modal File Manager in action.
 - [Tutorials on Modal File Manager](#tutorials-on-modal-file-manager)
 - [Icon](#icon)
 - [Sponsor this project](#sponsor-this-project)
+- [My Different Open Source Projects](#my-different-open-source-projects)
 
 ## Philosophy
 
@@ -497,3 +498,11 @@ I finally made my first attempt at an icon for Modal File Manager. The files are
 You can now sponsor my work on this project. The more sponsors I get, the more time I'll focus on development.
 
 ![Sponsor](picts/sponsor.svg)
+
+## My Different Open Source Projects
+
+[EmailIt](https://GitHub.com/raguay/EmailIt)
+[BullitenBoard](https://github.com/raguay/BulletinBoard)
+[ScriptBar](https://GitHub.com/raguay/scriptbarapp)
+[Modal File Manager](https://github.com/raguay/ModalFileManager)
+[Personal Kanban](https://github.com/raguay/PersonKanban)
