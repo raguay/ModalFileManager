@@ -104,7 +104,6 @@ Because this is a web technologies application, there are certain things that it
 
 - Install applications that the macOS Gatekeeper will allow.
 - Drag and drop with other programs.
-- Git command line needs to be installed for downloading extensions and themes.
 
 ## Installation
 
