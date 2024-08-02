@@ -499,7 +499,11 @@ You can now sponsor my work on this project. The more sponsors I get, the more t
 ## My Different Open Source Projects
 
 [EmailIt](https://GitHub.com/raguay/EmailIt)
+
 [BullitenBoard](https://github.com/raguay/BulletinBoard)
+
 [ScriptBar](https://GitHub.com/raguay/scriptbarapp)
+
 [Modal File Manager](https://github.com/raguay/ModalFileManager)
+
 [Personal Kanban](https://github.com/raguay/PersonKanban)
