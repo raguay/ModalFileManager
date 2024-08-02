@@ -188,8 +188,13 @@
     padding: 0px;
     margin: 0px;
     height: 100%;
-    overflow-y: hidden;
+    overflow-y: scroll;
     overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+  .panel::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
   }
 
   .empty {
