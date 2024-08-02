@@ -94,11 +94,9 @@ I've created multiple open source resources (I have around 80 GitHub repositorie
   - [User Scripts](https://github.com/raguay/runScripts-ModalFileManagerExtension): Create and run scripts from mfm.
   - [Project Manager](https://github.com/raguay/ProjectManager-mfm): A set of functions to work with projects, project templates, run project scripts for npm and mask, and creating/editing of project notes.
 - Themes currently created and downloadable from GitHub:
-  - [Dracula Pro](https://github.com/raguay/dracula-ThemeModalFileManager)
-  - [Dracula "Buffy"](https://github.com/raguay/dracula-buffy-ThemeModalFileManager)
-  - [Dracula "Van Helsing"](https://github.com/raguay/Dracula-Van-Helsing-ThemeModalFileManager)
+  - [Dracula](https://github.com/raguay/dracula-ThemeModalFileManager)
 
-All Dracula based themes are here with permission from the author. Please support his great work at [Dracula Themes](https://draculatheme.com/). The Dracula "Buffy" theme is my preferred theme for everything.
+All Dracula based themes are here with permission from the author. Please support his great work at [Dracula Themes](https://draculatheme.com/).
 
 ## Some Limitations
 
