@@ -1693,13 +1693,13 @@
 
   function swapPanels() {
     let npane = $currentCursor.pane === "left" ? "right" : "left";
-    tmp = $currentLeftFile;
+    let tmp = $currentLeftFile;
     $currentLeftFile = $currentRightFile;
     $currentRightFile = tmp;
     tmp = $leftDir;
     $leftDir = $rightDir;
     $rightDir = tmp;
-    let tmp = rightEntries;
+    tmp = rightEntries;
     rightEntries = leftEntries;
     leftEntries = tmp;
     tick();
