@@ -7,7 +7,7 @@
   "version": "2",
   "Path": "",
   "BuildDir": "",
-  "outputfilename": "Modal File Manager",
+  "outputfilename": "ModalFileManager",
   "OutputType": "",
   "Platform": "darwin/universal",
   "bundle_id": "com.customct.wails.ModalFileManager",
