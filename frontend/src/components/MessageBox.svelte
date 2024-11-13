@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
   import { createEventDispatcher, onMount, afterUpdate, tick } from "svelte";
   import util from "../modules/util.js";
@@ -154,16 +155,16 @@
       // It's a normal printable character. Add it and re-evaluate.
       //
       pickerValue += e.key;
-      var cur = pickerValue.toLowerCase();
+      let cur = pickerValue.toLowerCase();
       pickerItems = pickerItemsOrig.filter((it) =>
-        it.name.toLowerCase().includes(cur)
+        it.name.toLowerCase().includes(cur),
       );
       movePickerBar(0);
     } else if (e.keyCode === 8) {
       pickerValue = pickerValue.slice(0, pickerValue.length - 1);
-      var cur = pickerValue.toLowerCase();
+      let cur = pickerValue.toLowerCase();
       pickerItems = pickerItemsOrig.filter((it) =>
-        it.name.toLowerCase().includes(cur)
+        it.name.toLowerCase().includes(cur),
       );
       movePickerBar(0);
     } else if (e.which === 13) {

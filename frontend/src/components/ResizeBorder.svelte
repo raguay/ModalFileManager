@@ -18,13 +18,13 @@
             min-width: 10px;
             border-left: 3px solid {$theme.borderColor};
             border-right: 3px solid {$theme.borderColor};"
-  on:mousedown={(e) => {
+  onmousedown={(e) => {
     dispatch("mouseDown", true);
   }}
-  on:mouseup={(e) => {
+  onmouseup={(e) => {
     dispatch("mouseDown", false);
   }}
-/>
+></div>
 
 <style>
   #resizeBorder {

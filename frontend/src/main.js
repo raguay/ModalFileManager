@@ -1,10 +1,6 @@
-import Start from './Start.svelte';
+import Start from "./Start.svelte";
+import { mount } from "svelte";
 
-let app;
+const main = mount(Start, { target: document.body });
 
-app = new Start({
-  target: document.body,
-});
-
-export default app;
-
+export default main;

@@ -7,8 +7,8 @@
 
   import util from "../modules/util.js";
 
-  let size = 0;
-  let DT;
+  let size = $state(0);
+  let DT = $state();
 
   onMount(() => {
     //

@@ -38,30 +38,30 @@
 
   const dispatch = createEventDispatcher();
 
-  export let mid;
+  let { mid } = $props();
 
-  let showMessageBox = false;
-  let showQuickSearch = false;
-  let msgBoxConfig = {};
-  let msgBoxSpinners = [];
-  let msgBoxItems = null;
+  let showMessageBox = $state(false);
+  let showQuickSearch = $state(false);
+  let msgBoxConfig = $state({});
+  let msgBoxSpinners = $state([]);
+  let msgBoxItems = $state(null);
   let msgCallBack = () => {};
   let configDir = "";
-  let setEditDirFlagLeft = false;
-  let setEditDirFlagRight = false;
-  let showExtra = false;
-  let showCommandPrompt = false;
-  let leftEntries = {};
-  let rightEntries = {};
-  let rightDOM = null;
-  let leftDOM = null;
-  let containerDOM = null;
-  let mdown = false;
+  let setEditDirFlagLeft = $state(false);
+  let setEditDirFlagRight = $state(false);
+  let showExtra = $state(false);
+  let showCommandPrompt = $state(false);
+  let leftEntries = $state({});
+  let rightEntries = $state({});
+  let rightDOM = $state(null);
+  let leftDOM = $state(null);
+  let containerDOM = $state(null);
+  let mdown = $state(false);
   let lastError = null;
   let userEditor = ".myeditorchoice";
   let OStype = "macOS";
   let stateMaps = [];
-  let showGitHub = false;
+  let showGitHub = $state(false);
   let numberAcc = "";
   let lastCommand = "";
   let flagFilter = 1;
@@ -2964,8 +2964,8 @@
          font-family: {$theme.font};
          font-size: {$theme.fontSize};
          height: {mid}px;"
-  on:mousemove={mouseMove}
-  on:mouseup={() => {
+  onmousemove={mouseMove}
+  onmouseup={() => {
     mdown = false;
   }}
   bind:this={containerDOM}

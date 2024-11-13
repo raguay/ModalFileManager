@@ -5,9 +5,9 @@
 
   const dispatch = createEventDispatcher();
 
-  let KVname = "";
-  let KVvalue = "";
-  let addNew = false;
+  let KVname = $state("");
+  let KVvalue = $state("");
+  let addNew = $state(false);
 
   onMount(() => {
     return () => {};
@@ -85,8 +85,8 @@
   <table>
     <thead>
       <tr>
-        <th />
-        <th />
+        <th></th>
+        <th></th>
         <th> Name </th>
         <th> Value </th>
       </tr>
@@ -109,14 +109,14 @@
       {/each}
       {#if addNew}
         <tr>
-          <td />
-          <td />
+          <td></td>
+          <td></td>
           <td>
             <input
               class="inputKV"
               type="text"
               bind:value={KVname}
-              on:mouseover={() => {
+              onmouseover={() => {
                 setFocus(false);
               }}
             />
@@ -126,11 +126,11 @@
               class="inputKV"
               type="text"
               bind:value={KVvalue}
-              on:blur={addKV}
-              on:mouseover={() => {
+              onblur={addKV}
+              onmouseover={() => {
                 setFocus(false);
               }}
-              on:mouseleave={addKV}
+              onmouseleave={addKV}
             />
           </td>
         </tr>
@@ -139,7 +139,7 @@
           <td span="2">
             <span
               class="addNewItem"
-              on:click={() => {
+              onclick={() => {
                 addNew = true;
               }}
             >

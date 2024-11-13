@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
   import { theme } from "../stores/theme.js";
@@ -45,11 +46,11 @@
   async function loadRepoInfo() {
     loading = true;
     repos = await ap.GetGitHubScripts();
-    for (var i = 0; i < repos.length; i++) {
+    for (let i = 0; i < repos.length; i++) {
       repos[i].loaded = await extExists(repos[i]);
     }
     themes = await ap.GetGitHubThemes();
-    for (var i = 0; i < themes.length; i++) {
+    for (let i = 0; i < themes.length; i++) {
       themes[i].loaded = await themeExists(themes[i]);
     }
     loading = false;
@@ -123,7 +124,7 @@
           }
           return item;
         });
-      }
+      },
     );
   }
 
@@ -164,9 +165,9 @@
         });
         addMsg(
           ext,
-          "Rerun the application to remove the extension from memory."
+          "Rerun the application to remove the extension from memory.",
         );
-      }
+      },
     );
   }
 

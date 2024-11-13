@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate and afterUpdate. Please migrate by hand. -->
 <script>
   import { beforeUpdate, afterUpdate, tick } from "svelte";
   import ModeLine from "./ModeLine.svelte";
@@ -25,11 +26,11 @@
       lastChecked = $currentCursor.entry.name;
       fullPath = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
-        $currentCursor.entry.name
+        $currentCursor.entry.name,
       );
       let hmdir = await $currentCursor.entry.fileSystem.getHomeDir();
       lookupPath = `http://127.0.0.1:9998/filesys/${fullPath.substr(
-        hmdir.length + 1
+        hmdir.length + 1,
       )}`;
       lookupPath = encodeURI(lookupPath);
       extension = $currentCursor.entry.ext.toLowerCase();
@@ -68,7 +69,7 @@
         $currentCursor.entry.dir,
         $currentCursor.entry.name,
         $currentCursor.fileSystem,
-        side
+        side,
       );
       if (isExtra) {
         var newContent = await item.createHTML();
@@ -103,13 +104,13 @@
         if (err) {
           console.log("getDimensions: ffprobe error: ", err);
         } else {
-          var stdout = stdout.toString("utf8");
+          stdout = stdout.toString("utf8");
           var width = /width=(\d+)/.exec(stdout);
           var height = /height=(\d+)/.exec(stdout);
           videoDem = `${parseInt(width[1])}x${parseInt(height[1])}`;
         }
       },
-      "."
+      ".",
     );
   }
 </script>

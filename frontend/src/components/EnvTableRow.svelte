@@ -3,11 +3,10 @@
 
   const dispatch = createEventDispatcher();
 
-  export let name;
-  export let value;
+  let { name, value = $bindable() } = $props();
 
-  let inputValue = "";
-  let editValue = false;
+  let inputValue = $state("");
+  let editValue = $state(false);
 
   function editCell() {
     inputValue = value;
@@ -35,21 +34,21 @@
 </script>
 
 <tr>
-  <td class="editTD" on:click={editCell}>
+  <td class="editTD" onclick={editCell}>
     <span> 🖋️ </span>
   </td>
-  <td class="deleteTD" on:click={deleteCell}>
+  <td class="deleteTD" onclick={deleteCell}>
     <span> ❌ </span>
   </td>
   <td>{name}</td>
   {#if editValue}
     <input
       bind:value={inputValue}
-      on:blur={saveInput}
-      on:mouseover={() => {
+      onblur={saveInput}
+      onmouseover={() => {
         setFocus(false);
       }}
-      on:mouseleave={saveInput}
+      onmouseleave={saveInput}
     />
   {:else}
     <td>{value}</td>

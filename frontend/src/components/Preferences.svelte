@@ -8,11 +8,11 @@
 
   const dispatch = createEventDispatcher();
 
-  let showPanel = "general";
-  let vimInput = null;
-  let keepBlur = true;
-  let scrollDOM = null;
-  let timeOut = null;
+  let showPanel = $state("general");
+  let vimInput = $state(null);
+  let keepBlur = $state(true);
+  let scrollDOM = $state(null);
+  let timeOut = $state(null);
   const timeOutValue = 500;
 
   onMount(async () => {
@@ -83,12 +83,12 @@
   <input
     id="vimInputDiv"
     bind:this={vimInput}
-    on:blur={() => {
+    onblur={() => {
       if (keepBlur && vimInput !== null) {
         vimInput.focus();
       }
     }}
-    on:keydown={(e) => {
+    onkeydown={(e) => {
       if (keepBlur) {
         e.preventDefault();
         switch (e.key) {
@@ -123,7 +123,7 @@
   <ul>
     {#if showPanel === "general"}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "general";
         }}
         style="border-color: {$theme.textColor};
@@ -134,7 +134,7 @@
       </li>
     {:else}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "general";
         }}
         style="border-color: {$theme.textColor};
@@ -146,7 +146,7 @@
     {/if}
     {#if showPanel === "theme"}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "theme";
         }}
         style="border-color: {$theme.textColor};
@@ -157,7 +157,7 @@
       </li>
     {:else}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "theme";
         }}
         style="border-color: {$theme.textColor};
@@ -169,7 +169,7 @@
     {/if}
     {#if showPanel === "extension"}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "extension";
         }}
         style="border-color: {$theme.textColor};
@@ -180,7 +180,7 @@
       </li>
     {:else}
       <li
-        on:click={(e) => {
+        onclick={(e) => {
           showPanel = "extension";
         }}
         style="border-color: {$theme.textColor};
@@ -233,7 +233,7 @@
            background-color: {$theme.textColor};
            font-family: {$theme.font};
            font-size: {$theme.fontSize};"
-      on:click={() => {
+      onclick={() => {
         exitPrefs();
       }}
     >

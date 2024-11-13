@@ -1,4 +1,6 @@
 <script>
+  import { preventDefault } from 'svelte/legacy';
+
   import { onMount } from "svelte";
   import FileManager from "./components/FileManager.svelte";
   import Preferences from "./components/Preferences.svelte";
@@ -13,8 +15,8 @@
   import { processKey } from "./stores/processKey.js";
   import { keyProcess } from "./stores/keyProcess.js";
 
-  let showComponent = "filemanager";
-  let midSize = null;
+  let showComponent = $state("filemanager");
+  let midSize = $state(null);
 
   onMount(() => {
     midSize = window.innerHeight - 75;
@@ -26,7 +28,7 @@
 </script>
 
 <svelte:window
-  on:keydown={(e) => {
+  onkeydown={(e) => {
     $ctrlKey = e.ctrlKey;
     $shiftKey = e.shiftKey;
     $metaKey = e.metaKey;
@@ -42,18 +44,18 @@
     }
     $skipKey = false;
   }}
-  on:keyup={(e) => {
+  onkeyup={(e) => {
     $ctrlKey = e.ctrlKey;
     $shiftKey = e.shiftKey;
     $metaKey = e.metaKey;
     $altKey = e.altKey;
   }}
-  on:resize={() => {
+  onresize={() => {
     midSize = window.innerHeight - 75;
   }}
-  on:beforeunload|preventDefault={() => {
+  onbeforeunload={preventDefault(() => {
     window.go.main.App.Quit();
-  }}
+  })}
 />
 
 <div id="bodyContainer">

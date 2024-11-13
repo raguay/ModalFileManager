@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
   import { onMount, afterUpdate, tick, createEventDispatcher } from "svelte";
   import util from "../modules/util.js";

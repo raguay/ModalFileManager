@@ -10,13 +10,13 @@
          font-size: {$theme.fontSize};
          border-bottom: 3px solid {$theme.borderColor};"
 >
-  <div id="spacer" />
+  <div id="spacer"></div>
 
   <div id="title">
     <p>Modal File Manager</p>
   </div>
 
-  <div id="spacer2" />
+  <div id="spacer2"></div>
 </div>
 
 <style>

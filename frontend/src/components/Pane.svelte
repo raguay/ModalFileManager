@@ -1,4 +1,6 @@
 <script>
+  import { preventDefault } from 'svelte/legacy';
+
   import { createEventDispatcher } from "svelte";
   import Entry from "./Entry.svelte";
   import { currentCursor } from "../stores/currentCursor.js";
@@ -8,13 +10,19 @@
   import { leftDir } from "../stores/leftDir.js";
   import { rightDir } from "../stores/rightDir.js";
 
-  export let pane = "left";
-  export let entries = [];
-  export let utilities;
+  /**
+   * @typedef {Object} Props
+   * @property {string} [pane]
+   * @property {any} [entries]
+   * @property {any} utilities
+   */
+
+  /** @type {Props} */
+  let { pane = "left", entries = [], utilities } = $props();
 
   const dispatch = createEventDispatcher();
 
-  let DOM;
+  let DOM = $state();
 
   function changeDir(e) {
     dispatch("changeDir", {
@@ -169,16 +177,16 @@
   <div
     class="empty"
     draggable="false"
-    on:click={() => {
+    onclick={() => {
       cursorToPane();
     }}
-    on:drop|preventDefault={(e) => {
+    ondrop={preventDefault((e) => {
       dropFiles(e, "drop");
-    }}
-    on:dragover|preventDefault={(e) => {
+    })}
+    ondragover={preventDefault((e) => {
       dropFiles(e, "dragover");
-    }}
-  />
+    })}
+></div>
 </div>
 
 <style>
