@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -119,67 +118,69 @@ func (b *App) CloseLeftWatch() {
 }
 
 func (b *App) StartWatcher() {
-	for !b.Stopped {
-		//
-		// Create the timer.
-		//
-		b.Timer = time.NewTimer(time.Millisecond * 50)
+	/*
+		for !b.Stopped {
+			//
+			// Create the timer.
+			//
+			b.Timer = time.NewTimer(time.Millisecond * 50)
 
-		//
-		// Do the Job. check for changes in the current directories.
-		//
-		if b.lastLeftDir != "" {
-			leftFiles := b.ReadDir(b.lastLeftDir)
-			LenLeftFiles := len(leftFiles)
-			if LenLeftFiles != b.LenLeftFiles {
-				//
-				// The number of files have changed. Reload the directory.
-				//
-				b.LenLeftFiles = LenLeftFiles
-				rt.EventsEmit(b.ctx, "leftSideChange", "")
-			} else {
-				//
-				// See if a file name changed. This takes longer.
-				//
-				fileNames := ""
-				for i := 0; i < LenLeftFiles; i++ {
-					fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
-				}
-				if b.LeftHash != fileNames {
-					b.LeftHash = fileNames
+			//
+			// Do the Job. check for changes in the current directories.
+			//
+			if b.lastLeftDir != "" {
+				leftFiles := b.ReadDir(b.lastLeftDir)
+				LenLeftFiles := len(leftFiles)
+				if LenLeftFiles != b.LenLeftFiles {
+					//
+					// The number of files have changed. Reload the directory.
+					//
+					b.LenLeftFiles = LenLeftFiles
 					rt.EventsEmit(b.ctx, "leftSideChange", "")
+				} else {
+					//
+					// See if a file name changed. This takes longer.
+					//
+					fileNames := ""
+					for i := 0; i < LenLeftFiles; i++ {
+						fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
+					}
+					if b.LeftHash != fileNames {
+						b.LeftHash = fileNames
+						rt.EventsEmit(b.ctx, "leftSideChange", "")
+					}
 				}
 			}
-		}
-		if b.lastRightDir != "" {
-			rightFiles := b.ReadDir(b.lastRightDir)
-			LenRightFiles := len(rightFiles)
-			if LenRightFiles != b.LenRightFiles {
-				//
-				// The number of files have changed. Reload the directory.
-				//
-				b.LenRightFiles = LenRightFiles
-				rt.EventsEmit(b.ctx, "rightSideChange", "")
-			} else {
-				//
-				// See if a file name changed. This takes longer.
-				//
-				fileNames := ""
-				for i := 0; i < LenRightFiles; i++ {
-					fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
-				}
-				if b.RightHash != fileNames {
-					b.RightHash = fileNames
+			if b.lastRightDir != "" {
+				rightFiles := b.ReadDir(b.lastRightDir)
+				LenRightFiles := len(rightFiles)
+				if LenRightFiles != b.LenRightFiles {
+					//
+					// The number of files have changed. Reload the directory.
+					//
+					b.LenRightFiles = LenRightFiles
 					rt.EventsEmit(b.ctx, "rightSideChange", "")
+				} else {
+					//
+					// See if a file name changed. This takes longer.
+					//
+					fileNames := ""
+					for i := 0; i < LenRightFiles; i++ {
+						fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
+					}
+					if b.RightHash != fileNames {
+						b.RightHash = fileNames
+						rt.EventsEmit(b.ctx, "rightSideChange", "")
+					}
 				}
 			}
-		}
 
-		//
-		// Wait for the timer to finish.
-		//
-		<-b.Timer.C
-	}
+			//
+			// Wait for the timer to finish.
+			//
+			<-b.Timer.C
+		}
+	*/
 }
 
 func (b *App) StopWatcher() {
@@ -243,28 +244,33 @@ func (b *App) SplitFile(path string) FileParts {
 
 func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
+	fmt.Print("ReadDir...")
 	var result []FileInfo
 	result = make([]FileInfo, 0)
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		b.err = err.Error()
 	} else {
 		for index, file := range files {
 			var fileInfo FileInfo
+			info, err := file.Info()
+			if err != nil {
+				b.err = err.Error()
+			}
 			fileInfo.Name = file.Name()
-			fileInfo.Size = file.Size()
+			fileInfo.Size = info.Size()
 			fileInfo.IsDir = file.IsDir()
-			fileInfo.Modtime = file.ModTime().Format(time.ANSIC)
+			fileInfo.Modtime = info.ModTime().Format(time.ANSIC)
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
 			fileInfo.Index = index
-			fileInfo.Mode = file.Mode().Perm()
+			fileInfo.Mode = info.Mode().Perm()
 			fileInfo.Link = false
-
+			fmt.Print(fileInfo)
 			//
 			// Determine if it is a symlink and if so if it's a directory.
 			//
-			if file.Mode()&fs.ModeSymlink.Type() != 0 {
+			if fileInfo.Mode&fs.ModeSymlink.Type() != 0 {
 				fileInfo.Link = true
 				link, err := os.Readlink(b.AppendPath(path, fileInfo.Name))
 				if err == nil && b.DirExists(link) {
@@ -278,6 +284,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 			result = append(result, fileInfo)
 		}
 	}
+	fmt.Print(result)
 	return result
 }
 
@@ -348,7 +355,6 @@ func (b *App) CopyEntries(from string, to string) {
 		}
 		defer destination.Close()
 		_, err = io.Copy(destination, source)
-
 		if err != nil {
 			b.err = err.Error()
 		}

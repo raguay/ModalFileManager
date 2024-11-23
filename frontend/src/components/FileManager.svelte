@@ -145,7 +145,7 @@
       addHistory: function (dir) {
         dir = new String(dir);
         let el = this.histStore.find((item) =>
-          item.toLowerCase().includes(dir.toLowerCase())
+          item.toLowerCase().includes(dir.toLowerCase()),
         );
         if (typeof el === "undefined") {
           this.histStore.push(dir);
@@ -168,7 +168,7 @@
           //
           const hFile = await $config.OS.appendPath(
             $config.configDir,
-            "history.json"
+            "history.json",
           );
           await $config.OS.writeFile(hFile, JSON.stringify(this.histStore));
         }
@@ -184,7 +184,7 @@
           //
           const hf = await $config.OS.appendPath(
             $config.configDir,
-            "history.json"
+            "history.json",
           );
           if (await $config.OS.fileExists(hf)) {
             try {
@@ -216,7 +216,6 @@
     //
     // Get the files.
     //
-    leftEntries = await OS.getDirList($leftDir.path);
     leftEntries = await OS.getDirList($leftDir.path);
     rightEntries = await OS.getDirList($rightDir.path);
 
@@ -396,7 +395,7 @@
     // an extension command is being used.
     //
     await loadKeyMaps();
-    await extensions.installKeyMaps();
+    extensions.installKeyMaps();
   }
 
   async function setUpExt() {
@@ -443,165 +442,165 @@
     extensions.addExtCommand(
       "setCursor",
       "Set the cursor to the file name given in the current panel.",
-      setCursor
+      setCursor,
     );
     extensions.addExtCommand(
       "cursorToPane",
-      'Set the cursor to the pane given. Either "left" or "right", cursorToPane'
+      'Set the cursor to the pane given. Either "left" or "right", cursorToPane',
     );
     extensions.addExtCommand(
       "getLeftFile",
       "Get the current left file information.",
-      getLeftFile
+      getLeftFile,
     );
     extensions.addExtCommand(
       "getRightFile",
       "Get the current right file information.",
-      getRightFile
+      getRightFile,
     );
     extensions.addExtCommand("getCursor", "Get the current cursor.", getCursor);
     extensions.addExtCommand(
       "addKeyboardShort",
       "Add a keyboard shortcut.",
-      addKeyboardShort
+      addKeyboardShort,
     );
     extensions.addExtCommand(
       "setTheme",
       "Set the theme to the values given.",
-      setTheme
+      setTheme,
     );
     extensions.addExtCommand(
       "getTheme",
       "Get the current theme values.",
-      getTheme
+      getTheme,
     );
     extensions.addExtCommand("getOS", "Get the local OS name.", getOS);
     extensions.addExtCommand(
       "addDirectoryListener",
       "Register a function that will be called with each change in directory.",
-      addDirectoryListener
+      addDirectoryListener,
     );
     extensions.addExtCommand(
       "getLastError",
       "returns the last error.",
-      getLastError
+      getLastError,
     );
     extensions.addExtCommand(
       "getSelectedFiles",
       "Returns a list of Entries that have been selected",
-      getSelectedFiles
+      getSelectedFiles,
     );
     extensions.addExtCommand(
       "getCurrentFile",
       "Get the current file.",
-      getCurrentFile
+      getCurrentFile,
     );
     extensions.addExtCommand(
       "getCurrentPane",
       "Get the pane that is currently active.",
-      getCurrentPane
+      getCurrentPane,
     );
     extensions.addExtCommand(
       "changeDir",
       "Change the current directory for a pane.",
-      changeDir
+      changeDir,
     );
     extensions.addExtCommand(
       "addSpinner",
       "Add a message box spinner value.",
-      addSpinner
+      addSpinner,
     );
     extensions.addExtCommand(
       "updateSpinner",
       "Update a message box spinner value.",
-      updateSpinner
+      updateSpinner,
     );
     extensions.addExtCommand(
       "removeSpinner",
       "Remove a message box spinner value.",
-      removeSpinner
+      removeSpinner,
     );
     extensions.addExtCommand(
       "keyProcessor",
       "Send a keystroke to be processed.",
-      keyProcessor
+      keyProcessor,
     );
     extensions.addExtCommand(
       "stringKeyProcessor",
       "Send a string of keystrokes to be processed.",
-      stringKeyProcessor
+      stringKeyProcessor,
     );
     extensions.addExtCommand(
       "askQuestion",
       "Ask a question and get the response.",
-      askQuestion
+      askQuestion,
     );
     extensions.addExtCommand(
       "pickItem",
       "Choose from a list of items.",
-      pickItem
+      pickItem,
     );
     extensions.addExtCommand(
       "showMessage",
       "Show a message to the user.",
-      showMessage
+      showMessage,
     );
     extensions.addExtCommand(
       "createNewMode",
       "Allows the creation of a new mode for keyboard commands.",
-      createNewMode
+      createNewMode,
     );
     extensions.addExtCommand("changeMode", "Change to mode given.", changeMode);
     extensions.addExtCommand(
       "switchView",
       "Switch the active program view.",
-      switchView
+      switchView,
     );
     extensions.addExtCommand(
       "copyEntriesCommand",
       "Copy the list of entries to new location.",
-      copyEntriesCommand
+      copyEntriesCommand,
     );
     extensions.addExtCommand(
       "moveEntriesCommand",
       "Move the list of entries to the new location.",
-      moveEntriesCommand
+      moveEntriesCommand,
     );
     extensions.addExtCommand(
       "deleteEntriesCommand",
       "Delete the list of entries.",
-      deleteEntriesCommand
+      deleteEntriesCommand,
     );
     extensions.addExtCommand(
       "editEntryCommand",
       "Edit the given entry.",
-      editEntryCommand
+      editEntryCommand,
     );
     extensions.addExtCommand(
       "getRightDir",
       "Get the path for the right pane.",
-      getRightDir
+      getRightDir,
     );
     extensions.addExtCommand(
       "getLeftDir",
       "Get the path for the left pane.",
-      getLeftDir
+      getLeftDir,
     );
     extensions.addExtCommand(
       "setLeftDir",
       "Set the left panel directory.",
-      setLeftDir
+      setLeftDir,
     );
     extensions.addExtCommand(
       "setRightDir",
       "Set the right panel directory.",
-      setRightDir
+      setRightDir,
     );
 
     extensions.addExtCommand(
       "addExtraPanelProcessor",
       "Add a processor for creating extra panel html.",
-      addExtraPanelProcessor
+      addExtraPanelProcessor,
     );
   }
 
@@ -613,278 +612,278 @@
       "lock",
       "lock",
       "Lock the current quick search results.",
-      lockqs
+      lockqs,
     );
     commands.addCommand(
       "unlock",
       "unlock",
       "Unlock the current quick search results.",
-      unlockqs
+      unlockqs,
     );
     commands.addCommand(
       "Save Default Keymaps",
       "saveDefaultKeymaps",
       "Save the default keymaps into the keymap files.",
-      saveDefaultKeymaps
+      saveDefaultKeymaps,
     );
     commands.addCommand(
       "Minimize",
       "minimizeWindow",
       "Minimizes the window.",
-      minimizeWindow
+      minimizeWindow,
     );
     commands.addCommand(
       "Select by Regular Expression",
       "selectRegExp",
       "Selects the files/directories in the current pane based on a regular expression.",
-      selectRegExp
+      selectRegExp,
     );
     commands.addCommand("Quit", "quitApp", "Quits the application.", quitApp);
     commands.addCommand(
       "Go Home",
       "goHome",
       "Puts the current panel in the home directory.",
-      goHome
+      goHome,
     );
     commands.addCommand(
       "Select All",
       "selectAll",
       "Select All entries in the current pane.",
-      selectAll
+      selectAll,
     );
     commands.addCommand(
       "Unselect All",
       "unselectAll",
       "Unselect All entries in the current pane.",
-      unselectAll
+      unselectAll,
     );
     commands.addCommand(
       "Move Cursor Down",
       "moveCursorDown",
       "Move the cursor down one line.",
-      moveCursorDown
+      moveCursorDown,
     );
     commands.addCommand(
       "Move Cursor Down with Selection",
       "moveCursorDownWithSelect",
       "This will select the current file and move the cursor down one line.",
-      moveCursorDownWithSelect
+      moveCursorDownWithSelect,
     );
     commands.addCommand(
       "Move Cursor Up",
       "moveCursorUp",
       "This will move the cursor up one line",
-      moveCursorUp
+      moveCursorUp,
     );
     commands.addCommand(
       "Move Cursor Up with Selection",
       "moveCursorUpWithSelect",
       "This will move select the current entry and move the cursor up one line.",
-      moveCursorUpWithSelect
+      moveCursorUpWithSelect,
     );
     commands.addCommand(
       "Change Mode to Normal",
       "changeModeNormal",
       "Set the normal mode.",
-      changeModeNormal
+      changeModeNormal,
     );
     commands.addCommand(
       "Change Mode to Insert",
       "changeModeInsert",
       "Set the insert mode.",
-      changeModeInsert
+      changeModeInsert,
     );
     commands.addCommand(
       "Change Mode to Visual",
       "changeModeVisual",
       "Set the visual mode.",
-      changeModeVisual
+      changeModeVisual,
     );
     commands.addCommand(
       "Cursor to Next Pane",
       "cursorToNextPane",
       "This will move the cursore to the opposite pane.",
-      cursorToNextPane
+      cursorToNextPane,
     );
     commands.addCommand(
       "Action Entry",
       "actionEntry",
       "This will open a file or go into a directory.",
-      actionEntry
+      actionEntry,
     );
     commands.addCommand(
       "Go Up a Directory",
       "goUpDir",
       "Go to the parent directory.",
-      goUpDir
+      goUpDir,
     );
     commands.addCommand(
       "Go Down a Directory",
       "goDownDir",
       "If the current entry is a directory, go to it.",
-      goDownDir
+      goDownDir,
     );
     commands.addCommand(
       "Go to Bottom Entry",
       "goBottomFile",
       "Move the cursor to the bottom most file.",
-      goBottomFile
+      goBottomFile,
     );
     commands.addCommand(
       "Go to Top Entry",
       "goTopFile",
       "Move the cursor to the top most file.",
-      goTopFile
+      goTopFile,
     );
     commands.addCommand(
       "Delete Entries",
       "deleteEntries",
       "Delete all selected entries or the one under the cursor",
-      deleteEntries
+      deleteEntries,
     );
     commands.addCommand(
       "Copy Entries",
       "copyEntries",
       "Copy the selected entries or the one under the cursor to the other pane.",
-      copyEntries
+      copyEntries,
     );
     commands.addCommand(
       "Move Entries",
       "moveEntries",
       "Move the selected entries or the one under the cursor to the other pane.",
-      moveEntries
+      moveEntries,
     );
     commands.addCommand(
       "Edit Entry",
       "editEntry",
       "Opens the file under the cursor in the editor specified. This command assumes using a Text/Code editor on the file.",
-      editEntry
+      editEntry,
     );
     commands.addCommand(
       "Duplicate Entry",
       "duplicateEntry",
       'Make a copy of the current entry with "_copy" added to it.',
-      duplicateEntry
+      duplicateEntry,
     );
     commands.addCommand(
       "New File",
       "newFile",
       "Create a new file in the current pane.",
-      newFile
+      newFile,
     );
     commands.addCommand(
       "New Directory",
       "newDirectory",
       "Create a new directory in the current pane.",
-      newDirectory
+      newDirectory,
     );
     commands.addCommand(
       "Rename Entry",
       "renameEntry",
       "Rename the current entry.",
-      renameEntry
+      renameEntry,
     );
     commands.addCommand(
       "Swap Panels",
       "swapPanels",
       "Swap the panel contents.",
-      swapPanels
+      swapPanels,
     );
     commands.addCommand(
       "Toggle Quick Search",
       "toggleQuickSearch",
       "Show/Hide the Quick Search panel.",
-      toggleQuickSearch
+      toggleQuickSearch,
     );
     commands.addCommand(
       "Reload Pane",
       "reloadPane",
       "Reload the Current Pane.",
-      reloadPane
+      reloadPane,
     );
     commands.addCommand(
       "Edit Directory",
       "editDirLoc",
       "Edit the current panels directory.",
-      editDirLoc
+      editDirLoc,
     );
     commands.addCommand(
       "Toggle Extra Panel",
       "toggleExtraPanel",
       "Toggles the showing of the extra panel.",
-      toggleExtraPanel
+      toggleExtraPanel,
     );
     commands.addCommand(
       "Toggle Command Prompt",
       "toggleCommandPrompt",
       "Toggles showing the command prompt.",
-      toggleCommandPrompt
+      toggleCommandPrompt,
     );
     commands.addCommand(
       "Toggle GitHub Importer",
       "toggleGitHub",
       "Toggles the showing of the GitHub importer.",
-      toggleGitHub
+      toggleGitHub,
     );
     commands.addCommand(
       "Refresh Panes",
       "refreshPanes",
       "Reloads both panes.",
-      refreshPanes
+      refreshPanes,
     );
     commands.addCommand(
       "Refresh Right Pane",
       "refreshRightPane",
       "Refresh the Right Pane",
-      refreshRightPane
+      refreshRightPane,
     );
     commands.addCommand(
       "Refresh Left Pane",
       "refreshLeftPane",
       "Reloads the Left Pane.",
-      refreshLeftPane
+      refreshLeftPane,
     );
     commands.addCommand(
       "Rerun Last Command",
       "reRunLastCommand",
       "Runs the last command with it's number.",
-      reRunLastCommand
+      reRunLastCommand,
     );
     commands.addCommand(
       "Toggle Filter",
       "toggleFilter",
       "Toggles the show all and default filters.",
-      toggleFilter
+      toggleFilter,
     );
     commands.addCommand(
       "Show All Filter",
       "setShowAllFilter",
       "Sets to show all Entries.",
-      setShowAllFilter
+      setShowAllFilter,
     );
     commands.addCommand(
       "Show Only Non-System Files/Folders",
       "setDefaultFilter",
       "Sets the default filter of not showing system files/folders.",
-      setDefaultFilter
+      setDefaultFilter,
     );
     commands.addCommand(
       "Open in Opposite Panel",
       "openOppositePanel",
       "Set the opposite panel to the directory under the current cursor or the directory of the current cursor.",
-      openOppositePanel
+      openOppositePanel,
     );
     commands.addCommand(
       "Show Preferences",
       "showPreferences",
       "Show the preferences.",
-      showPreferences
+      showPreferences,
     );
     commands.addCommand(
       "Reload Extensions",
       "reloadExtensions",
       "Reload the extensions, keyboard maps, and theme.",
-      reloadExtensions
+      reloadExtensions,
     );
   }
 
@@ -926,7 +925,7 @@
         cKey,
         sKey,
         mKey,
-        aKey
+        aKey,
       );
 
       //
@@ -1030,7 +1029,6 @@
   async function setCursor(fname) {
     let index = 0;
     if ($currentCursor.pane == "left") {
-      leftEntries = await OS.getDirList($leftDir.path);
       index = leftEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
       $currentCursor = {
@@ -1042,7 +1040,6 @@
         entry: leftEntries[index],
       };
     } else {
-      rightEntries = await OS.getDirList($rightDir.path);
       index = rightEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
       $currentCursor = {
@@ -1061,7 +1058,7 @@
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index < leftEntries.length - 1) {
           index += 1;
@@ -1078,7 +1075,7 @@
     } else {
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index < rightEntries.length - 1) {
           index += 1;
@@ -1100,7 +1097,7 @@
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
         let entry = leftEntries[index];
@@ -1122,7 +1119,7 @@
     } else {
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
         let entry = rightEntries[index];
@@ -1149,7 +1146,7 @@
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index > 0) {
           index -= 1;
@@ -1167,7 +1164,7 @@
     } else {
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index > 0) {
           index -= 1;
@@ -1190,7 +1187,7 @@
     if ($currentCursor.pane.includes("left")) {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         index = leftEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
         let entry = leftEntries[index];
@@ -1212,7 +1209,7 @@
     } else {
       if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
         index = rightEntries.findIndex(
-          (item) => item.name == $currentCursor.entry.name
+          (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
         let entry = rightEntries[index];
@@ -1255,7 +1252,7 @@
     if ($currentCursor.entry.type === 1) {
       nEntry = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
-        $currentCursor.entry.name
+        $currentCursor.entry.name,
       );
     }
     if ($currentCursor.pane === "right") {
@@ -1265,7 +1262,7 @@
           cursor: true,
         },
         "left",
-        ""
+        "",
       );
     } else {
       await changeDir(
@@ -1274,7 +1271,7 @@
           cursor: true,
         },
         "right",
-        ""
+        "",
       );
     }
   }
@@ -1288,7 +1285,7 @@
           cursor: true,
         },
         "right",
-        ""
+        "",
       );
     } else {
       await changeDir(
@@ -1297,7 +1294,7 @@
           cursor: true,
         },
         "left",
-        ""
+        "",
       );
     }
   }
@@ -1305,7 +1302,7 @@
   function cursorToPane(npane) {
     if (npane == "right") {
       let index = rightEntries.findIndex(
-        (item) => item.name === $currentCursor.entry.name
+        (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
         pane: "right",
@@ -1314,7 +1311,7 @@
       };
     } else {
       let index = leftEntries.findIndex(
-        (item) => item.name === $currentCursor.entry.name
+        (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
         pane: "left",
@@ -1327,7 +1324,7 @@
   function cursorToNextPane() {
     if ($currentCursor.pane == "left") {
       let index = rightEntries.findIndex(
-        (item) => item.name === $currentCursor.entry.name
+        (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
         pane: "right",
@@ -1336,7 +1333,7 @@
       };
     } else {
       let index = leftEntries.findIndex(
-        (item) => item.name === $currentCursor.entry.name
+        (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
         pane: "left",
@@ -1364,7 +1361,7 @@
         cursor: true,
       },
       $currentCursor.pane,
-      $currentCursor.entry.name
+      $currentCursor.entry.name,
     );
   }
 
@@ -1383,7 +1380,7 @@
 
       if ($saved.lockqs && $saved.sideqs === "left") {
         leftEntries = leftEntries.filter((item) =>
-          item.name.toLowerCase().includes($saved.qs)
+          item.name.toLowerCase().includes($saved.qs),
         );
       }
 
@@ -1447,7 +1444,7 @@
 
       if ($saved.lockqs && $saved.sideqs === "right") {
         rightEntries = rightEntries.filter((item) =>
-          item.name.toLowerCase().includes($saved.qs)
+          item.name.toLowerCase().includes($saved.qs),
         );
       }
 
@@ -1526,7 +1523,7 @@
       //
       let ndir = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
-        $currentCursor.entry.name
+        $currentCursor.entry.name,
       );
       await changeDir(
         {
@@ -1534,7 +1531,7 @@
           cursor: true,
         },
         $currentCursor.pane,
-        ""
+        "",
       );
     }
   }
@@ -1552,7 +1549,7 @@
           cursor: true,
         },
         $currentCursor.pane,
-        parts[parts.length - 1]
+        parts[parts.length - 1],
       );
       await setCursor(parts[parts.length - 1]);
     }
@@ -1562,7 +1559,7 @@
     if ($currentCursor.entry.type === 1) {
       let newDir = await $currentCursor.entry.fileSystem.appendPath(
         $currentCursor.entry.dir,
-        $currentCursor.entry.name
+        $currentCursor.entry.name,
       );
       await changeDir(
         {
@@ -1570,12 +1567,13 @@
           cursor: true,
         },
         $currentCursor.pane,
-        ""
+        "",
       );
     }
   }
 
   async function goBottomFile() {
+    debugger;
     if ($currentCursor.pane == "left") {
       if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
         const last = leftEntries[leftEntries.length - 1];
@@ -1685,7 +1683,7 @@
               //
               if (sel) clearSelectedFiles();
             }
-          }
+          },
         );
       }
     }
@@ -1735,7 +1733,7 @@
             'emacsclient -n -q "' + file + '"',
             [],
             (err, result) => {},
-            "."
+            ".",
           );
         } else {
           //
@@ -1769,7 +1767,7 @@
     nEntry.name = newName;
     await $currentCursor.entry.fileSystem.copyEntries(
       $currentCursor.entry,
-      nEntry
+      nEntry,
     );
     //
     // Refresh the file list.
@@ -1808,7 +1806,7 @@
               //
               refreshPanes();
             }
-          }
+          },
         );
       }
     }
@@ -1824,7 +1822,7 @@
 
     if ($saved.lockqs && $saved.sideqs === "right") {
       rightEntries = rightEntries.filter((item) =>
-        item.name.toLowerCase().includes($saved.qs)
+        item.name.toLowerCase().includes($saved.qs),
       );
     }
 
@@ -1855,7 +1853,7 @@
       // Try to find the original file.
       //
       let newIndex = rightEntries.findIndex(
-        (item) => item.name === current.name
+        (item) => item.name === current.name,
       );
       if (newIndex === -1) {
         //
@@ -1894,7 +1892,7 @@
 
     if ($saved.lockqs && $saved.sideqs === "left") {
       leftEntries = leftEntries.filter((item) =>
-        item.name.toLowerCase().includes($saved.qs)
+        item.name.toLowerCase().includes($saved.qs),
       );
     }
 
@@ -1928,7 +1926,7 @@
       // Try to find the original file.
       //
       let newIndex = leftEntries.findIndex(
-        (item) => item.name === current.name
+        (item) => item.name === current.name,
       );
       if (newIndex === -1) {
         //
@@ -2069,7 +2067,7 @@
     //
     nfname = await $currentCursor.entry.fileSystem.appendPath(
       $currentCursor.entry.dir,
-      nfname
+      nfname,
     );
     await $currentCursor.entry.fileSystem.createFile(nfname);
 
@@ -2166,7 +2164,7 @@
     nentry.name = nname;
     await $currentCursor.entry.fileSystem.renameEntry(
       $currentCursor.entry,
-      nentry
+      nentry,
     );
 
     //
@@ -2358,7 +2356,7 @@
       "Select Regular Expressions",
       selectList,
       runRegExpHistSelection,
-      true
+      true,
     );
   }
 
