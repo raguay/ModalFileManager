@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -118,69 +118,67 @@ func (b *App) CloseLeftWatch() {
 }
 
 func (b *App) StartWatcher() {
-	/*
-		for !b.Stopped {
-			//
-			// Create the timer.
-			//
-			b.Timer = time.NewTimer(time.Millisecond * 50)
+	for !b.Stopped {
+		//
+		// Create the timer.
+		//
+		b.Timer = time.NewTimer(time.Millisecond * 30000)
 
-			//
-			// Do the Job. check for changes in the current directories.
-			//
-			if b.lastLeftDir != "" {
-				leftFiles := b.ReadDir(b.lastLeftDir)
-				LenLeftFiles := len(leftFiles)
-				if LenLeftFiles != b.LenLeftFiles {
-					//
-					// The number of files have changed. Reload the directory.
-					//
-					b.LenLeftFiles = LenLeftFiles
+		//
+		// Do the Job. check for changes in the current directories.
+		//
+		if b.lastLeftDir != "" {
+			leftFiles := b.ReadDir(b.lastLeftDir)
+			LenLeftFiles := len(leftFiles)
+			if LenLeftFiles != b.LenLeftFiles {
+				//
+				// The number of files have changed. Reload the directory.
+				//
+				b.LenLeftFiles = LenLeftFiles
+				rt.EventsEmit(b.ctx, "leftSideChange", "")
+			} else {
+				//
+				// See if a file name changed. This takes longer.
+				//
+				fileNames := ""
+				for i := 0; i < LenLeftFiles; i++ {
+					fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
+				}
+				if b.LeftHash != fileNames {
+					b.LeftHash = fileNames
 					rt.EventsEmit(b.ctx, "leftSideChange", "")
-				} else {
-					//
-					// See if a file name changed. This takes longer.
-					//
-					fileNames := ""
-					for i := 0; i < LenLeftFiles; i++ {
-						fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
-					}
-					if b.LeftHash != fileNames {
-						b.LeftHash = fileNames
-						rt.EventsEmit(b.ctx, "leftSideChange", "")
-					}
 				}
 			}
-			if b.lastRightDir != "" {
-				rightFiles := b.ReadDir(b.lastRightDir)
-				LenRightFiles := len(rightFiles)
-				if LenRightFiles != b.LenRightFiles {
-					//
-					// The number of files have changed. Reload the directory.
-					//
-					b.LenRightFiles = LenRightFiles
-					rt.EventsEmit(b.ctx, "rightSideChange", "")
-				} else {
-					//
-					// See if a file name changed. This takes longer.
-					//
-					fileNames := ""
-					for i := 0; i < LenRightFiles; i++ {
-						fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
-					}
-					if b.RightHash != fileNames {
-						b.RightHash = fileNames
-						rt.EventsEmit(b.ctx, "rightSideChange", "")
-					}
-				}
-			}
-
-			//
-			// Wait for the timer to finish.
-			//
-			<-b.Timer.C
 		}
-	*/
+		if b.lastRightDir != "" {
+			rightFiles := b.ReadDir(b.lastRightDir)
+			LenRightFiles := len(rightFiles)
+			if LenRightFiles != b.LenRightFiles {
+				//
+				// The number of files have changed. Reload the directory.
+				//
+				b.LenRightFiles = LenRightFiles
+				rt.EventsEmit(b.ctx, "rightSideChange", "")
+			} else {
+				//
+				// See if a file name changed. This takes longer.
+				//
+				fileNames := ""
+				for i := 0; i < LenRightFiles; i++ {
+					fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
+				}
+				if b.RightHash != fileNames {
+					b.RightHash = fileNames
+					rt.EventsEmit(b.ctx, "rightSideChange", "")
+				}
+			}
+		}
+
+		//
+		// Wait for the timer to finish.
+		//
+		<-b.Timer.C
+	}
 }
 
 func (b *App) StopWatcher() {
@@ -244,7 +242,6 @@ func (b *App) SplitFile(path string) FileParts {
 
 func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
-	fmt.Print("ReadDir...")
 	var result []FileInfo
 	result = make([]FileInfo, 0)
 	files, err := os.ReadDir(path)
@@ -266,7 +263,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Index = index
 			fileInfo.Mode = info.Mode().Perm()
 			fileInfo.Link = false
-			fmt.Print(fileInfo)
+
 			//
 			// Determine if it is a symlink and if so if it's a directory.
 			//
@@ -284,7 +281,6 @@ func (b *App) ReadDir(path string) []FileInfo {
 			result = append(result, fileInfo)
 		}
 	}
-	fmt.Print(result)
 	return result
 }
 

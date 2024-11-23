@@ -9,6 +9,8 @@
   import ExtraPanel from "../components/ExtraPanel.svelte";
   import CommandPrompt from "../components/CommandPrompt.svelte";
   import GitHub from "../components/GitHub.svelte";
+  import { leftEntries } from "../stores/leftEntries.js";
+  import { rightEntries } from "../stores/rightEntries.js";
   import { currentCursor } from "../stores/currentCursor.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";
   import { currentRightFile } from "../stores/currentRightFile.js";
@@ -51,8 +53,6 @@
   let setEditDirFlagRight = $state(false);
   let showExtra = $state(false);
   let showCommandPrompt = $state(false);
-  let leftEntries = $state({});
-  let rightEntries = $state({});
   let rightDOM = $state(null);
   let leftDOM = $state(null);
   let containerDOM = $state(null);
@@ -216,19 +216,19 @@
     //
     // Get the files.
     //
-    leftEntries = await OS.getDirList($leftDir.path);
-    rightEntries = await OS.getDirList($rightDir.path);
+    $leftEntries = await OS.getDirList($leftDir.path);
+    $rightEntries = await OS.getDirList($rightDir.path);
 
     $currentCursor = {
       pane: "left",
-      entry: leftEntries[0],
+      entry: $leftEntries[0],
       index: 0,
     };
     $currentLeftFile = {
-      entry: leftEntries[0],
+      entry: $leftEntries[0],
     };
     $currentRightFile = {
-      entry: rightEntries[0],
+      entry: $rightEntries[0],
     };
     let unsubscribeTheme = theme.subscribe(async (value) => {
       //
@@ -981,29 +981,29 @@
 
   function selectAll() {
     if ($currentCursor.pane == "left") {
-      leftEntries.forEach((item) => {
+      $leftEntries.forEach((item) => {
         item.selected = true;
       });
-      leftEntries = leftEntries;
+      $leftEntries = $leftEntries;
     } else {
-      rightEntries.forEach((item) => {
+      $rightEntries.forEach((item) => {
         item.selected = true;
       });
-      rightEntries = rightEntries;
+      $rightEntries = $rightEntries;
     }
   }
 
   function unselectAll() {
     if ($currentCursor.pane == "left") {
-      leftEntries.forEach((item) => {
+      $leftEntries.forEach((item) => {
         item.selected = false;
       });
-      leftEntries = leftEntries;
+      $leftEntries = $leftEntries;
     } else {
-      rightEntries.forEach((item) => {
+      $rightEntries.forEach((item) => {
         item.selected = false;
       });
-      rightEntries = rightEntries;
+      $rightEntries = $rightEntries;
     }
   }
 
@@ -1029,26 +1029,26 @@
   async function setCursor(fname) {
     let index = 0;
     if ($currentCursor.pane == "left") {
-      index = leftEntries.findIndex((item) => item.name == fname);
+      index = $leftEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
       $currentCursor = {
         pane: "left",
-        entry: leftEntries[index],
+        entry: $leftEntries[index],
         index: index,
       };
       $currentLeftFile = {
-        entry: leftEntries[index],
+        entry: $leftEntries[index],
       };
     } else {
-      index = rightEntries.findIndex((item) => item.name == fname);
+      index = $rightEntries.findIndex((item) => item.name == fname);
       if (index === -1) index = 0;
       $currentCursor = {
         pane: "right",
-        entry: rightEntries[index],
+        entry: $rightEntries[index],
         index: index,
       };
       $currentRightFile = {
-        entry: rightEntries[index],
+        entry: $rightEntries[index],
       };
     }
   }
@@ -1056,37 +1056,37 @@
   function moveCursorDown() {
     let index = 0;
     if ($currentCursor.pane.includes("left")) {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        index = leftEntries.findIndex(
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        index = $leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
-        if (index < leftEntries.length - 1) {
+        if (index < $leftEntries.length - 1) {
           index += 1;
         }
         $currentCursor = {
           pane: "left",
-          entry: leftEntries[index],
+          entry: $leftEntries[index],
           index: index,
         };
         $currentLeftFile = {
-          entry: leftEntries[index],
+          entry: $leftEntries[index],
         };
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        index = rightEntries.findIndex(
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        index = $rightEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
-        if (index < rightEntries.length - 1) {
+        if (index < $rightEntries.length - 1) {
           index += 1;
         }
         $currentCursor = {
           pane: "right",
-          entry: rightEntries[index],
+          entry: $rightEntries[index],
           index: index,
         };
         $currentRightFile = {
-          entry: rightEntries[index],
+          entry: $rightEntries[index],
         };
       }
     }
@@ -1095,18 +1095,18 @@
   function moveCursorDownWithSelect() {
     let index = 0;
     if ($currentCursor.pane.includes("left")) {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        index = leftEntries.findIndex(
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        index = $leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
-        let entry = leftEntries[index];
+        let entry = $leftEntries[index];
         entry.selected = !entry.selected;
-        leftEntries[index] = entry;
-        if (index < leftEntries.length - 1) {
+        $leftEntries[index] = entry;
+        if (index < $leftEntries.length - 1) {
           index += 1;
         }
-        entry = leftEntries[index];
+        entry = $leftEntries[index];
         $currentCursor = {
           pane: "left",
           entry: entry,
@@ -1117,18 +1117,18 @@
         };
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        index = rightEntries.findIndex(
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        index = $rightEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
-        let entry = rightEntries[index];
+        let entry = $rightEntries[index];
         entry.selected = !entry.selected;
-        rightEntries[index] = entry;
-        if (index < rightEntries.length - 1) {
+        $rightEntries[index] = entry;
+        if (index < $rightEntries.length - 1) {
           index += 1;
         }
-        entry = rightEntries[index];
+        entry = $rightEntries[index];
         $currentCursor = {
           pane: "right",
           entry: entry,
@@ -1144,8 +1144,8 @@
   function moveCursorUp() {
     let index = 0;
     if ($currentCursor.pane.includes("left")) {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        index = leftEntries.findIndex(
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        index = $leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index > 0) {
@@ -1154,16 +1154,16 @@
         if (index === -1) index = 0;
         $currentCursor = {
           pane: "left",
-          entry: leftEntries[index],
+          entry: $leftEntries[index],
           index: index,
         };
         $currentLeftFile = {
-          entry: leftEntries[index],
+          entry: $leftEntries[index],
         };
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        index = rightEntries.findIndex(
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        index = $rightEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index > 0) {
@@ -1172,11 +1172,11 @@
         if (index === -1) index = 0;
         $currentCursor = {
           pane: "right",
-          entry: rightEntries[index],
+          entry: $rightEntries[index],
           index: index,
         };
         $currentRightFile = {
-          entry: rightEntries[index],
+          entry: $rightEntries[index],
         };
       }
     }
@@ -1185,18 +1185,18 @@
   function moveCursorUpWithSelect() {
     let index = 0;
     if ($currentCursor.pane.includes("left")) {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        index = leftEntries.findIndex(
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        index = $leftEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
-        let entry = leftEntries[index];
+        let entry = $leftEntries[index];
         entry.selected = !entry.selected;
-        leftEntries[index] = entry;
+        $leftEntries[index] = entry;
         if (index > 0) {
           index -= 1;
         }
-        entry = leftEntries[index];
+        entry = $leftEntries[index];
         $currentCursor = {
           pane: "left",
           entry: entry,
@@ -1207,18 +1207,18 @@
         };
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        index = rightEntries.findIndex(
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        index = $rightEntries.findIndex(
           (item) => item.name == $currentCursor.entry.name,
         );
         if (index === -1) index = 0;
-        let entry = rightEntries[index];
+        let entry = $rightEntries[index];
         entry.selected = !entry.selected;
-        rightEntries[index] = entry;
+        $rightEntries[index] = entry;
         if (index > 0) {
           index -= 1;
         }
-        entry = rightEntries[index];
+        entry = $rightEntries[index];
         $currentCursor = {
           pane: "right",
           entry: entry,
@@ -1301,7 +1301,7 @@
 
   function cursorToPane(npane) {
     if (npane == "right") {
-      let index = rightEntries.findIndex(
+      let index = $rightEntries.findIndex(
         (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
@@ -1310,7 +1310,7 @@
         index: index,
       };
     } else {
-      let index = leftEntries.findIndex(
+      let index = $leftEntries.findIndex(
         (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
@@ -1323,7 +1323,7 @@
 
   function cursorToNextPane() {
     if ($currentCursor.pane == "left") {
-      let index = rightEntries.findIndex(
+      let index = $rightEntries.findIndex(
         (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
@@ -1332,7 +1332,7 @@
         index: index,
       };
     } else {
-      let index = leftEntries.findIndex(
+      let index = $leftEntries.findIndex(
         (item) => item.name === $currentCursor.entry.name,
       );
       $currentCursor = {
@@ -1376,18 +1376,18 @@
         fileSystemType: $leftDir.fileSystemType,
         fileSystem: $leftDir.fileSystem,
       };
-      leftEntries = await $leftDir.fileSystem.getDirList(ndir);
+      $leftEntries = await $leftDir.fileSystem.getDirList(ndir);
 
       if ($saved.lockqs && $saved.sideqs === "left") {
-        leftEntries = leftEntries.filter((item) =>
+        $leftEntries = leftEntries.filter((item) =>
           item.name.toLowerCase().includes($saved.qs),
         );
       }
 
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        let index = leftEntries.findIndex((item) => item.name === name);
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        let index = $leftEntries.findIndex((item) => item.name === name);
         if (index === -1) index = 0;
-        let entry = leftEntries[index];
+        let entry = $leftEntries[index];
         if (entry.length !== 0) {
           $currentLeftFile = {
             entry: entry,
@@ -1401,9 +1401,9 @@
             };
           }
         } else {
-          $currentLeftFile = { entry: leftEntries[0], pane: npane };
+          $currentLeftFile = { entry: $leftEntries[0], pane: npane };
           if (dirOb.cursor) {
-            $currentCursor = { entry: leftEntries[0], pane: npane, index: 0 };
+            $currentCursor = { entry: $leftEntries[0], pane: npane, index: 0 };
           }
         }
       } else {
@@ -1440,18 +1440,18 @@
         fileSystemType: $rightDir.fileSystemType,
         fileSystem: $rightDir.fileSystem,
       };
-      rightEntries = await $rightDir.fileSystem.getDirList(ndir);
+      $rightEntries = await $rightDir.fileSystem.getDirList(ndir);
 
       if ($saved.lockqs && $saved.sideqs === "right") {
-        rightEntries = rightEntries.filter((item) =>
+        $rightEntries = $rightEntries.filter((item) =>
           item.name.toLowerCase().includes($saved.qs),
         );
       }
 
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        let index = rightEntries.findIndex((item) => item.name === name);
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        let index = $rightEntries.findIndex((item) => item.name === name);
         if (index === -1) index = 0;
-        let entry = rightEntries[index];
+        let entry = $rightEntries[index];
         if (entry.length !== 0) {
           $currentRightFile = {
             entry: entry,
@@ -1465,10 +1465,10 @@
             };
           }
         } else {
-          $currentRightFile = { entry: rightEntries[0], pane: npane };
+          $currentRightFile = { entry: $rightEntries[0], pane: npane };
           if (dirOb.cursor) {
             $currentCursor = {
-              entry: rightEntries[0],
+              entry: $rightEntries[0],
               pane: npane,
               index: 0,
             };
@@ -1575,13 +1575,13 @@
   async function goBottomFile() {
     debugger;
     if ($currentCursor.pane == "left") {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        const last = leftEntries[leftEntries.length - 1];
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        const last = $leftEntries[$leftEntries.length - 1];
         await setCursor(last.name);
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        const last = rightEntries[rightEntries.length - 1];
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        const last = $rightEntries[$rightEntries.length - 1];
         await setCursor(last.name);
       }
     }
@@ -1589,13 +1589,13 @@
 
   async function goTopFile() {
     if ($currentCursor.pane == "left") {
-      if (typeof leftEntries !== "undefined" && leftEntries.length !== 0) {
-        let top = leftEntries[0];
+      if (typeof $leftEntries !== "undefined" && $leftEntries.length !== 0) {
+        let top = $leftEntries[0];
         await setCursor(top.name);
       }
     } else {
-      if (typeof rightEntries !== "undefined" && rightEntries.length !== 0) {
-        let top = rightEntries[0];
+      if (typeof $rightEntries !== "undefined" && $rightEntries.length !== 0) {
+        let top = $rightEntries[0];
         await setCursor(top.name);
       }
     }
@@ -1697,9 +1697,9 @@
     tmp = $leftDir;
     $leftDir = $rightDir;
     $rightDir = tmp;
-    tmp = rightEntries;
-    rightEntries = leftEntries;
-    leftEntries = tmp;
+    tmp = $rightEntries;
+    $rightEntries = $leftEntries;
+    $leftEntries = tmp;
     tick();
     cursorToPane(npane);
   }
@@ -1818,18 +1818,18 @@
     //
     // Refresh right pane.
     //
-    rightEntries = await $rightDir.fileSystem.getDirList($rightDir.path);
+    $rightEntries = await $rightDir.fileSystem.getDirList($rightDir.path);
 
     if ($saved.lockqs && $saved.sideqs === "right") {
-      rightEntries = rightEntries.filter((item) =>
+      $rightEntries = $rightEntries.filter((item) =>
         item.name.toLowerCase().includes($saved.qs),
       );
     }
 
     let current = $currentRightFile.entry;
     if (
-      typeof rightEntries !== "undefined" &&
-      (rightEntries.length == 0 ||
+      typeof $rightEntries !== "undefined" &&
+      ($rightEntries.length == 0 ||
         typeof current === "undefined" ||
         current === null)
     ) {
@@ -1852,7 +1852,7 @@
       //
       // Try to find the original file.
       //
-      let newIndex = rightEntries.findIndex(
+      let newIndex = $rightEntries.findIndex(
         (item) => item.name === current.name,
       );
       if (newIndex === -1) {
@@ -1860,10 +1860,13 @@
         // original file has disappeared. Set to the closest match.
         //
         newIndex = current.index;
-        while (newIndex >= 0 && typeof rightEntries[newIndex] === "undefined") {
+        while (
+          newIndex >= 0 &&
+          typeof $rightEntries[newIndex] === "undefined"
+        ) {
           newIndex--;
         }
-        current = rightEntries[newIndex];
+        current = $rightEntries[newIndex];
         current.index = newIndex;
       } else {
         //
@@ -1888,18 +1891,18 @@
     //
     // Refresh left pane.
     //
-    leftEntries = await $leftDir.fileSystem.getDirList($leftDir.path);
+    $leftEntries = await $leftDir.fileSystem.getDirList($leftDir.path);
 
     if ($saved.lockqs && $saved.sideqs === "left") {
-      leftEntries = leftEntries.filter((item) =>
+      $leftEntries = $leftEntries.filter((item) =>
         item.name.toLowerCase().includes($saved.qs),
       );
     }
 
     let current = $currentLeftFile.entry;
     if (
-      typeof leftEntries !== "undefined" &&
-      (leftEntries.length === 0 ||
+      typeof $leftEntries !== "undefined" &&
+      ($leftEntries.length === 0 ||
         typeof current === "undefined" ||
         current === null)
     ) {
@@ -1925,7 +1928,7 @@
       //
       // Try to find the original file.
       //
-      let newIndex = leftEntries.findIndex(
+      let newIndex = $leftEntries.findIndex(
         (item) => item.name === current.name,
       );
       if (newIndex === -1) {
@@ -1933,10 +1936,10 @@
         // original file has disappeared. Set to the closest match.
         //
         newIndex = current.index;
-        while (newIndex >= 0 && typeof leftEntries[newIndex] === "undefined") {
+        while (newIndex >= 0 && typeof $leftEntries[newIndex] === "undefined") {
           newIndex--;
         }
-        current = leftEntries[newIndex];
+        current = $leftEntries[newIndex];
         current.index = newIndex;
       } else {
         //
@@ -2187,7 +2190,7 @@
       //
       // Clear the left pane's selected files
       //
-      leftEntries = leftEntries.map((item) => {
+      $leftEntries = $leftEntries.map((item) => {
         item.selected = false;
         return item;
       });
@@ -2195,7 +2198,7 @@
       //
       // Clear the right panes selected files
       //
-      rightEntries = rightEntries.map((item) => {
+      $rightEntries = $rightEntries.map((item) => {
         item.selected = false;
         return item;
       });
@@ -2208,12 +2211,12 @@
       //
       // Get the left pane's selected files
       //
-      selected = leftEntries.filter((item) => item.selected === true);
+      selected = $leftEntries.filter((item) => item.selected === true);
     } else {
       //
       // Get the right panes selected files
       //
-      selected = rightEntries.filter((item) => item.selected === true);
+      selected = $rightEntries.filter((item) => item.selected === true);
     }
     if (selected.length === 0) {
       selected.push($currentCursor.entry);
@@ -2232,27 +2235,27 @@
 
   function qsChangeEntries(e) {
     if (e.detail.pane === "left") {
-      leftEntries = e.detail.entries;
+      $leftEntries = e.detail.entries;
     } else {
-      rightEntries = e.detail.entries;
+      $rightEntries = e.detail.entries;
     }
     if ($currentCursor.pane == "left") {
       $currentCursor = {
-        entry: leftEntries[0],
+        entry: $leftEntries[0],
         pane: "left",
         index: 0,
       };
       $currentLeftFile = {
-        entry: leftEntries[0],
+        entry: $leftEntries[0],
       };
     } else {
       $currentCursor = {
-        entry: rightEntries[0],
+        entry: $rightEntries[0],
         pane: "right",
         index: 0,
       };
       $currentRightFile = {
-        entry: rightEntries[0],
+        entry: $rightEntries[0],
       };
     }
   }
@@ -2367,19 +2370,19 @@
     saveRegExpSelectHistory(value);
     let selRegExp = new RegExp(value);
     if ($currentCursor.pane === "left") {
-      leftEntries.map((item) => {
+      $leftEntries.map((item) => {
         if (item.name.match(selRegExp) !== null) {
           item.selected = true;
         }
       });
-      leftEntries = leftEntries;
+      $leftEntries = $leftEntries;
     } else {
-      rightEntries.map((item) => {
+      $rightEntries.map((item) => {
         if (item.name.match(selRegExp) !== null) {
           item.selected = true;
         }
       });
-      rightEntries = rightEntries;
+      $rightEntries = $rightEntries;
     }
   }
 
@@ -3007,8 +3010,8 @@
     <QuickSearch
       {leftDOM}
       {rightDOM}
-      {leftEntries}
-      {rightEntries}
+      {$leftEntries}
+      {$rightEntries}
       on:changeEntries={qsChangeEntries}
       on:closeQuickSearch={(e) => {
         showQuickSearch = false;
@@ -3036,7 +3039,7 @@
       />
       <Pane
         pane="left"
-        entries={leftEntries}
+        entries={$leftEntries}
         utilities={$leftDir.fileSystem}
         on:changeDir={async (e) => {
           await changeDir(e.detail.dir, "left", "");
@@ -3070,7 +3073,7 @@
       />
       <Pane
         pane="right"
-        entries={rightEntries}
+        entries={$rightEntries}
         utilities={$rightDir.fileSystem}
         on:changeDir={async (e) => {
           await changeDir(e.detail.dir, "right", "");

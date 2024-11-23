@@ -1,6 +1,4 @@
 <script>
-  import { preventDefault } from 'svelte/legacy';
-
   import { onMount } from "svelte";
   import FileManager from "./components/FileManager.svelte";
   import Preferences from "./components/Preferences.svelte";
@@ -53,9 +51,9 @@
   onresize={() => {
     midSize = window.innerHeight - 75;
   }}
-  onbeforeunload={preventDefault(() => {
+  onbeforeunload={() => {
     window.go.main.App.Quit();
-  })}
+  }}
 />
 
 <div id="bodyContainer">
