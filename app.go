@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -266,16 +265,15 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Link = false
 
 			//
-			// Determine if it is a symlink and if so if it's a directory. It Just
-			// works for being  a directory right now.
+			// Determine if it is a symlink and if so if it's a directory.
 			//
 			ninfo, err := os.Stat(filepath.Join(path, fileInfo.Name))
 			dir := ninfo.Mode().IsDir()
-			fmt.Print("\n", fileInfo.Name, " ", fileInfo.IsDir, " ", dir, "\n")
 			if err != nil {
 				b.err = err.Error()
 			} else if dir {
 				fileInfo.IsDir = true
+				fileInfo.Link = true
 			}
 
 			//
