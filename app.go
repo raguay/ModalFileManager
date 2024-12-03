@@ -265,14 +265,19 @@ func (b *App) ReadDir(path string) []FileInfo {
 			fileInfo.Link = false
 
 			//
-			// Determine if it is a symlink and if so if it's a directory.
+			// Determine if it is a symlink and if so if it's a directory. Currently,
+			// if before it wasn't a directory but is now, then it is treated as a
+			// symlink directory. Nothing is in place to detect a file symlink.
 			//
 			ninfo, err := os.Stat(filepath.Join(path, fileInfo.Name))
 			dir := ninfo.Mode().IsDir()
 			if err != nil {
 				b.err = err.Error()
-			} else if dir {
+			} else if dir && !fileInfo.IsDir {
 				fileInfo.IsDir = true
+				fileInfo.Link = true
+			}
+			if ninfo.Mode()&os.ModeSymlink == 'l' {
 				fileInfo.Link = true
 			}
 
