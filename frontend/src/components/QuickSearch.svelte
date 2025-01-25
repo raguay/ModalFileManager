@@ -20,10 +20,6 @@
   });
 
   $effect(() => {
-    console.log("$keyProcess:  ", $keyProcess);
-  });
-
-  $effect(() => {
     if (qsInputDOM !== null) {
       qsInputDOM.focus();
     }

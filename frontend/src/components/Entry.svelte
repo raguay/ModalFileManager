@@ -1,6 +1,4 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate. Please migrate by hand. -->
 <script>
-  import { beforeUpdate, createEventDispatcher } from "svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";
@@ -10,63 +8,44 @@
   import FaRegFileAlt from "svelte-icons/fa/FaRegFileAlt.svelte";
   import FaExternalLinkAlt from "svelte-icons/fa/FaExternalLinkAlt.svelte";
 
-  export let pane;
-  export let entry;
-  export let utilities;
+  let { viewing = $bindable(), pane, entry, utilities } = $props();
 
-  const dispatch = createEventDispatcher();
+  let DOM = $state(null);
 
-  let DOM;
-
-  beforeUpdate(() => {
+  $effect.pre(() => {
     if (
       typeof DOM !== "undefined" &&
+      DOM !== null &&
       typeof $currentCursor.entry !== "undefined" &&
       typeof $currentCursor.entry.name !== "undefined" &&
       $currentCursor.pane === pane &&
       $currentCursor.entry.name == entry.name
     ) {
-      var viewable = elementInViewport(DOM);
-      if (typeof viewable !== "undefined" && !viewable.visible) {
-        dispatch("changeViewing", {
-          dom: DOM,
-          dir: viewable.dir,
-        });
-      }
-    }
-  });
-
-  function elementInViewport(el) {
-    if (
-      typeof el !== "undefined" &&
-      typeof el.getBoundingClientRect !== "undefined"
-    ) {
-      var windowInner = window.innerHeight - 31;
-      var boundingEl = el.getBoundingClientRect();
-      return {
+      let windowInner = window.innerHeight - 31;
+      let boundingEl = DOM.getBoundingClientRect();
+      let viewable = {
         visible: boundingEl.top >= 60 && boundingEl.bottom <= windowInner,
         dir:
           boundingEl.top < 60
             ? boundingEl.top - 60
             : boundingEl.bottom - windowInner,
       };
+      if (!viewable.visible) {
+        viewing = viewable;
+      }
     }
-  }
+  });
 
   function cursorToEntry(pane, entry) {
-    currentCursor.set({
+    $currentCursor = {
       pane: pane,
       entry: entry,
-    });
+    };
 
     if (pane === "right") {
-      currentRightFile.set({
-        entry: entry,
-      });
+      $currentRightFile = entry;
     } else {
-      currentLeftFile.set({
-        entry: entry,
-      });
+      $currentLeftFile = entry;
     }
   }
 
@@ -75,23 +54,26 @@
       //
       // It is a file, open it.
       //
-      dispatch("openFile", { entry: entry });
+      await $config.extensions.getExtCommand("openFile").command(entry);
     } else {
       //
       // It is a directory. Go into it.
       //
-      var newDir = await utilities.appendPath(entry.dir, entry.name);
-      dispatch("changeDir", {
-        path: newDir,
-        cursor: true,
-      });
+      let newDir = await utilities.appendPath(entry.dir, entry.name);
+      await $config.extensions.getExtCommand("changeDir").command(
+        {
+          path: newDir,
+        },
+        pane,
+        "",
+      );
     }
   }
 
   async function dragStart(e) {
-    var flist = $config.extensions.getExtCommand("getSelectedFiles").command();
-    var included = false;
-    var data = [];
+    let flist = $config.extensions.getExtCommand("getSelectedFiles").command();
+    let included = false;
+    let data = [];
     flist.map(async (item) => {
       const nfile = await utilities.appendPath(item.dir, item.name);
       data.push(nfile + "|" + item.type);
@@ -106,12 +88,12 @@
     e.dataTransfer.setData("text/x-moz-url", "file://" + file);
     e.dataTransfer.setData(
       "application/x-moz-file-promise-url",
-      "file://" + file
+      "file://" + file,
     );
   }
 
   async function dropFiles(e, type) {
-    var shiftKey = e.shiftKey;
+    let shiftKey = e.shiftKey;
     switch (type) {
       case "over":
         if (shiftKey) {
@@ -124,10 +106,10 @@
         //
         // Create the drop to entry.
         //
-        var dirPath = "";
-        var fileName = "";
-        var fileExt = "";
-        var toEntry = { ...entry };
+        let dirPath = "";
+        let fileName = "";
+        let fileExt = "";
+        let toEntry = { ...entry };
         if (toEntry.type === 1) {
           toEntry.dir = await utilities.appendPath(toEntry.dir, toEntry.name);
           toEntry.name = "";
@@ -137,17 +119,17 @@
         // Create the entries from the drop.
         //
         const dataTransArray = e.dataTransfer.getData("text/plain").split("\n");
-        var fromEntries = [];
-        for (var i = 0; i < dataTransArray.length; i++) {
-          var parts = dataTransArray[i].split("|");
+        let fromEntries = [];
+        for (let i = 0; i < dataTransArray.length; i++) {
+          let parts = dataTransArray[i].split("|");
           if (parts[1] === "1") {
             dirPath = parts[0];
-            var fdir = await utilities.splitFilePath(dirPath);
-            var nwDir = await utilities.appendPath(toEntry.dir, fdir.Name);
+            let fdir = await utilities.splitFilePath(dirPath);
+            let nwDir = await utilities.appendPath(toEntry.dir, fdir.Name);
             await utilities.makeDir(nwDir);
             toEntry.dir = nwDir;
           } else {
-            var result = await utilities.splitFilePath(parts[0]);
+            let result = await utilities.splitFilePath(parts[0]);
             dirPath = result.Dir;
             fileName = result.Name;
             fileExt = result.Extension;

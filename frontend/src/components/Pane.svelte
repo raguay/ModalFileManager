@@ -1,7 +1,4 @@
 <script>
-  import { preventDefault } from "svelte/legacy";
-
-  import { createEventDispatcher } from "svelte";
   import Entry from "./Entry.svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { currentLeftFile } from "../stores/currentLeftFile.js";
@@ -18,33 +15,19 @@
    */
 
   /** @type {Props} */
-  let { pane = "left", entries = [], utilities } = $props();
+  let { pane = "left", entries = $bindable(), utilities } = $props();
+  let viewing = $state(null);
+  let DOM = null;
 
-  const dispatch = createEventDispatcher();
-
-  let DOM = $state();
-
-  function changeDir(e) {
-    dispatch("changeDir", {
-      dir: e.detail,
-      pane: pane,
-    });
-  }
-
-  function openFile(e) {
-    dispatch("openFile", e.detail);
-  }
-
-  function changeViewingDOM(e) {
-    var elDOM = e.detail;
-    if (elDOM !== null) {
-      DOM.scrollTop += elDOM.dir;
+  $effect(() => {
+    if (viewing !== null) {
+      DOM.scrollTop += viewing.dir;
       if (DOM.scrollTop < 0) DOM.scrollTop = 0;
     }
-  }
+  });
 
   async function dropFiles(e, type) {
-    var shiftKey = e.shiftKey;
+    let shiftKey = e.shiftKey;
     switch (type) {
       case "over":
         if (shiftKey) {
@@ -57,9 +40,9 @@
         //
         // Get the local information for dropping into.
         //
-        var dirPath = "";
-        var fileName = "";
-        var toEntry = {
+        let dirPath = "";
+        let fileName = "";
+        let toEntry = {
           dir: "",
           name: "",
           fileSystemType: utilities.type,
@@ -70,7 +53,7 @@
           toEntry.dir = entries[0].dir;
           toEntry.name = "";
         } else {
-          var curPane;
+          let curPane;
           if (pane === "left") {
             curPane = get(leftDir);
           } else {
@@ -85,12 +68,12 @@
         //
         const dataTransArray = e.dataTransfer.getData("text/plain").split("\n");
         const lconfig = get(config);
-        var fromEntries = [];
+        let fromEntries = [];
         dataTransArray.forEach(async (dataTrans) => {
           const parts = dataTrans.split("|");
           if (parts[1] === "1") {
             dirPath = parts[0];
-            var fdir = await utilities.splitFilePath(dirPath);
+            let fdir = await utilities.splitFilePath(dirPath);
             const nwDir = await utilities.appendPath(toEntry.dir, fdir.name);
             await utilities.makeDir(nwDir);
             toEntry.dir = nwDir;
@@ -122,7 +105,7 @@
   }
 
   function cursorToPane() {
-    var nEntry = {
+    let nEntry = {
       dir: "",
       name: "",
       fileSystemType: utilities.type,
@@ -165,14 +148,7 @@
 
 <div class="panel" bind:this={DOM}>
   {#each entries as entry}
-    <Entry
-      {pane}
-      {entry}
-      {utilities}
-      onchangeDir={changeDir}
-      onopenFile={openFile}
-      onchangeViewing={changeViewingDOM}
-    />
+    <Entry {pane} {entry} {utilities} bind:viewing />
   {/each}
   <div
     class="empty"

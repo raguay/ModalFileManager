@@ -1,40 +1,30 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate and afterUpdate. Please migrate by hand. -->
 <script>
-  import {
-    tick,
-    beforeUpdate,
-    afterUpdate,
-    createEventDispatcher,
-  } from "svelte";
+  import { tick } from "svelte";
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
   import { directoryListeners } from "../stores/directoryListeners.js";
 
-  const dispatch = createEventDispatcher();
+  let { path = $bindable(), edit = $bindable(), pane } = $props();
 
-  export let path;
-  export let edit;
-  export let pane;
-
-  let show = true;
-  let dirInputDOM;
-  let newPath = "";
+  let show = $state(true);
+  let dirInputDOM = null;
+  let newPath = $state("");
   let inputPath = "";
   let dirlist = [];
   let pending = false;
   let dirIndex = 0;
   let lastDir = "";
-  let elDOM;
-  let DOM;
+  let elDOM = null;
+  let DOM = null;
 
-  $: checkEdit(edit);
-  $: checkPath(path);
+  $effect(() => {
+    checkEdit(edit);
+    checkPath(path);
+  });
 
-  beforeUpdate(() => {});
-
-  afterUpdate(async () => {
+  $effect(async () => {
     //
     // Focus the input if visible.
     //
@@ -182,25 +172,16 @@
     $keyProcess = true;
     if (typeof path !== "undefined" && typeof path.fileSystem !== "undefined") {
       let Pext = await path.fileSystem.dirExists(nPath);
+      inputPath = nPath;
       if (Pext) {
-        inputPath = nPath;
         dirlist = [];
-        dispatch("dirChange", {
-          path: nPath,
-          cursor: true,
-        });
       } else if (
         typeof dirlist !== "undefined" &&
         dirlist.length - 1 >= dirIndex
       ) {
-        inputPath = nPath;
         show = true;
         nPath = dirlist[dirIndex];
         dirlist = [];
-        dispatch("dirChange", {
-          path: nPath,
-          cursor: true,
-        });
       }
     } else {
       dirlist = [];

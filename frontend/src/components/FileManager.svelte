@@ -40,19 +40,19 @@
 
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
-  let msgBoxConfig = $state({});
-  let msgBoxSpinners = $state([]);
-  let msgBoxItems = $state(null);
+  let msgBoxConfig = {};
+  let msgBoxSpinners = [];
+  let msgBoxItems = null;
   let msgCallBack = () => {};
   let configDir = "";
   let setEditDirFlagLeft = $state(false);
   let setEditDirFlagRight = $state(false);
   let showExtra = $state(false);
   let showCommandPrompt = $state(false);
-  let rightDOM = $state(null);
-  let leftDOM = $state(null);
-  let containerDOM = $state(null);
-  let mdown = $state(false);
+  let rightDOM = null;
+  let leftDOM = null;
+  let containerDOM = null;
+  let mdown = false;
   let lastError = null;
   let userEditor = ".myeditorchoice";
   let OStype = "macOS";
@@ -62,7 +62,7 @@
   let lastCommand = "";
   let flagFilter = 1;
   let selRegExpHist = null;
-  let mid = $state(0);
+  let mid = 0;
 
   $effect(() => {
     mid = window.innerHeight - 75;
@@ -594,12 +594,12 @@
       "Set the right panel directory.",
       setRightDir,
     );
-
     extensions.addExtCommand(
       "addExtraPanelProcessor",
       "Add a processor for creating extra panel html.",
       addExtraPanelProcessor,
     );
+    extensions.addExtCommand("openFile", "Opens the given file.", openFile);
   }
 
   function installDefaultCommands() {
@@ -1368,6 +1368,9 @@
     if (typeof npane === "undefined") npane = $currentCursor.pane;
     if (typeof dirOb.cursor === "undefined") dirOb.cursor = true;
     if (typeof name === "undefined") name = "";
+
+    console.log("changeDir:  ", dirOb, npane, name);
+
     if (npane == "left") {
       $leftDir = {
         path: ndir,
@@ -1432,6 +1435,7 @@
           };
         }
       }
+      refreshLeftPane();
     } else {
       $rightDir = {
         path: ndir,
@@ -1500,6 +1504,7 @@
           };
         }
       }
+      refreshRightPane();
     }
   }
 
@@ -3025,26 +3030,14 @@
       <ExtraPanel side="left" />
     {:else}
       <DirectoryListing
-        path={$leftDir}
-        edit={setEditDirFlagLeft}
+        bind:path={$leftDir}
+        bind:edit={setEditDirFlagLeft}
         pane="left"
-        on:dirChange={async (e) => {
-          setEditDirFlagLeft = false;
-          await changeDir(e.detail, "left", "");
-        }}
-        on:updateDir={() => {
-          refreshLeftPane();
-        }}
       />
       <Pane
         pane="left"
         entries={$leftEntries}
         utilities={$leftDir.fileSystem}
-        on:changeDir={async (e) => {
-          await changeDir(e.detail.dir, "left", "");
-        }}
-        on:openFile={async (e) => {
-          await openFile(e.detail.entry);
         }}
       />
     {/if}
@@ -3059,27 +3052,14 @@
       <ExtraPanel side="right" />
     {:else}
       <DirectoryListing
-        path={$rightDir}
-        edit={setEditDirFlagRight}
+        bind:path={$rightDir}
+        bind:edit={setEditDirFlagRight}
         pane="right"
-        on:dirChange={async (e) => {
-          setEditDirFlagRight = false;
-          await changeDir(e.detail, "right", "");
-        }}
-        on:updateDir={async () => {
-          await refreshRightPane();
-        }}
       />
       <Pane
         pane="right"
         entries={$rightEntries}
         utilities={$rightDir.fileSystem}
-        on:changeDir={async (e) => {
-          await changeDir(e.detail.dir, "right", "");
-        }}
-        on:openFile={async (e) => {
-          await openFile(e.detail.entry);
-        }}
       />
     {/if}
   </div>
