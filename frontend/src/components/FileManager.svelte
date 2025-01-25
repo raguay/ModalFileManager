@@ -1,5 +1,5 @@
 <script>
-  import { onMount, tick, createEventDispatcher } from "svelte";
+  import { tick, onMount } from "svelte";
   import * as App from "../../dist/wailsjs/go/main/App.js";
   import Pane from "../components/Pane.svelte";
   import MessageBox from "../components/MessageBox.svelte";
@@ -38,10 +38,6 @@
   import { processKey } from "../stores/processKey.js";
   import * as rt from "../../dist/wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
-  const dispatch = createEventDispatcher();
-
-  let { mid } = $props();
-
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
   let msgBoxConfig = $state({});
@@ -66,6 +62,11 @@
   let lastCommand = "";
   let flagFilter = 1;
   let selRegExpHist = null;
+  let mid = $state(0);
+
+  $effect(() => {
+    mid = window.innerHeight - 75;
+  });
 
   onMount(async () => {
     //
@@ -323,9 +324,6 @@
     //
     $dirHistory.loadHistory();
 
-    //
-    // return a command to unsubscribe from everything.
-    //
     return () => {
       unsubscribeTheme();
     };
@@ -428,10 +426,10 @@
     await loadExtensionsKeyboard();
   }
 
-  function switchView(view) {
-    dispatch("switchView", {
-      view: view,
-    });
+  function switchView(vw) {
+    //
+    // Switch to the given view.
+    //
   }
 
   function showPreferences() {
@@ -3007,18 +3005,19 @@
   {/if}
 
   {#if showQuickSearch}
-    <QuickSearch
-      {leftDOM}
-      {rightDOM}
-      {$leftEntries}
-      {$rightEntries}
-      on:changeEntries={qsChangeEntries}
-      on:closeQuickSearch={(e) => {
-        showQuickSearch = false;
-        $keyProcess = true;
-        if (e.detail.skip) $skipKey = true;
-      }}
-    />
+    {#if $currentCursor.pane === "left"}
+      <QuickSearch
+        position={leftDOM.clientWidth - 110}
+        bind:Entries={$leftEntries}
+        bind:open={showQuickSearch}
+      />
+    {:else}
+      <QuickSearch
+        bind:Entries={$rightEntries}
+        bind:open={showQuickSearch}
+        position={rightDOM.clientWidth + leftDOM.clientWidth - 95}
+      />
+    {/if}
   {/if}
 
   <div id="leftSide" bind:this={leftDOM}>

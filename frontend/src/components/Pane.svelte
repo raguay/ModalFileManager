@@ -1,5 +1,5 @@
 <script>
-  import { preventDefault } from 'svelte/legacy';
+  import { preventDefault } from "svelte/legacy";
 
   import { createEventDispatcher } from "svelte";
   import Entry from "./Entry.svelte";
@@ -169,9 +169,9 @@
       {pane}
       {entry}
       {utilities}
-      on:changeDir={changeDir}
-      on:openFile={openFile}
-      on:changeViewing={changeViewingDOM}
+      onchangeDir={changeDir}
+      onopenFile={openFile}
+      onchangeViewing={changeViewingDOM}
     />
   {/each}
   <div
@@ -186,7 +186,7 @@
     ondragover={preventDefault((e) => {
       dropFiles(e, "dragover");
     })}
-></div>
+  ></div>
 </div>
 
 <style>
@@ -201,8 +201,8 @@
     overscroll-behavior-y: none;
   }
   .panel::-webkit-scrollbar {
-    width: 0;  /* Remove scrollbar space */
-    background: transparent;  /* Optional: just make scrollbar invisible */
+    width: 0; /* Remove scrollbar space */
+    background: transparent; /* Optional: just make scrollbar invisible */
   }
 
   .empty {

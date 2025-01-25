@@ -1,67 +1,42 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate and afterUpdate. Please migrate by hand. -->
 <script>
-  import {
-    onMount,
-    beforeUpdate,
-    createEventDispatcher,
-    afterUpdate,
-  } from "svelte";
-  import { currentCursor } from "../stores/currentCursor.js";
+  import { onMount } from "svelte";
   import { theme } from "../stores/theme.js";
   import { keyProcess } from "../stores/keyProcess.js";
+  import { currentCursor } from "../stores/currentCursor.js";
   import { saved } from "../stores/saved.js";
+  import { skipKey } from "../stores/skipKey.js";
 
-  const dispatch = createEventDispatcher();
+  let { Entries = $bindable(), open = $bindable(), position } = $props();
 
-  export let rightDOM;
-  export let leftDOM;
-  export let leftEntries;
-  export let rightEntries;
-
-  let qsInput = "";
-  let qsInputDOM = null;
-  let position = null;
+  let qsInput = $state("");
+  let qsInputDOM = $state(null);
   let origEntries = null;
 
-  beforeUpdate(() => {
+  onMount(() => {
     if (origEntries === null) {
-      getDefaults();
+      $keyProcess = false;
+      origEntries = Entries;
     }
   });
 
-  afterUpdate(() => {
+  $effect(() => {
+    console.log("$keyProcess:  ", $keyProcess);
+  });
+
+  $effect(() => {
     if (qsInputDOM !== null) {
       qsInputDOM.focus();
     }
   });
 
-  onMount(() => {
-    if ($currentCursor.pane === "left") {
-      position = leftDOM.clientWidth - 110;
-    } else {
-      position = rightDOM.clientWidth + leftDOM.clientWidth - 95;
-    }
-  });
-  function getDefaults() {
-    $keyProcess = false;
-    origEntries = usingEntry(leftEntries, rightEntries);
-  }
-
-  function usingEntry(leftE, rightE) {
-    if ($currentCursor.pane === "left") {
-      return leftE;
-    } else {
-      return rightE;
-    }
-  }
-
   function exitQS(skip) {
     if (typeof skip === "undefined") skip = false;
-    $keyProcess = true;
     origEntries = null;
-    dispatch("closeQuickSearch", {
-      skip: skip,
-    });
+    open = false;
+    $keyProcess = true;
+    $currentCursor.entry = Entries[0];
+    $currentCursor.index = 0;
+    $skipKey = skip;
   }
 
   function processKey(e) {
@@ -80,29 +55,14 @@
   }
 
   function processInput() {
-    if ($currentCursor === null) {
-      getDefaults();
-    }
-
     $saved.qs = qsInput.toLowerCase();
 
     //
     // filter the entries by the quick search ignoring case.
     //
-    var entries = origEntries;
-    entries = entries.filter((item) =>
-      item.name.toLowerCase().includes($saved.qs)
-    );
-
-    //
-    // Send to the panel only if there are some entries to see.
-    //
-    if (entries.length > 0) {
-      dispatch("changeEntries", {
-        pane: $currentCursor.pane,
-        entries: entries,
-      });
-    }
+    Entries = origEntries.filter((item) => {
+      return item.name.toLowerCase().includes($saved.qs);
+    });
   }
 </script>
 
@@ -111,9 +71,9 @@
     type="text"
     bind:this={qsInputDOM}
     bind:value={qsInput}
-    on:keydown={processKey}
-    on:input={processInput}
-    on:blur={(e) => {
+    onkeydown={processKey}
+    oninput={processInput}
+    onblur={() => {
       exitQS();
     }}
     style="background-color: {$theme.textColor};
