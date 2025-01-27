@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from "svelte";
   import FileManager from "./components/FileManager.svelte";
   import Preferences from "./components/Preferences.svelte";
   import StatusLine from "./components/StatusLine.svelte";
@@ -13,16 +12,12 @@
   import { processKey } from "./stores/processKey.js";
   import { keyProcess } from "./stores/keyProcess.js";
 
-  let showComponent = $state("filemanager");
   let midSize = $state(null);
+  let currentView = $state("filemanager");
 
-  onMount(() => {
+  $effect(() => {
     midSize = window.innerHeight - 75;
   });
-
-  function switchView(v) {
-    showComponent = v.detail.view;
-  }
 </script>
 
 <svelte:window
@@ -32,7 +27,7 @@
     $metaKey = e.metaKey;
     $altKey = e.altKey;
     $key = e.key;
-    if (($skipKey && e.key === "Enter") || showComponent !== "filemanager") {
+    if (($skipKey && e.key === "Enter") || currentView !== "filemanager") {
       $keyProcess = true;
     } else {
       if ($keyProcess) {
@@ -59,13 +54,13 @@
 <div id="bodyContainer">
   <TitleBar />
 
-  <FileManager on:switchView={switchView} mid={midSize} />
+  <FileManager bind:view={currentView} mid={midSize} />
 
   <StatusLine />
 </div>
 
-{#if showComponent === "preferences"}
-  <Preferences on:switchView={switchView} />
+{#if currentView === "preferences"}
+  <Preferences bind:view={currentView} />
 {/if}
 
 <style>

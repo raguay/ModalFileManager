@@ -270,17 +270,18 @@ func (b *App) ReadDir(path string) []FileInfo {
 			// symlink directory. Nothing is in place to detect a file symlink.
 			//
 			ninfo, err := os.Stat(filepath.Join(path, fileInfo.Name))
-			dir := ninfo.Mode().IsDir()
 			if err != nil {
 				b.err = err.Error()
-			} else if dir && !fileInfo.IsDir {
-				fileInfo.IsDir = true
-				fileInfo.Link = true
+			} else {
+				dir := ninfo.Mode().IsDir()
+				if dir && !fileInfo.IsDir {
+					fileInfo.IsDir = true
+					fileInfo.Link = true
+				}
+				if ninfo.Mode()&os.ModeSymlink == 'l' {
+					fileInfo.Link = true
+				}
 			}
-			if ninfo.Mode()&os.ModeSymlink == 'l' {
-				fileInfo.Link = true
-			}
-
 			//
 			// Add it to the rest.
 			//

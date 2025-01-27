@@ -142,10 +142,14 @@ let OS = {
     return dir;
   },
   dirExists: async function (dir) {
-    if (typeof dir !== "string") {
+    if (
+      typeof dir !== "string" &&
+      typeof dir.dir !== "undefined" &&
+      typeof dir.name !== "undefined"
+    ) {
       dir = await this.appendPath(dir.dir, dir.name);
     }
-    let dirReal = await App.DirExists(dir);
+    const dirReal = await App.DirExists(dir);
     return dirReal;
   },
   fileExists: async function (file) {
@@ -414,8 +418,7 @@ let OS = {
       //
       if (this.local) {
         if (await this.dirExists(`${this.localHomeDir}/bin`)) {
-          this.config.env.PATH =
-            `${this.localHomeDir}/bin:${this.config.env.PATH}`;
+          this.config.env.PATH = `${this.localHomeDir}/bin:${this.config.env.PATH}`;
         }
       }
       if (await this.dirExists("/opt/homebrew/bin")) {

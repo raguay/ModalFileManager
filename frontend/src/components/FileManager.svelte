@@ -38,6 +38,7 @@
   import { processKey } from "../stores/processKey.js";
   import * as rt from "../../dist/wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
+  let { view = $bindable() } = $props();
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
   let msgBoxConfig = {};
@@ -63,9 +64,22 @@
   let flagFilter = 1;
   let selRegExpHist = null;
   let mid = 0;
+  let closeCommand = $state(false);
+  let closeMsgBox = $state(false);
 
   $effect(() => {
     mid = window.innerHeight - 75;
+    if (closeMsgBox) {
+      showMessageBox = false;
+      $keyProcess = true;
+    }
+    if (closeCommand) {
+      showCommandPrompt = false;
+      if (!showMessageBox) {
+        $keyProcess = true;
+      }
+      closeCommand = false;
+    }
   });
 
   onMount(async () => {
@@ -406,6 +420,13 @@
     extensions.init();
   }
 
+  function switchView(vw) {
+    //
+    // Switch which view is seen.
+    //
+    view = vw;
+  }
+
   function clearKeyboard() {
     stateMaps = [];
   }
@@ -424,12 +445,6 @@
     clearExtensions();
     clearCommands();
     await loadExtensionsKeyboard();
-  }
-
-  function switchView(vw) {
-    //
-    // Switch to the given view.
-    //
   }
 
   function showPreferences() {
@@ -1368,8 +1383,6 @@
     if (typeof npane === "undefined") npane = $currentCursor.pane;
     if (typeof dirOb.cursor === "undefined") dirOb.cursor = true;
     if (typeof name === "undefined") name = "";
-
-    console.log("changeDir:  ", dirOb, npane, name);
 
     if (npane == "left") {
       $leftDir = {
@@ -2975,37 +2988,21 @@
   bind:this={containerDOM}
 >
   {#if showGitHub}
-    <GitHub
-      on:closeGitHub={() => {
-        toggleGitHub();
-      }}
-    />
+    <GitHub bind:toggle={showGitHub} bind:skip={$skipKey} />
   {/if}
 
   {#if showCommandPrompt}
-    <CommandPrompt
-      {commands}
-      on:closeCommandPrompt={(e) => {
-        showCommandPrompt = false;
-        if (!showMessageBox) {
-          $keyProcess = true;
-        }
-        if (e.detail.skip) $skipKey = true;
-      }}
-    />
+    <CommandPrompt {commands} bind:close={closeCommand} />
   {/if}
 
   {#if showMessageBox}
     <MessageBox
       config={msgBoxConfig}
       spinners={msgBoxSpinners}
-      items={msgBoxItems}
-      on:msgReturn={msgReturn}
-      on:closeMsgBox={(e) => {
-        showMessageBox = false;
-        $keyProcess = true;
-        if (e.detail.skip) $skipKey = true;
-      }}
+      items="msgBoxItems"
+      bind:skip={$skipKey}
+      bind:msgReturn
+      bind:closeMsgBox
     />
   {/if}
 
@@ -3043,7 +3040,7 @@
     {/if}
   </div>
   <ResizeBorder
-    on:mouseDown={(e) => {
+    onmouseDown={(e) => {
       mdown = e.detail;
     }}
   />

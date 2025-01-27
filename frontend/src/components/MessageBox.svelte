@@ -1,27 +1,30 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { createEventDispatcher, onMount, afterUpdate, tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import util from "../modules/util.js";
   import { theme } from "../stores/theme.js";
   import { keyProcess } from "../stores/keyProcess.js";
 
-  const dispatch = createEventDispatcher();
-
-  export let config = null;
-  export let items = null;
-  export let spinners = [];
+  let {
+    msgReturn = $bindable(),
+    closeMsgBox = $bindable(),
+    config,
+    items,
+    spinners,
+  } = $props();
 
   let pickerNum = 0;
   let pickerItems = [];
   let pickerItemsOrig = [];
   let pickerValue = "";
-  let pickerDOM;
-  let msgboxDOM;
+  let pickerDOM = $state(null);
+  let msgboxDOM = $state(null);
   let pickerExtra = false;
 
-  $: items = updateSpinners(spinners);
-  $: updateItems(items);
-  $: updateHeight(pickerDOM);
+  $effect(() => {
+    items = updateSpinners(spinners);
+    updateItems(items);
+    updateHeight(pickerDOM);
+  });
 
   onMount(() => {
     //
@@ -38,7 +41,7 @@
     };
   });
 
-  afterUpdate(async () => {
+  $effect(async () => {
     await tick();
     var main = window.document.getElementById("msgboxMain");
     if (main !== null) {
@@ -85,12 +88,10 @@
       retItem.value = pickerValue;
       retItem.name = "";
     }
-    dispatch("msgReturn", {
+    msgReturn = {
       ans: retItem,
-    });
-    dispatch("closeMsgBox", {
-      skip: skip,
-    });
+    };
+    closeMsgBox = true;
   }
 
   function returnInputValue(skip) {
@@ -99,20 +100,16 @@
       name: items[0].name,
       value: items[0].value,
     };
-    dispatch("msgReturn", {
+    msgReturn = {
       ans: retItem,
-    });
-    dispatch("closeMsgBox", {
-      skip: skip,
-    });
+    };
+    closeMsgBox = true;
   }
 
   function cancel() {
     var skip = false;
     $keyProcess = true;
-    dispatch("closeMsgBox", {
-      skip: skip,
-    });
+    closeMsgBox = true;
   }
 
   function updateHeight(dom) {
@@ -137,9 +134,7 @@
       //
       // Escape key. Just exit without doing anything.
       //
-      dispatch("closeMsgBox", {
-        skip: false,
-      });
+      closeMsgBox = false;
     } else if (e.key === "Tab") {
       if (typeof pickerItems[pickerNum].value.name !== "undefined")
         pickerValue = pickerItems[pickerNum].value.name;
@@ -177,15 +172,13 @@
       } else {
         pickerval = pickerItems[pickerNum].value;
       }
-      dispatch("msgReturn", {
+      msgReturn = {
         ans: {
           type: "picker",
           value: pickerval,
         },
-      });
-      dispatch("closeMsgBox", {
-        skip: true,
-      });
+      };
+      closeMsgBox = true;
     }
   }
 
@@ -194,15 +187,13 @@
     // Enter key. Take the highlighted value and return.
     //
     $keyProcess = true;
-    dispatch("msgReturn", {
+    msgReturn = {
       ans: {
         type: "picker",
         value: sel,
       },
-    });
-    dispatch("closeMsgBox", {
-      skip: true,
-    });
+    };
+    closeMsgBox = true;
   }
 
   function updateItems(itms) {
@@ -240,19 +231,16 @@
 <div id="messageboxbg">
   <div
     id="messagebox"
-    tabindex="0"
     style="background-color: {$theme.backgroundColor};
            border-color: {util.pSBC(0.1, $theme.backgroundColor)};
            color: {$theme.textColor};"
-    on:keydown={(e) => {
+    onkeydown={(e) => {
       if (
         e.key === "Escape" ||
         (e.key === "Enter" && items[0].type === "label")
       ) {
         e.preventDefault();
-        dispatch("closeMsgBox", {
-          skip: true,
-        });
+        closeMsgBox = true;
       }
     }}
     bind:this={msgboxDOM}
@@ -268,7 +256,10 @@
                 type="text"
                 id={item.id}
                 bind:value={item.value}
-                on:keydown={(e) => {
+                autocomplete="off"
+                spellcheck="false"
+                autocorrect="off"
+                onkeydown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
                     returnInputValue(true);
@@ -288,7 +279,7 @@
                 <input
                   id={item.id}
                   bind:value={pickerValue}
-                  on:keydown|preventDefault={pickerInputChange}
+                  onkeydown={pickerInputChange}
                 />
                 <div id="{item.id}picker" class="picker" bind:this={pickerDOM}>
                   {#each pickerItems as selection, key}
@@ -298,7 +289,7 @@
                         style="color: {$theme.backgroundColor};
                                background-color: {$theme.textColor};"
                         class="pickerSelected"
-                        on:click|preventDefault={() => {
+                        onclick={() => {
                           pickerSelected(selection);
                         }}
                       >
@@ -309,7 +300,7 @@
                         href="/#"
                         style="background-color: {$theme.backgroundColor};
                                color: {$theme.textColor};"
-                        on:click|preventDefault={() => {
+                        onclick={() => {
                           pickerSelected(selection);
                         }}
                       >
@@ -338,7 +329,7 @@
       <div id="butRow">
         {#if typeof config.noShowButton !== "undefined" && !config.noShowButton}
           <button
-            on:click={() => {
+            onclick={() => {
               if (items[0].type === "picker") {
                 returnPickerValue(false);
               } else {
@@ -349,7 +340,7 @@
             Okay
           </button>
         {/if}
-        <button on:click={cancel}> Cancel </button>
+        <button onclick={cancel}> Cancel </button>
       </div>
     {/if}
   </div>

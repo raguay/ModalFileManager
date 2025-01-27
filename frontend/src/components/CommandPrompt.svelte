@@ -1,40 +1,44 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { onMount, afterUpdate, tick, createEventDispatcher } from "svelte";
+  import { onMount, tick } from "svelte";
   import util from "../modules/util.js";
   import { theme } from "../stores/theme.js";
   import { keyProcess } from "../stores/keyProcess.js";
 
-  const dispatch = createEventDispatcher();
-
-  export let commands = null;
+  let { close = $bindable(), skip = $bindable(), commands } = $props();
 
   let showDescription = true;
   let promptInput = null;
-  let promptValue = "";
-  let width = null;
-  let filtered = [];
-  let current = 0;
-  let panelDOM = null;
-  let currentDOM = null;
+  let promptValue = $state("");
+  let width = $state(null);
+  let height = $state(null);
+  let filtered = $state([]);
+  let current = $state(0);
+  let panelDOM = $state(null);
+  let currentDOM = $state(null);
 
-  onMount(() => {
-    width = window.innerWidth - 30;
+  onMount(async () => {
     $keyProcess = false;
+    await tick();
     if (commands != null) filtered = commands.commandList;
+    width = window.innerWidth - 30;
+    height = window.document.body.clientHeight - 61;
+    return () => {
+      $keyProcess = true;
+    };
   });
 
-  afterUpdate(async () => {
+  $effect(async () => {
     await tick();
-    promptInput.focus();
+    width = window.innerWidth - 30;
+    height = window.document.body.clientHeight - 61;
+    if (promptInput !== null) promptInput.focus();
   });
 
-  async function exitCP(skip) {
-    if (typeof skip === "undefined") skip = false;
-    await tick();
-    dispatch("closeCommandPrompt", {
-      skip: skip,
-    });
+  async function exitCP(skp) {
+    if (typeof skp === "undefined") skp = false;
+    $keyProcess = true;
+    skip = skp;
+    close = true;
   }
 
   async function processKey(e) {
@@ -43,27 +47,12 @@
     //
     switch (e.key) {
       case "Escape":
-        exitCP();
-        return false;
+        await exitCP();
         break;
       case "ArrowUp":
         current = current - 1;
         if (current < 0) current = 0;
         changeViewing();
-        break;
-      case "j":
-        if (e.ctrlKey) {
-          current = current + 1;
-          if (current >= filtered.length) current = filtered.length - 1;
-          changeViewing();
-        }
-        break;
-      case "k":
-        if (e.ctrlKey) {
-          current = current - 1;
-          if (current < 0) current = 0;
-          changeViewing();
-        }
         break;
       case "ArrowDown":
         current = current + 1;
@@ -71,41 +60,35 @@
         changeViewing();
         break;
       case "Tab":
-        promptValue = filtered[current].name;
-        current = 0;
         e.preventDefault();
         e.stopPropagation();
+        promptValue = filtered[current].name;
+        current = 0;
+        processInput();
         break;
       case "Enter":
         e.stopPropagation();
         e.preventDefault();
-        if (commands !== null) commands.runCommand(filtered[current].name);
-        await tick();
-        exitCP(true);
+        if (commands !== null) {
+          await runCommand(filtered[current].name);
+        }
+        await exitCP(true);
         break;
     }
-    return false;
   }
 
-  function runCommand(cmd) {
-    if (commands !== null) commands.runCommand(cmd);
-    exitCP(false);
+  async function runCommand(cmd) {
+    if (commands !== null) await commands.runCommand(cmd);
+    await exitCP(false);
   }
 
-  function processInput(e) {
+  function processInput() {
     if (commands !== null) filtered = commands.commandList;
     var newPrompt = promptValue.toLowerCase().split("").join(".*");
     filtered = filtered.filter(
-      (item) => item.name.toLowerCase().match(newPrompt) !== null
+      (item) => item.name.toLowerCase().match(newPrompt) !== null,
     );
     current = 0;
-  }
-
-  function getHeight() {
-    //
-    // The height of the window minus (status line + Directory + top location)
-    //
-    return window.document.body.clientHeight - 61;
   }
 
   async function changeViewing() {
@@ -122,61 +105,67 @@
              color: {$theme.textColor};
              width: {width !== null ? width : 100}px;
              border-color: {util.pSBC(0.1, $theme.backgroundColor)};
-             max-height: {getHeight()}px;"
-  on:blur={() => {
-    exitCP();
+             max-height: {height !== null ? height : 100}px;
+             height: {height !== null ? height : 100}px;"
+  onblur={async () => {
+    await exitCP();
   }}
 >
   <input
     type="text"
     bind:this={promptInput}
     bind:value={promptValue}
-    style="width: {width !== null ? width - 20 : '100'}px; 
+    autocomplete="off"
+    spellcheck="false"
+    autocorrect="off"
+    style="width: {width !== null ? width - 20 : 100}px; 
           background-color: {$theme.textColor};
           text-color: {$theme.backgroundColor};"
-    on:keydown|capture|stopPropagation={processKey}
-    on:input|stopPropagation|preventDefault={processInput}
+    onkeydown={processKey}
+    oninput={processInput}
   />
   {#if filtered.length > 0}
     <div
       id="commandlist"
       bind:this={panelDOM}
-      style="max-height: {getHeight() - 40}px;"
+      style="max-height: {height - 40}px;"
     >
       <ul>
-        {#each filtered as command, index}
-          {#if index === current}
-            <li style="color: {$theme.commentColor};">
-              <p>
+        {#if filtered.length !== 0}
+          {#each filtered as command, index}
+            {#if index === current}
+              <li style="color: {$theme.commentColor};">
+                <p>
+                  <a
+                    href="/"
+                    bind:this={currentDOM}
+                    onclick={async (e) => {
+                      await runCommand(command.name);
+                    }}
+                  >
+                    {command.name}
+                  </a>
+                </p>
+                {#if showDescription}
+                  <p class="description" style="color: {$theme.commentColor};">
+                    {command.description}
+                  </p>
+                {/if}
+              </li>
+            {:else}
+              <li>
                 <a
                   href="/"
-                  bind:this={currentDOM}
-                  on:click|preventDefault={(e) => {
-                    runCommand(command.name);
+                  onclick={async () => {
+                    await runCommand(command.name);
                   }}
                 >
                   {command.name}
                 </a>
-              </p>
-              {#if showDescription}
-                <p class="description" style="color: {$theme.commentColor};">
-                  {command.description}
-                </p>
-              {/if}
-            </li>
-          {:else}
-            <li>
-              <a
-                href="/"
-                on:click|preventDefault={() => {
-                  runCommand(command.name);
-                }}
-              >
-                {command.name}
-              </a>
-            </li>
-          {/if}
-        {/each}
+              </li>
+            {/if}
+          {/each}
+        {/if}
       </ul>
     </div>
   {/if}

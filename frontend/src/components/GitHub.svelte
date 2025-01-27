@@ -1,27 +1,24 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import util from "../modules/util.js";
   import * as ap from "../../dist/wailsjs/go/main/App.js";
 
-  const dispatch = createEventDispatcher();
-
+  let { toggle = $bindable() } = $props();
   let repos = null;
   let themes = null;
-  let width = null;
+  let width = $state(null);
   let msgs = [];
-  let pickerDOM;
-  let hiddenInput;
+  let pickerDOM = null;
+  let hiddenInput = null;
   let once = true;
-  let timeOut;
-  let loading = true;
+  let timeOut = 0;
+  let loading = $state(true);
 
   onMount(async () => {
     $keyProcess = false;
-    width = window.innerWidth - 30;
     timeOut = setTimeout(focusInput, 1000);
     await loadRepoInfo();
     return () => {
@@ -30,7 +27,8 @@
     };
   });
 
-  afterUpdate(() => {
+  $effect(() => {
+    width = window.innerWidth - 60;
     if (typeof hiddenInput !== "undefined") hiddenInput.focus();
   });
 
@@ -68,7 +66,7 @@
   function exitGitHub() {
     $keyProcess = true;
     inputHidden = null;
-    dispatch("closeGitHub", {});
+    toggle = false;
   }
 
   async function installTheme(thm) {
@@ -235,21 +233,28 @@
              max-height: {getHeight()}px;
              width: {width !== null ? width : 100}px;
              color: {$theme.textColor};"
-  on:blur={(e) => {
+  onblur={() => {
     exitGitHub();
   }}
 >
   <div id="GitHubHeader">
     <h3>GitHub Themes and Extensions Importer</h3>
     <span
-      on:click={() => {
+      onclick={() => {
         exitGitHub();
       }}
       style="color: {$theme.Red};"
     >
       X
     </span>
-    <input id="inputHidden" bind:this={hiddenInput} on:keydown={inputChange} />
+    <input
+      id="inputHidden"
+      bind:this={hiddenInput}
+      onkeydown={inputChange}
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
+    />
   </div>
   {#if loading}
     <h1>Loading....</h1>
@@ -281,7 +286,7 @@
           <div class="repobuttons">
             {#if repo.loaded}
               <button
-                on:click={(e) => {
+                onclick={() => {
                   deleteExtension(repo);
                 }}
                 style="background-color: {$theme.Red};"
@@ -290,7 +295,7 @@
               </button>
             {:else}
               <button
-                on:click={(e) => {
+                onclick={() => {
                   installExtension(repo);
                 }}
                 style="background-color: {$theme.Green};"
@@ -327,7 +332,7 @@
           <div class="repobuttons">
             {#if thm.loaded}
               <button
-                on:click={(e) => {
+                onclick={() => {
                   loadTheme(thm);
                 }}
                 style="background-color: {$theme.Green};"
@@ -335,7 +340,7 @@
                 Load
               </button>
               <button
-                on:click={(e) => {
+                onclick={() => {
                   deleteTheme(thm);
                 }}
                 style="background-color: {$theme.Red};"
@@ -344,7 +349,7 @@
               </button>
             {:else}
               <button
-                on:click={(e) => {
+                onclick={() => {
                   installTheme(thm);
                 }}
                 style="background-color: {$theme.Green};"
