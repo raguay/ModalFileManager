@@ -1,4 +1,5 @@
 <script>
+  import { tick } from "svelte";
   import { dirHistory } from "../stores/dirHistory.js";
   import { keyProcess } from "../stores/keyProcess.js";
   import { theme } from "../stores/theme.js";
@@ -147,11 +148,11 @@
     if (ed) editOn();
   }
 
-  function runDirectoryListeners(pth) {
+  async function runDirectoryListeners(pth) {
     if (typeof pth !== "undefined" && lastDir !== pth) {
       lastDir = pth;
-      $directoryListeners.map((value) => {
-        value(pth, "");
+      $directoryListeners.map(async (value) => {
+        await value(pth, "");
       });
     }
   }
@@ -207,7 +208,7 @@
     $keyProcess = true;
   }
 
-  function processKey(e) {
+  async function processKey(e) {
     const key = e.key;
 
     //
@@ -238,8 +239,15 @@
         e.preventDefault();
         e.stopPropagation();
         if (dirlist.length > 0) {
+          dirInputDOM.focus();
+          inputPath = "";
           inputPath = dirlist[dirIndex];
+          await tick();
+          dirInputDOM.value = "";
           dirInputDOM.value = inputPath;
+          await tick();
+          dirInputDOM.setSelectionRange(inputPath.length, inputPath.length);
+          await tick();
         }
         break;
       case "ArrowUp":
@@ -330,7 +338,8 @@
         id="searchList"
         bind:this={DOM}
         style="background-color: {$theme.backgroundColor};
-        color: {$theme.textColor};"
+        color: {$theme.textColor};
+        border: {$theme.textColor} solid 3px;"
       >
         <ul>
           {#each dirlist as item, key}
@@ -370,10 +379,12 @@
     flex-direction: column;
     top: 50px;
     left: 20px;
+    padding: 5px;
     margin: 10px auto 10px auto;
     z-index: 200;
     overflow: auto;
     height: 70%;
+    border-radius: 10px;
     width: 90%;
   }
 
@@ -386,7 +397,6 @@
   #searchList ul li {
     text-decoration: none;
     margin: 0px;
-    padding: 0px;
   }
 
   .dirList {
@@ -408,6 +418,8 @@
 
   .dirinputclass {
     height: 20px;
+    padding: 5px;
+    width: 90%;
     margin: 0px auto 0px 10px;
     white-space: nowrap;
     outline: none;
