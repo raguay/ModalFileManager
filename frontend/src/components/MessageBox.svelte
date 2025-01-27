@@ -5,44 +5,28 @@
   import { keyProcess } from "../stores/keyProcess.js";
 
   let {
-    msgReturn = $bindable(),
+    msgBoxReturn = $bindable(),
     closeMsgBox = $bindable(),
     config,
     items,
     spinners,
+    skip = $bindable(),
+    msgCallBack,
   } = $props();
 
-  let pickerNum = 0;
-  let pickerItems = [];
+  let pickerNum = $state(0);
+  let pickerItems = $state([]);
   let pickerItemsOrig = [];
-  let pickerValue = "";
+  let pickerValue = $state("");
   let pickerDOM = $state(null);
   let msgboxDOM = $state(null);
   let pickerExtra = false;
 
-  $effect(() => {
-    items = updateSpinners(spinners);
-    updateItems(items);
-    updateHeight(pickerDOM);
-  });
-
-  onMount(() => {
-    //
-    // Turn off key processing.
-    //
-    $keyProcess = false;
-
-    //
-    // Return a function to be called when this component no longer
-    // is being shown.
-    //
-    return () => {
-      $keyProcess = true;
-    };
-  });
-
   $effect(async () => {
     await tick();
+    items = updateSpinners(spinners);
+    updateItems(items);
+    if (pickerDOM !== null) updateHeight(pickerDOM);
     var main = window.document.getElementById("msgboxMain");
     if (main !== null) {
       main.focus();
@@ -58,6 +42,21 @@
     if (exit) {
       cancel();
     }
+  });
+
+  onMount(() => {
+    //
+    // Turn off key processing.
+    //
+    $keyProcess = false;
+
+    //
+    // Return a function to be called when this component no longer
+    // is being shown.
+    //
+    return () => {
+      $keyProcess = true;
+    };
   });
 
   function updateSpinners(spins) {
@@ -77,7 +76,7 @@
     return items;
   }
 
-  function returnPickerValue(skip) {
+  async function returnPickerValue(skip) {
     if (typeof skip === "undefined") skip = false;
     $keyProcess = true;
     var retItem = {};
@@ -88,26 +87,33 @@
       retItem.value = pickerValue;
       retItem.name = "";
     }
-    msgReturn = {
+    msgBoxReturn = {
       ans: retItem,
     };
+    await msgCallBack();
     closeMsgBox = true;
+    $keyProcess = true;
+    skip = true;
   }
 
-  function returnInputValue(skip) {
+  async function returnInputValue(skip) {
     if (typeof skip === "undefined") skip = false;
     var retItem = {
       name: items[0].name,
       value: items[0].value,
     };
-    msgReturn = {
+    msgBoxReturn = {
       ans: retItem,
     };
+    await msgCallBack();
     closeMsgBox = true;
+    $keyProcess = true;
+    skip = true;
   }
 
   function cancel() {
-    var skip = false;
+    console.log("Cancel messagebox:  ");
+    skip = false;
     $keyProcess = true;
     closeMsgBox = true;
   }
@@ -136,6 +142,7 @@
       //
       closeMsgBox = false;
     } else if (e.key === "Tab") {
+      e.preventDefault();
       if (typeof pickerItems[pickerNum].value.name !== "undefined")
         pickerValue = pickerItems[pickerNum].value.name;
       else if (typeof pickerItems[pickerNum].name !== "undefined")
@@ -149,7 +156,6 @@
       //
       // It's a normal printable character. Add it and re-evaluate.
       //
-      pickerValue += e.key;
       let cur = pickerValue.toLowerCase();
       pickerItems = pickerItemsOrig.filter((it) =>
         it.name.toLowerCase().includes(cur),
@@ -166,13 +172,14 @@
       //
       // Enter key. Take the highlighted value and return.
       //
+      e.preventDefault();
       var pickerval = "";
       if (pickerExtra && pickerItems.length === 0) {
         pickerval = pickerValue;
       } else {
         pickerval = pickerItems[pickerNum].value;
       }
-      msgReturn = {
+      msgBoxReturn = {
         ans: {
           type: "picker",
           value: pickerval,
@@ -187,7 +194,7 @@
     // Enter key. Take the highlighted value and return.
     //
     $keyProcess = true;
-    msgReturn = {
+    msgBoxReturn = {
       ans: {
         type: "picker",
         value: sel,

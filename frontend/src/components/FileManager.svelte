@@ -44,6 +44,7 @@
   let msgBoxConfig = {};
   let msgBoxSpinners = [];
   let msgBoxItems = null;
+  let msgBoxReturn = {};
   let msgCallBack = () => {};
   let configDir = "";
   let setEditDirFlagLeft = $state(false);
@@ -80,6 +81,7 @@
       }
       closeCommand = false;
     }
+    closeMsgBox = closeMsgBox;
   });
 
   onMount(async () => {
@@ -2030,9 +2032,11 @@
         extra: extra,
       },
     ];
-    msgCallBack = (e) => {
-      returnValue(e.value);
+    msgCallBack = () => {
+      returnValue(msgBoxReturn.ans.value);
       msgCallBack = () => {};
+      showMessageBox = false;
+      $keyProcess = true;
     };
     showMessageBox = true;
   }
@@ -2050,11 +2054,12 @@
         id: "msgboxMain",
       },
     ];
-    showMessageBox = true;
-    msgCallBack = (e) => {
-      returnValue(e.value);
+    msgCallBack = () => {
+      returnValue(msgBoxReturn.ans.value);
       msgCallBack = () => {};
+      showMessageBox = false;
     };
+    showMessageBox = true;
   }
 
   function newFile() {
@@ -2074,12 +2079,12 @@
     msgCallBack = newFileReturn;
   }
 
-  async function newFileReturn(data) {
+  async function newFileReturn() {
     //
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    let nfname = data.value;
+    let nfname = msgBoxReturn.ans.value;
 
     //
     // Create the new file.
@@ -2103,6 +2108,7 @@
     // Set the new file as the cursor point.
     //
     await setCursor(nfname);
+    showMessageBox = false;
   }
 
   function newDirectory() {
@@ -2123,12 +2129,12 @@
     msgCallBack = newDirectoryReturn;
   }
 
-  async function newDirectoryReturn(data) {
+  async function newDirectoryReturn() {
     //
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    let ndname = data.value;
+    let ndname = msgBoxReturn.ans.value;
 
     //
     // Create the new file.
@@ -2150,6 +2156,7 @@
     // Set the new file as the cursor point.
     //
     await setCursor(ndname);
+    showMessageBox = false;
   }
 
   function renameEntry() {
@@ -2169,12 +2176,12 @@
     msgCallBack = renameReturn;
   }
 
-  async function renameReturn(data) {
+  async function renameReturn() {
     //
     // Setup a null callback.
     //
     msgCallBack = () => {};
-    let nname = data.value;
+    let nname = msgBoxReturn.ans.value;
 
     //
     // Create the new file.
@@ -2199,6 +2206,7 @@
     // Set the new file as the cursor point.
     //
     await setCursor(nname);
+    showMessageBox = false;
   }
 
   function clearSelectedFiles() {
@@ -2238,11 +2246,6 @@
       selected.push($currentCursor.entry);
     }
     return selected;
-  }
-
-  function msgReturn(e) {
-    showMessageBox = false;
-    msgCallBack(e.detail.ans);
   }
 
   function toggleQuickSearch() {
@@ -2999,9 +3002,10 @@
     <MessageBox
       config={msgBoxConfig}
       spinners={msgBoxSpinners}
-      items="msgBoxItems"
+      items={msgBoxItems}
+      {msgCallBack}
       bind:skip={$skipKey}
-      bind:msgReturn
+      bind:msgBoxReturn
       bind:closeMsgBox
     />
   {/if}
