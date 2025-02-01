@@ -1,12 +1,12 @@
 <script>
-  import { onMount, createEventDispatcher } from "svelte";
+  import { onMount } from "svelte";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
   import GeneralPrefs from "./GeneralPrefs.svelte";
   import ThemePrefs from "./ThemePrefs.svelte";
   import ExtensionPrefs from "./ExtensionPrefs.svelte";
 
-  const dispatch = createEventDispatcher();
+  let { view = $bindable() } = $props();
 
   let showPanel = $state("general");
   let vimInput = $state(null);
@@ -41,19 +41,17 @@
     };
   });
 
-  function switchView(view) {
+  function switchView(vw) {
     //
     // Only switch if going to the filemanager.
     //
-    if (view === "filemanager") {
-      dispatch("switchView", {
-        view: view,
-      });
-    }
+    view = vw;
   }
 
   function exitPrefs() {
+    console.log("exitPrefs:  ", view);
     switchView("filemanager");
+    console.log("exitPrefs:  ", view);
   }
 
   function scrollDiv(amount) {
@@ -123,7 +121,7 @@
   <ul>
     {#if showPanel === "general"}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "general";
         }}
         style="border-color: {$theme.textColor};
@@ -134,7 +132,7 @@
       </li>
     {:else}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "general";
         }}
         style="border-color: {$theme.textColor};
@@ -146,7 +144,7 @@
     {/if}
     {#if showPanel === "theme"}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "theme";
         }}
         style="border-color: {$theme.textColor};
@@ -157,7 +155,7 @@
       </li>
     {:else}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "theme";
         }}
         style="border-color: {$theme.textColor};
@@ -169,7 +167,7 @@
     {/if}
     {#if showPanel === "extension"}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "extension";
         }}
         style="border-color: {$theme.textColor};
@@ -180,7 +178,7 @@
       </li>
     {:else}
       <li
-        onclick={(e) => {
+        onclick={() => {
           showPanel = "extension";
         }}
         style="border-color: {$theme.textColor};
@@ -192,40 +190,11 @@
     {/if}
   </ul>
   {#if showPanel === "general"}
-    <GeneralPrefs
-      on:setScrollDOM={(e) => {
-        scrollDOM = e.detail.DOM;
-      }}
-      on:setKeyProcess={(e) => {
-        keepBlur = e.detail.blur;
-        if (timeOut !== null) clearTimeout(timeOut);
-        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
-      }}
-    />
+    <GeneralPrefs bind:scrollDOM />
   {:else if showPanel === "theme"}
-    <ThemePrefs
-      on:setScrollDOM={(e) => {
-        scrollDOM = e.detail.DOM;
-      }}
-      on:setKeyProcess={(e) => {
-        keepBlur = e.detail.blur;
-        if (timeOut !== null) clearTimeout(timeOut);
-        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
-      }}
-    />
+    <ThemePrefs bind:scrollDOM />
   {:else if showPanel === "extension"}
-    <ExtensionPrefs
-      on:switchView={(e) => {
-        switchView(e.detail.view);
-      }}
-      on:setScrollDOM={(e) => {
-        scrollDOM = e.detail.DOM;
-      }}
-      on:setKeyProcess={(e) => {
-        keepBlur = e.detail.blur;
-        if (keepBlur) timeOut = setTimeout(focusInput, timeOutValue);
-      }}
-    />
+    <ExtensionPrefs bind:scrollDOM />
   {/if}
   <div id="buttonRow">
     <button

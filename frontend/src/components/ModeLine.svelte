@@ -1,11 +1,8 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate. Please migrate by hand. -->
 <script>
-  import { beforeUpdate } from "svelte";
+  let { entry } = $props();
+  let modeString = $state("");
 
-  export let entry = null;
-  let modeString = "";
-
-  beforeUpdate(() => {
+  $effect.pre(() => {
     modeString = getRWX(entry.mode >> 6) + "  ";
     modeString += getRWX(entry.mode >> 3) + "  ";
     modeString += getRWX(entry.mode);

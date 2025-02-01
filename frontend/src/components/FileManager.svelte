@@ -39,6 +39,8 @@
   import * as rt from "../../dist/wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let { view = $bindable() } = $props();
+  let mdown = $state(false);
+  let midBarDOM = $state(null);
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
   let msgBoxConfig = {};
@@ -51,10 +53,9 @@
   let setEditDirFlagRight = $state(false);
   let showExtra = $state(false);
   let showCommandPrompt = $state(false);
-  let rightDOM = null;
-  let leftDOM = null;
+  let rightDOM = $state(null);
+  let leftDOM = $state(null);
   let containerDOM = null;
-  let mdown = false;
   let lastError = null;
   let userEditor = ".myeditorchoice";
   let OStype = "macOS";
@@ -1360,13 +1361,6 @@
     // Force run the directory listeners.
     //
     forceRunDirectoryListeners($currentCursor.entry.dir);
-  }
-
-  function mouseMove(e) {
-    if (mdown) {
-      leftDOM.style.width = e.clientX + "px";
-      rightDOM.style.width = containerDOM.clientWidth - (e.clientX + 10) + "px";
-    }
   }
 
   async function reloadPane() {
@@ -2984,11 +2978,14 @@
          font-family: {$theme.font};
          font-size: {$theme.fontSize};
          height: {mid}px;"
-  onmousemove={mouseMove}
-  onmouseup={() => {
-    mdown = false;
-  }}
   bind:this={containerDOM}
+  onmousemove={(e) => {
+    console.log("moveDivider: ", mdown, leftDOM, rightDOM, e.clientX);
+    if (mdown) {
+      leftDOM.style.width = e.clientX + "px";
+      rightDOM.style.width = containerDOM.clientWidth - (e.clientX + 10) + "px";
+    }
+  }}
 >
   {#if showGitHub}
     <GitHub bind:toggle={showGitHub} bind:skip={$skipKey} />
@@ -3044,9 +3041,10 @@
     {/if}
   </div>
   <ResizeBorder
-    onmouseDown={(e) => {
-      mdown = e.detail;
-    }}
+    bind:DOM={midBarDOM}
+    bind:mdown
+    lDOM={leftDOM}
+    rDOM={rightDOM}
   />
   <div id="rightSide" bind:this={rightDOM}>
     {#if $currentCursor.pane === "left" && showExtra}

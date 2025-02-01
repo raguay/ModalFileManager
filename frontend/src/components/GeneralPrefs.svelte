@@ -1,46 +1,14 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { onMount, afterUpdate, createEventDispatcher } from "svelte";
   import Env from "../components/Env.svelte";
   import { config } from "../stores/config.js";
 
-  const dispatch = createEventDispatcher();
-
-  let scrollDOM = null;
-  let first = true;
-
-  onMount(async () => {
-    return () => {};
-  });
-
-  afterUpdate(() => {
-    if (scrollDOM !== null && first) {
-      dispatch("setScrollDOM", {
-        DOM: scrollDOM,
-      });
-      first = false;
-    }
-  });
-
-  function trashChanged(e) {
-    $config.useTrash = e.target.checked;
-  }
-
-  function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
-  }
+  let { scrollDOM = $bindable() } = $props();
 </script>
 
 <div id="general" bind:this={scrollDOM}>
   {#if $config !== null}
     <h3>Environment for Launching Programs</h3>
-    <Env
-      on:setKeyProcess={(e) => {
-        setFocus(e.detail.blur);
-      }}
-    />
+    <Env />
 
     <h3>Other Configuration Items</h3>
     <div class="row">
@@ -49,11 +17,19 @@
         <input
           id="trashcanans"
           type="checkbox"
-          on:change={trashChanged}
           checked
+          onchange={(e) => {
+            $config.useTrash = e.target.checked;
+          }}
         />
       {:else}
-        <input id="trashcanans" type="checkbox" on:change={trashChanged} />
+        <input
+          id="trashcanans"
+          type="checkbox"
+          onchange={(e) => {
+            $config.useTrash = e.target.checked;
+          }}
+        />
       {/if}
     </div>
   {/if}

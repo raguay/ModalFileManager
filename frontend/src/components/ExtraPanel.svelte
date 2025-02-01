@@ -1,12 +1,11 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate and afterUpdate. Please migrate by hand. -->
 <script>
-  import { beforeUpdate, afterUpdate, tick } from "svelte";
+  import { tick } from "svelte";
   import ModeLine from "./ModeLine.svelte";
   import { currentCursor } from "../stores/currentCursor.js";
   import { extraPanel } from "../stores/extraPanel.js";
   import util from "../modules/util.js";
 
-  export let side = "";
+  let { side } = $props();
 
   let fullPath = "";
   let extension = "";
@@ -18,7 +17,7 @@
   let lastChecked = "";
   let lookupPath = "";
 
-  beforeUpdate(async () => {
+  $effect.pre(async () => {
     //
     // Get the file information needed whenever the current cursor changes.
     //
@@ -43,7 +42,7 @@
     }
   });
 
-  afterUpdate(async () => {
+  $effect(async () => {
     if (isMovie()) {
       await tick();
       /* 

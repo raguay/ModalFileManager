@@ -1,12 +1,7 @@
 <script>
-  import { onMount, createEventDispatcher } from "svelte";
   import { theme } from "../stores/theme.js";
 
-  const dispatch = createEventDispatcher();
-
-  onMount(() => {
-    return () => {};
-  });
+  let { mdown = $bindable() } = $props();
 </script>
 
 <div
@@ -18,11 +13,11 @@
             min-width: 10px;
             border-left: 3px solid {$theme.borderColor};
             border-right: 3px solid {$theme.borderColor};"
-  onmousedown={(e) => {
-    dispatch("mouseDown", true);
+  onmousedown={() => {
+    mdown = true;
   }}
-  onmouseup={(e) => {
-    dispatch("mouseDown", false);
+  onmouseup={() => {
+    mdown = false;
   }}
 ></div>
 
