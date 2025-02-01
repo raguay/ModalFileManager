@@ -40,7 +40,6 @@
 
   let { view = $bindable() } = $props();
   let mdown = $state(false);
-  let midBarDOM = null;
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
   let msgBoxConfig = {};
@@ -3047,12 +3046,7 @@
       />
     {/if}
   </div>
-  <ResizeBorder
-    bind:DOM={midBarDOM}
-    bind:mdown
-    lDOM={leftDOM}
-    rDOM={rightDOM}
-  />
+  <ResizeBorder bind:mdown lDOM={leftDOM} rDOM={rightDOM} />
   <div id="rightSide" bind:this={rightDOM}>
     {#if $currentCursor.pane === "left" && showExtra}
       <ExtraPanel side="right" entry={$currentCursor.entry} />
