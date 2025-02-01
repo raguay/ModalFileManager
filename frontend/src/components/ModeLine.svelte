@@ -1,12 +1,14 @@
 <script>
-  let { entry } = $props();
+  let { mode } = $props();
   let modeString = $state("");
 
-  $effect.pre(() => {
-    modeString = getRWX(entry.mode >> 6) + "  ";
-    modeString += getRWX(entry.mode >> 3) + "  ";
-    modeString += getRWX(entry.mode);
+  $effect(() => {
+    modeString = UpdateModeLine(mode);
   });
+
+  function UpdateModeLine(modl) {
+    return getRWX(modl >> 6) + "  " + getRWX(modl >> 3) + "  " + getRWX(modl);
+  }
 
   function getRWX(bits) {
     let result = bits & 4 ? "r" : "-";

@@ -40,7 +40,7 @@
 
   let { view = $bindable() } = $props();
   let mdown = $state(false);
-  let midBarDOM = $state(null);
+  let midBarDOM = null;
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
   let msgBoxConfig = {};
@@ -53,8 +53,8 @@
   let setEditDirFlagRight = $state(false);
   let showExtra = $state(false);
   let showCommandPrompt = $state(false);
-  let rightDOM = $state(null);
-  let leftDOM = $state(null);
+  let rightDOM = null;
+  let leftDOM = null;
   let containerDOM = null;
   let lastError = null;
   let userEditor = ".myeditorchoice";
@@ -68,22 +68,6 @@
   let mid = 0;
   let closeCommand = $state(false);
   let closeMsgBox = $state(false);
-
-  $effect(() => {
-    mid = window.innerHeight - 75;
-    if (closeMsgBox) {
-      showMessageBox = false;
-      $keyProcess = true;
-    }
-    if (closeCommand) {
-      showCommandPrompt = false;
-      if (!showMessageBox) {
-        $keyProcess = true;
-      }
-      closeCommand = false;
-    }
-    closeMsgBox = closeMsgBox;
-  });
 
   onMount(async () => {
     //
@@ -341,10 +325,34 @@
     //
     $dirHistory.loadHistory();
 
+    mid = window.innerHeight - 75;
+
     return () => {
       unsubscribeTheme();
     };
   });
+
+  $effect(() => {
+    if (closeMsgBox) {
+      efCloseMsgBox();
+    }
+    if (closeCommand) {
+      efCloseCommand();
+    }
+  });
+
+  function efCloseMsgBox() {
+    showMessageBox = false;
+    $keyProcess = true;
+  }
+
+  function efCloseCommand() {
+    showCommandPrompt = false;
+    if (!showMessageBox) {
+      $keyProcess = true;
+    }
+    closeCommand = false;
+  }
 
   async function loadExtensionsKeyboard() {
     //
@@ -2980,8 +2988,7 @@
          height: {mid}px;"
   bind:this={containerDOM}
   onmousemove={(e) => {
-    console.log("moveDivider: ", mdown, leftDOM, rightDOM, e.clientX);
-    if (mdown) {
+    if (mdown == true) {
       leftDOM.style.width = e.clientX + "px";
       rightDOM.style.width = containerDOM.clientWidth - (e.clientX + 10) + "px";
     }
@@ -3025,7 +3032,7 @@
 
   <div id="leftSide" bind:this={leftDOM}>
     {#if $currentCursor.pane === "right" && showExtra}
-      <ExtraPanel side="left" />
+      <ExtraPanel side="left" entry={$currentCursor.entry} />
     {:else}
       <DirectoryListing
         bind:path={$leftDir}
@@ -3048,7 +3055,7 @@
   />
   <div id="rightSide" bind:this={rightDOM}>
     {#if $currentCursor.pane === "left" && showExtra}
-      <ExtraPanel side="right" />
+      <ExtraPanel side="right" entry={$currentCursor.entry} />
     {:else}
       <DirectoryListing
         bind:path={$rightDir}

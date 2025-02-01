@@ -1,81 +1,78 @@
 <script>
   import { tick } from "svelte";
   import ModeLine from "./ModeLine.svelte";
-  import { currentCursor } from "../stores/currentCursor.js";
   import { extraPanel } from "../stores/extraPanel.js";
   import util from "../modules/util.js";
 
-  let { side } = $props();
+  let { side, entry } = $props();
 
-  let fullPath = "";
-  let extension = "";
-  let size = "";
-  let videoDem = "";
-  let isMovieFlag = false;
-  let isExtra = false;
-  let extraHTML = "";
+  let fullPath = $state("");
+  let extension = $state("");
+  let size = $state("");
+  let videoDem = $state("");
+  let isMovieFlag = $state(false);
+  let isExtra = $state(false);
+  let extraHTML = $state("");
   let lastChecked = "";
-  let lookupPath = "";
+  let lookupPath = $state("");
 
   $effect.pre(async () => {
     //
-    // Get the file information needed whenever the current cursor changes.
+    // Check the new cursor for extra panel items.
     //
-    if (lastChecked !== $currentCursor.entry.name) {
-      lastChecked = $currentCursor.entry.name;
-      fullPath = await $currentCursor.entry.fileSystem.appendPath(
-        $currentCursor.entry.dir,
-        $currentCursor.entry.name,
-      );
-      let hmdir = await $currentCursor.entry.fileSystem.getHomeDir();
-      lookupPath = `http://127.0.0.1:9998/filesys/${fullPath.substr(
-        hmdir.length + 1,
-      )}`;
-      lookupPath = encodeURI(lookupPath);
-      extension = $currentCursor.entry.ext.toLowerCase();
-      size = util.readableSize($currentCursor.entry.size);
-
-      //
-      // Check the new cursor for extra panel items.
-      //
+    if (typeof entry !== "undefined") {
       isExtra = checkExtraPanel();
+      await runExtraPanel();
     }
   });
 
   $effect(async () => {
-    if (isMovie()) {
-      await tick();
-      /* 
-      var fileURL = window.URL.createObjectURL(lookupPath);
-      var videoNode = window.document.getElementById("videoItem");
-      if (videoNode !== null) {
-        videoNode.src = fileURL;
+    size = util.readableSize(entry.size);
+    await tick();
+    if (typeof entry !== "undefined") {
+      if (isMovie()) {
+        /* 
+        var fileURL = window.URL.createObjectURL(lookupPath);
+        var videoNode = window.document.getElementById("videoItem");
+        if (videoNode !== null) {
+          videoNode.src = fileURL;
+        }
+        */
+        getDimensions(fullPath);
       }
-     */
-      getDimensions(fullPath);
-    }
-    if (isExtra) {
-      $extraPanel.forEach((item) => {
-        item.after();
-      });
     }
   });
 
+  async function runExtraPanel() {
+    //
+    // Get the file information needed whenever the current cursor changes.
+    //
+    if (lastChecked !== entry.name) {
+      lastChecked = entry.name;
+      fullPath = await entry.fileSystem.appendPath(entry.dir, entry.name);
+      let hmdir = await entry.fileSystem.getHomeDir();
+      lookupPath = `http://127.0.0.1:9998/filesys/${fullPath.substr(
+        hmdir.length + 1,
+      )}`;
+      lookupPath = encodeURI(lookupPath);
+      extension = entry.ext.toLowerCase();
+    }
+    $extraPanel.forEach((item) => {
+      item.after();
+    });
+  }
+
   function checkExtraPanel() {
     extraHTML = "";
+    let isxtra = false;
     $extraPanel.forEach(async (item) => {
-      isExtra = await item.check(
-        $currentCursor.entry.dir,
-        $currentCursor.entry.name,
-        $currentCursor.fileSystem,
-        side,
-      );
-      if (isExtra) {
+      isxtra = await item.check(entry.dir, entry.name, entry.fileSystem, side);
+      if (isxtra) {
         var newContent = await item.createHTML();
         extraHTML = extraHTML.concat("\n", newContent);
       }
     });
-    return isExtra;
+    return isxtra;
   }
 
   function isMovie() {
@@ -96,7 +93,7 @@
       'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' +
       fileName +
       '"';
-    $currentCursor.entry.fileSystem.runCommandLine(
+    entry.fileSystem.runCommandLine(
       com,
       [],
       (err, stdout) => {
@@ -130,11 +127,13 @@
     </p>
   {/if}
   <div class="stats">
-    <p>Date: {$currentCursor.entry.datetime}</p>
+    {#if typeof entry.datetime !== "undefined"}
+      <p>Date: {entry.datetime}</p>
+    {/if}
     <p>Size: {size}</p>
     <div id="modeline">
       <p>Permissions:</p>
-      <ModeLine entry={$currentCursor.entry} />
+      <ModeLine mode={entry.mode} />
     </div>
   </div>
 </div>
