@@ -1,19 +1,17 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { onMount, afterUpdate, createEventDispatcher } from "svelte";
+  import { onMount } from "svelte";
   import { rightDir } from "../stores/rightDir.js";
   import { leftDir } from "../stores/leftDir.js";
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
 
-  const dispatch = createEventDispatcher();
-
-  let showMsgBox = false;
-  let msgText = "";
-  let msgTitle = "";
-  let extensionList = null;
-  let extensionName = "";
+  let { scrollDOM = $bindable(), view = $bindable() } = $props();
+  let showMsgBox = $state(false);
+  let msgText = $state("");
+  let msgTitle = $state("");
+  let extensionList = $state(null);
+  let extensionName = $state("");
   let extTemplate = `
 const {{extName}} = {
   extMan: null,
@@ -25,8 +23,6 @@ const {{extName}} = {
 };
 return({{extName}});
   `;
-  let scrollDOM = null;
-  let first = true;
 
   onMount(async () => {
     if (typeof $config.OS !== "undefined") {
@@ -35,15 +31,6 @@ return({{extName}});
     }
 
     return () => {};
-  });
-
-  afterUpdate(() => {
-    if (scrollDOM !== null && first) {
-      dispatch("setScrollDOM", {
-        DOM: scrollDOM,
-      });
-      first = false;
-    }
   });
 
   async function reloadExtensions() {
@@ -106,7 +93,7 @@ return({{extName}});
               'emacsclient -n -q "' + file + '"',
               [],
               (err, result) => {},
-              "."
+              ".",
             );
           } else {
             //
@@ -123,16 +110,14 @@ return({{extName}});
           'open "' + file + '"',
           [],
           (err, result) => {},
-          "."
+          ".",
         );
       }
 
       //
       // Go back to the filemanager view.
       //
-      dispatch("switchView", {
-        view: "filemanager",
-      });
+      view = "filemanger";
     } else {
       console.log("Not a proper Extension.");
       msgText =
@@ -164,7 +149,7 @@ return({{extName}});
             editPackage();
           }
         },
-        "."
+        ".",
       );
     } else {
       //
@@ -247,14 +232,8 @@ return({{extName}});
           console.log(err);
           console.log(stdout);
         }
-      }
+      },
     );
-  }
-
-  function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
   }
 </script>
 
@@ -275,7 +254,7 @@ return({{extName}});
                background-color: {$theme.textColor};
                font-family: {$theme.font};
                font-size: {$theme.fontSize};"
-        on:click={() => {
+        onclick={() => {
           showMsgBox = false;
         }}
       >
@@ -288,8 +267,8 @@ return({{extName}});
       <thead>
         <tr>
           <th> Extension Name </th>
-          <th />
-          <th />
+          <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -305,7 +284,7 @@ return({{extName}});
                        font-family: {$theme.font};
                        font-size: {$theme.fontSize};"
                 class="editButton"
-                on:click={() => {
+                onclick={() => {
                   editExtension(item);
                 }}
               >
@@ -315,7 +294,7 @@ return({{extName}});
             <td>
               <button
                 class="deleteButton"
-                on:click={() => {
+                onclick={() => {
                   deleteExtension(item);
                 }}
               >
@@ -336,15 +315,6 @@ return({{extName}});
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
       bind:value={extensionName}
-      on:mouseover={() => {
-        setFocus(false);
-      }}
-      on:mouseleave={() => {
-        setFocus(true);
-      }}
-      on:blur={() => {
-        setFocus(true);
-      }}
     />
     <button
       id="createExtensionButton"
@@ -352,7 +322,7 @@ return({{extName}});
              background-color: {$theme.textColor};
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
-      on:click={createExtension}
+      onclick={createExtension}
     >
       Create New Extension
     </button>

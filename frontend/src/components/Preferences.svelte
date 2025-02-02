@@ -194,7 +194,7 @@
   {:else if showPanel === "theme"}
     <ThemePrefs bind:scrollDOM />
   {:else if showPanel === "extension"}
-    <ExtensionPrefs bind:scrollDOM />
+    <ExtensionPrefs bind:scrollDOM bind:view />
   {/if}
   <div id="buttonRow">
     <button

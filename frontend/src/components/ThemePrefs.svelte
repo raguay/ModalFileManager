@@ -1,19 +1,15 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { onMount, afterUpdate, createEventDispatcher } from "svelte";
+  import { onMount } from "svelte";
   import ThemeItem from "../components/ThemeItem.svelte";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
 
-  const dispatch = createEventDispatcher();
-
-  let themeName = "";
-  let showMsgBox = false;
-  let msgText = "";
-  let msgTitle = "";
-  let themeList = null;
-  let scrollDOM = null;
-  let first = true;
+  let { scrollDOM = $bindable() } = $props();
+  let themeName = $state("");
+  let showMsgBox = $state(false);
+  let msgText = $state("");
+  let msgTitle = $state("");
+  let themeList = $state(null);
 
   onMount(async () => {
     if (typeof $config.OS !== "undefined") {
@@ -23,26 +19,10 @@
     return () => {};
   });
 
-  afterUpdate(() => {
-    if (scrollDOM !== null && first) {
-      dispatch("setScrollDOM", {
-        DOM: scrollDOM,
-      });
-      first = false;
-    }
-  });
-
   async function loadThemeList() {
     var themedir = await $config.OS.appendPath($config.configDir, "themes");
     themeList = await $config.OS.getDirList(themedir);
     themeName = "";
-    themeList = themeList;
-  }
-
-  function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
   }
 
   function changeValue(kv, e) {
@@ -85,12 +65,12 @@
           //
           var thmFile = await $config.OS.appendPath(
             thmDir,
-            themeName + ".json"
+            themeName + ".json",
           );
           await $config.OS.writeFile(thmFile, JSON.stringify($theme));
           loadThemeList();
         },
-        "."
+        ".",
       );
     } else {
       //
@@ -127,7 +107,7 @@
         if (!err) {
           var themedir = await $config.OS.appendPath(
             $config.configDir,
-            "themes"
+            "themes",
           );
           themeList = await $config.OS.getDirList(themedir);
         } else {
@@ -135,7 +115,7 @@
           msgTitle = "Theme Preferences";
           showMsgBox = true;
         }
-      }
+      },
     );
     loadThemeList();
   }
@@ -170,9 +150,6 @@
             on:change={(e) => {
               changeValue(kv, e);
             }}
-            on:setKeyProcess={(e) => {
-              setFocus(e.detail.blur);
-            }}
           />
         {/each}
       </tbody>
@@ -188,16 +165,6 @@
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
       bind:value={themeName}
-      on:mouseover={() => {
-        setFocus(false);
-      }}
-      on:mouseleave={() => {
-        setFocus(true);
-      }}
-      on:blur={() => {
-        setFocus(true);
-      }}
-      on:focus={() => {}}
     />
     <button
       id="createThemeButton"
@@ -205,7 +172,7 @@
              background-color: {$theme.textColor};
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
-      on:click={createTheme}
+      onclick={createTheme}
     >
       Save New Theme
     </button>
@@ -226,7 +193,7 @@
                background-color: {$theme.textColor};
                font-family: {$theme.font};
                font-size: {$theme.fontSize};"
-        on:click={() => {
+        onclick={() => {
           showMsgBox = false;
         }}
       >
@@ -258,7 +225,7 @@
                        background-color: {$theme.textColor};
                        font-family: {$theme.font};
                        font-size: {$theme.fontSize};"
-                on:click={() => {
+                onclick={() => {
                   setTheme(item);
                 }}
               >
@@ -272,7 +239,7 @@
                        background-color: {$theme.textColor};
                        font-family: {$theme.font};
                        font-size: {$theme.fontSize};"
-                on:click={() => {
+                onclick={() => {
                   updateTheme(item);
                 }}
               >
@@ -282,7 +249,7 @@
             <td>
               <button
                 class="deleteButton"
-                on:click={() => {
+                onclick={() => {
                   deleteTheme(item);
                 }}
               >
