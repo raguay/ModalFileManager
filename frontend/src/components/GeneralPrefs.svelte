@@ -2,13 +2,13 @@
   import Env from "../components/Env.svelte";
   import { config } from "../stores/config.js";
 
-  let { scrollDOM = $bindable() } = $props();
+  let { scrollDOM = $bindable(), blur = $bindable() } = $props();
 </script>
 
 <div id="general" bind:this={scrollDOM}>
   {#if $config !== null}
     <h3>Environment for Launching Programs</h3>
-    <Env />
+    <Env bind:blur />
 
     <h3>Other Configuration Items</h3>
     <div class="row">

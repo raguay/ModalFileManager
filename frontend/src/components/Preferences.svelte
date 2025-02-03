@@ -64,7 +64,7 @@
   }
 
   function focusInput() {
-    if (vimInput !== null && keepBlur) {
+    if (vimInput != null && keepBlur) {
       vimInput.focus();
     }
     timeOut = setTimeout(focusInput, timeOutValue);
@@ -190,11 +190,11 @@
     {/if}
   </ul>
   {#if showPanel === "general"}
-    <GeneralPrefs bind:scrollDOM />
+    <GeneralPrefs bind:scrollDOM bind:blur={keepBlur} />
   {:else if showPanel === "theme"}
-    <ThemePrefs bind:scrollDOM />
+    <ThemePrefs bind:scrollDOM bind:blur={keepBlur} />
   {:else if showPanel === "extension"}
-    <ExtensionPrefs bind:scrollDOM bind:view />
+    <ExtensionPrefs bind:scrollDOM bind:view bind:blur={keepBlur} />
   {/if}
   <div id="buttonRow">
     <button

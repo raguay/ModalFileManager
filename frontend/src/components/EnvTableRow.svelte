@@ -1,35 +1,43 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { tick } from "svelte";
+  import { config } from "../stores/config.js";
 
-  const dispatch = createEventDispatcher();
-
-  let { name, value = $bindable() } = $props();
+  let { name, value = $bindable(), save, blur = $bindable() } = $props();
 
   let inputValue = $state("");
   let editValue = $state(false);
+  let inputDOM = $state(null);
+
+  function deleteCell() {
+    delete $config.env[name];
+    $config = $config;
+    save();
+  }
+
+  function saveCell() {
+    $config.env[name] = inputValue;
+    $config = $config;
+    save();
+  }
 
   function editCell() {
     inputValue = value;
     editValue = true;
+    setFocus(false);
   }
 
   function saveInput() {
     value = inputValue;
     editValue = false;
+    saveCell();
     setFocus(true);
-    dispatch("save", {
-      value: inputValue,
-    });
   }
 
-  function deleteCell() {
-    dispatch("delete", {});
-  }
-
-  function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
+  async function setFocus(flag) {
+    await tick();
+    blur = flag;
+    if (inputDOM !== null) inputDOM.focus();
+    save();
   }
 </script>
 
@@ -44,11 +52,25 @@
   {#if editValue}
     <input
       bind:value={inputValue}
-      onblur={saveInput}
+      bind:this={inputDOM}
+      onblur={() => {
+        saveInput();
+      }}
       onmouseover={() => {
         setFocus(false);
       }}
-      onmouseleave={saveInput}
+      onmouseleave={() => {
+        saveInput();
+      }}
+      onkeydown={(e) => {
+        switch (e.key) {
+          case "Enter": {
+            e.preventDefault();
+            saveInput();
+            break;
+          }
+        }
+      }}
     />
   {:else}
     <td>{value}</td>

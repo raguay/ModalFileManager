@@ -1,8 +1,6 @@
 <script>
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
-  import { currentLeftFile } from "../stores/currentLeftFile.js";
-  import { currentRightFile } from "../stores/currentRightFile.js";
   import { config } from "../stores/config.js";
   import FaRegFolder from "svelte-icons/fa/FaRegFolder.svelte";
   import FaRegFileAlt from "svelte-icons/fa/FaRegFileAlt.svelte";
@@ -36,20 +34,14 @@
     }
   });
 
-  function cursorToEntry(pane, entry) {
-    $currentCursor = {
-      pane: pane,
-      entry: entry,
-    };
-
-    if (pane === "right") {
-      $currentRightFile = entry;
-    } else {
-      $currentLeftFile = entry;
+  function cursorToEntry() {
+    if ($currentCursor.pane !== pane) {
+      $config.extensions.getExtCommand("setPane").command(pane);
     }
+    $config.extensions.getExtCommand("setCursor").command(entry.name);
   }
 
-  async function openEntry(entry) {
+  async function openEntry() {
     if (entry.type === 0) {
       //
       // It is a file, open it.
@@ -163,69 +155,84 @@
   <div
     class="entry"
     style="background-color: {$theme.cursorColor};"
-    on:click={cursorToEntry(pane, entry)}
-    on:dblclick={openEntry(entry)}
     bind:this={DOM}
+    onclick={() => {
+      cursorToEntry();
+    }}
+    ondblclick={() => {
+      openEntry();
+    }}
     draggable="true"
-    on:dragstart={dragStart}
-    on:dragend|preventDefault={(e) => {
+    ondragstart={dragStart}
+    ondragend={(e) => {
       dropFiles(e, "dragend");
     }}
-    on:drop|preventDefault={(e) => {
+    ondrop={(e) => {
       dropFiles(e, "drop");
     }}
-    on:dragover|preventDefault={(e) => {
+    ondragover={(e) => {
       dropFiles(e, "dragover");
     }}
-    on:dragenter|preventDefault={(e) => {
+    ondragenter={(e) => {
       dropFiles(e, "dragenter");
     }}
   >
-    <span class="type">
-      {#if entry.type === 0}
-        <FaRegFileAlt />
-      {:else if entry.type === 1}
-        <FaRegFolder />
-      {:else}
-        <FaExternalLinkAlt />
-      {/if}
-    </span>
-    <span
-      class="name"
-      style="color: {entry.selected ? $theme.selectedColor : $theme.textColor};"
-      >{entry.name}</span
-    >
+    <div class="entryBuffer">
+      <span class="type">
+        {#if entry.type === 0}
+          <FaRegFileAlt />
+        {:else if entry.type === 1}
+          <FaRegFolder />
+        {:else}
+          <FaExternalLinkAlt />
+        {/if}
+      </span>
+      <span
+        class="name"
+        style="color: {entry.selected
+          ? $theme.selectedColor
+          : $theme.textColor};">{entry.name}</span
+      >
+    </div>
   </div>
 {:else}
   <div
     class="entry"
     style="background-color: 'transparent';"
-    on:click={cursorToEntry(pane, entry)}
-    on:dblclick={openEntry(entry)}
     bind:this={DOM}
+    onclick={() => {
+      cursorToEntry();
+    }}
+    ondblclick={() => {
+      openEntry();
+    }}
     draggable="false"
-    on:drop|preventDefault={(e) => {
+    ondrop={(e) => {
       dropFiles(e, "drop");
     }}
-    on:dragover|preventDefault={(e) => {
+    ondragover={(e) => {
       dropFiles(e, "over");
     }}
   >
-    <span class="type">
-      {#if entry.type === 0}
-        <FaRegFileAlt />
-      {:else if entry.type === 1}
-        <FaRegFolder />
-      {:else}
-        <FaExternalLinkAlt />
-      {/if}
-    </span>
-    <span
-      class="name"
-      style="color: {entry.selected ? $theme.selectedColor : $theme.textColor};"
-    >
-      {entry.name}
-    </span>
+    <div class="entryBuffer">
+      <span class="type">
+        {#if entry.type === 0}
+          <FaRegFileAlt />
+        {:else if entry.type === 1}
+          <FaRegFolder />
+        {:else}
+          <FaExternalLinkAlt />
+        {/if}
+      </span>
+      <span
+        class="name"
+        style="color: {entry.selected
+          ? $theme.selectedColor
+          : $theme.textColor};"
+      >
+        {entry.name}
+      </span>
+    </div>
   </div>
 {/if}
 
@@ -233,28 +240,42 @@
   .entry {
     display: flex;
     flex-direction: row;
+    height: 26px;
+    max-height: 26px;
+    min-height: 26px;
+    width: 100%;
+    margin: 0px;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+  }
+
+  .entryBuffer {
+    display: flex;
+    flex-direction: row;
     height: 20px;
     max-height: 20px;
-    min-height: 20px;
-    width: 100%;
-    margin: 3px 3px;
+    margin: 3px;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
   }
 
   .name {
     white-space: nowrap;
     -webkit-user-select: none;
     user-select: none;
+    cursor: default;
   }
 
   .type {
-    height: 20px;
-    width: 20px;
-    min-height: 20px;
-    min-width: 20px;
-    max-height: 20px;
-    max-width: 20px;
     margin: 0px 10px 0px 5px;
     -webkit-user-select: none;
     user-select: none;
+    height: 20px;
+    max-height: 20px;
+    width: 20px;
+    max-width: 20px;
+    cursor: default;
   }
 </style>

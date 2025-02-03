@@ -353,6 +353,16 @@
     closeCommand = false;
   }
 
+  function setPane(newPane) {
+    console.log("setPane:  ", newPane);
+    $currentCursor.pane = newPane;
+    if (newPane === "right") {
+      $currentCursor.entry = $currentRightFile;
+    } else {
+      $currentCursor.entry = $currentLeftFile;
+    }
+  }
+
   async function loadExtensionsKeyboard() {
     //
     // Setup the default commands.
@@ -625,6 +635,7 @@
       addExtraPanelProcessor,
     );
     extensions.addExtCommand("openFile", "Opens the given file.", openFile);
+    extensions.addExtCommand("setPane", "Set the current pane.", setPane);
   }
 
   function installDefaultCommands() {

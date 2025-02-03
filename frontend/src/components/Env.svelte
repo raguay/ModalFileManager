@@ -1,29 +1,14 @@
 <script>
-  import { onMount, createEventDispatcher } from "svelte";
+  import { tick } from "svelte";
   import EnvTableRow from "./EnvTableRow.svelte";
   import { config } from "../stores/config.js";
 
-  const dispatch = createEventDispatcher();
+  let { blur = $bindable() } = $props();
 
   let KVname = $state("");
   let KVvalue = $state("");
   let addNew = $state(false);
-
-  onMount(() => {
-    return () => {};
-  });
-
-  function deleteCell(kv) {
-    delete $config.env[kv[0]];
-    $config = $config;
-    saveConfig();
-  }
-
-  function saveCell(kv, e) {
-    $config.env[kv[0]] = e.detail.value;
-    $config = $config;
-    saveConfig();
-  }
+  let nameInputDOM = $state(null);
 
   async function saveConfig() {
     if ($config !== null) {
@@ -58,10 +43,16 @@
       //
       const cfgFile = await $config.OS.appendPath(
         $config.configDir,
-        "config.json"
+        "config.json",
       );
       await $config.OS.writeFile(cfgFile, JSON.stringify(svConfig));
     }
+  }
+
+  async function setFocus(flag) {
+    blur = flag;
+    await tick();
+    if (nameInputDOM !== null && !blur) nameInputDOM.focus();
   }
 
   function addKV() {
@@ -72,12 +63,6 @@
     KVvalue = "";
     $config = $config;
     saveConfig();
-  }
-
-  function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
   }
 </script>
 
@@ -95,16 +80,9 @@
       {#each Object.entries($config.env) as kv}
         <EnvTableRow
           name={kv[0]}
-          value={kv[1]}
-          on:delete={() => {
-            deleteCell(kv);
-          }}
-          on:save={(e) => {
-            saveCell(kv, e);
-          }}
-          on:setKeyProcess={(e) => {
-            setFocus(e.detail.blur);
-          }}
+          bind:value={kv[1]}
+          bind:blur
+          save={saveConfig}
         />
       {/each}
       {#if addNew}
@@ -115,6 +93,7 @@
             <input
               class="inputKV"
               type="text"
+              bind:this={nameInputDOM}
               bind:value={KVname}
               onmouseover={() => {
                 setFocus(false);
@@ -131,6 +110,14 @@
                 setFocus(false);
               }}
               onmouseleave={addKV}
+              onkeydown={(e) => {
+                switch (e.key) {
+                  case "Enter": {
+                    addKV();
+                    setFocus(true);
+                  }
+                }
+              }}
             />
           </td>
         </tr>
@@ -141,6 +128,7 @@
               class="addNewItem"
               onclick={() => {
                 addNew = true;
+                setFocus(false);
               }}
             >
               +

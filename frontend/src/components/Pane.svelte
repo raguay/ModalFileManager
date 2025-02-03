@@ -105,6 +105,7 @@
   }
 
   function cursorToPane() {
+    console.log("cusorToPane:  ", pane);
     let nEntry = {
       dir: "",
       name: "",
