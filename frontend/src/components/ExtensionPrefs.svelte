@@ -5,13 +5,19 @@
   import { currentCursor } from "../stores/currentCursor.js";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
+  import { keyProcess } from "../stores/keyProcess.js";
 
-  let { scrollDOM = $bindable(), view = $bindable() } = $props();
+  let {
+    scrollDOM = $bindable(),
+    view = $bindable(),
+    blur = $bindable(),
+  } = $props();
   let showMsgBox = $state(false);
   let msgText = $state("");
   let msgTitle = $state("");
   let extensionList = $state(null);
   let extensionName = $state("");
+  let newExtNameDOM = $state(null);
   let extTemplate = `
 const {{extName}} = {
   extMan: null,
@@ -117,7 +123,8 @@ return({{extName}});
       //
       // Go back to the filemanager view.
       //
-      view = "filemanger";
+      view = "filemanager";
+      blur = true;
     } else {
       console.log("Not a proper Extension.");
       msgText =
@@ -315,6 +322,23 @@ return({{extName}});
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
       bind:value={extensionName}
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
+      onmouseover={() => {
+        blur = false;
+        if (newExtNameDOM !== null) newExtNameDOM.focus();
+      }}
+      onfocus={() => {
+        blur = false;
+        if (newExtNameDOM !== null) newExtNameDOM.focus();
+      }}
+      onblur={() => {
+        blur = true;
+      }}
+      onmouseout={() => {
+        blur = true;
+      }}
     />
     <button
       id="createExtensionButton"

@@ -151,11 +151,13 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#if ($currentCursor.pane === pane && $currentCursor.entry.name == entry.name) || entry.selected}
   <div
     class="entry"
     style="background-color: {$theme.cursorColor};"
     bind:this={DOM}
+    onkeydown={() => {}}
     onclick={() => {
       cursorToEntry();
     }}
@@ -200,6 +202,7 @@
     class="entry"
     style="background-color: 'transparent';"
     bind:this={DOM}
+    onkeydown={() => {}}
     onclick={() => {
       cursorToEntry();
     }}

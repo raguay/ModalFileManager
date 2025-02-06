@@ -41,6 +41,10 @@
     };
   });
 
+  $effect(() => {
+    focusInput();
+  });
+
   function switchView(vw) {
     //
     // Only switch if going to the filemanager.
@@ -49,9 +53,7 @@
   }
 
   function exitPrefs() {
-    console.log("exitPrefs:  ", view);
     switchView("filemanager");
-    console.log("exitPrefs:  ", view);
   }
 
   function scrollDiv(amount) {
@@ -71,6 +73,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions a11y -->
 <div
   id="Preferences"
   style="background-color: {$theme.backgroundColor};

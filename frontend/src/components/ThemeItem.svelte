@@ -1,105 +1,130 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { afterUpdate, createEventDispatcher } from "svelte";
   import { theme } from "../stores/theme.js";
   import ColorPicker from "svelte-awesome-color-picker";
 
-  const dispatch = createEventDispatcher();
+  let { label, value, update, blur = $bindable() } = $props();
 
-  export let label = "";
-  export let value = "";
+  let changeColor = $state(false);
+  let changeString = $state(false);
+  let showPicker = $state(false);
+  let showInput = $state(false);
+  let hex = $state("");
+  let nvalue = $state("");
+  let inputDOM = $state(null);
 
-  let changeColor = false;
-  let changeString = false;
-  let hex;
-
-  afterUpdate(() => {
-    hex = value;
+  $effect.pre(() => {
+    setValueType();
+    if (inputDOM !== null) inputDOM.focus();
   });
 
-  function changeValue() {
+  function setValueType() {
+    showPicker = false;
     if (value[0] === "#") {
+      hex = value;
       changeColor = true;
+      changeString = false;
     } else {
+      nvalue = value;
       changeString = true;
+      changeColor = false;
     }
-    setFocus(false);
   }
 
   function changeStringValue(val) {
-    changeString = false;
-    dispatch("change", {
-      value: val,
-    });
-  }
-
-  function colorCallback(hex) {
-    dispatch("change", {
-      value: hex,
-    });
+    showInput = false;
+    inputDOM = null;
+    update(label, val);
+    setFocus(true);
   }
 
   function setValue() {
-    changeColor = false;
+    update(label, hex);
+    showPicker = false;
     setFocus(true);
   }
 
   function setFocus(flag) {
-    dispatch("setKeyProcess", {
-      blur: flag,
-    });
+    blur = flag;
   }
 </script>
 
+<!-- svelte-ignore a11y_mouse_events_have_key_events a11y_no_static_element_interactions a11y_invalid_attribute -->
 <tr>
   <td>
     {label}
   </td>
-  <td
-    on:click={() => {
-      changeValue();
-    }}
-  >
+  <td>
     <div class="rowCell">
-      {#if changeString}
+      {#if showInput}
         <input
           style="color: {$theme.backgroundColor};
                  background-color: {$theme.textColor};
                  font-family: {$theme.font};
                  font-size: {$theme.fontSize};"
-          bind:value
-          on:blur={() => {
-            changeStringValue(value);
-            setFocus(true);
+          bind:value={nvalue}
+          bind:this={inputDOM}
+          autocomplete="off"
+          spellcheck="false"
+          autocorrect="off"
+          onkeyup={(e) => {
+            e.preventDefault();
+            switch (e.key) {
+              case "Enter":
+                changeStringValue(nvalue);
+                value = nvalue;
+                break;
+              case "Esc":
+                showInput = false;
+                nvalue = value;
+                break;
+              case "Tab":
+                changeStringValue(nvalue);
+                value = nvalue;
+                break;
+            }
           }}
-          on:mouseover={() => {
-            setFocus(false);
+          onblur={() => {
+            changeStringValue(nvalue);
+            value = nvalue;
           }}
         />
       {:else}
-        {value}
+        <div class="inputValue">
+          <span
+            onclick={() => {
+              showInput = true;
+              setFocus(false);
+            }}
+          >
+            {value}
+          </span>
+        </div>
       {/if}
-      {#if value.startsWith("#")}
+      {#if changeColor}
         <div
           class="colorDiv"
           style="background-color: {value}; border-color: {$theme.textColor};"
-        />
+          onclick={() => {
+            hex = value;
+            showPicker = true;
+          }}
+        ></div>
       {/if}
     </div>
   </td>
 </tr>
-{#if changeColor}
+{#if showPicker}
   <div class="cpicker">
     <ColorPicker
-      on:input={(e) => {
-        colorCallback(e.detail.hex);
-      }}
       bind:hex
       {label}
       isOpen="true"
       isPopup="false"
+      on:input={(e) => {
+        hex = e.details.hex;
+      }}
     />
-    <button on:click={setValue}> Set Value </button>
+    <button onclick={setValue}> Set Value </button>
   </div>
 {/if}
 
@@ -111,6 +136,11 @@
   }
 
   .rowCell {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .inputValue {
     display: flex;
     flex-direction: row;
   }

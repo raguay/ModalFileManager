@@ -315,6 +315,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions a11y_no_noninteractive_element_interactions -->
 <div
   class="dirList"
   style="font-family: {$theme.font}; font-size: {$theme.fontSize}; color: {$theme.Green}; background: {$theme.backgroundColor};"
@@ -328,6 +329,9 @@
       bind:this={dirInputDOM}
       type="text"
       class="dirinputclass"
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
       style="color: {$theme.Green}; background: {$theme.backgroundColor}; border-color: {$theme.borderColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
       onkeydown={processKey}
       bind:value={inputPath}
@@ -348,6 +352,7 @@
                 <li
                   style="background-color: {$theme.cursorColor};"
                   bind:this={elDOM}
+                  onkeydown={() => {}}
                   onclick={() => {
                     processListItem(key);
                   }}
@@ -357,6 +362,7 @@
               {:else}
                 <li
                   style="background-color: {$theme.backgroundColor};"
+                  onkeydown={() => {}}
                   onclick={() => {
                     processListItem(key);
                   }}

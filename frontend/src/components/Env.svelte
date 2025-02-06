@@ -66,6 +66,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#if $config !== null && typeof $config.env !== "undefined"}
   <table>
     <thead>
@@ -93,8 +94,12 @@
             <input
               class="inputKV"
               type="text"
+              autocomplete="off"
+              spellcheck="false"
+              autocorrect="off"
               bind:this={nameInputDOM}
               bind:value={KVname}
+              onfocus={() => {}}
               onmouseover={() => {
                 setFocus(false);
               }}
@@ -105,6 +110,10 @@
               class="inputKV"
               type="text"
               bind:value={KVvalue}
+              autocomplete="off"
+              spellcheck="false"
+              autocorrect="off"
+              onfocus={() => {}}
               onblur={addKV}
               onmouseover={() => {
                 setFocus(false);
@@ -126,6 +135,7 @@
           <td span="2">
             <span
               class="addNewItem"
+              onkeydown={() => {}}
               onclick={() => {
                 addNew = true;
                 setFocus(false);

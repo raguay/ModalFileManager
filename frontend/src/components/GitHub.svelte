@@ -226,6 +226,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   id="GitHub"
   style="background-color: {$theme.backgroundColor};
@@ -240,6 +241,7 @@
   <div id="GitHubHeader">
     <h3>GitHub Themes and Extensions Importer</h3>
     <span
+      onkeydown={() => {}}
       onclick={() => {
         exitGitHub();
       }}

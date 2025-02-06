@@ -147,6 +147,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions  -->
 <div class="panel" bind:this={DOM}>
   {#each entries as entry}
     <Entry {pane} {entry} {utilities} bind:viewing />
@@ -154,6 +155,7 @@
   <div
     class="empty"
     draggable="false"
+    onkeydown={() => {}}
     onclick={() => {
       cursorToPane();
     }}

@@ -235,6 +235,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div id="messageboxbg">
   <div
     id="messagebox"
@@ -318,7 +319,7 @@
                 </div>
               </div>
             {:else if item.type === "spinner"}
-              <progress id={item.name} value={item.value} max="100" />
+              <progress id={item.name} value={item.value} max="100"></progress>
             {:else if item.type === "label"}
               <label for={item.for}>
                 {item.text}

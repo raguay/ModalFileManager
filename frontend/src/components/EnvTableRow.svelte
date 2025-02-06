@@ -41,6 +41,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <tr>
   <td class="editTD" onclick={editCell}>
     <span> 🖋️ </span>
@@ -53,6 +54,9 @@
     <input
       bind:value={inputValue}
       bind:this={inputDOM}
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
       onblur={() => {
         saveInput();
       }}

@@ -67,6 +67,9 @@
     type="text"
     bind:this={qsInputDOM}
     bind:value={qsInput}
+    autocomplete="off"
+    spellcheck="false"
+    autocorrect="off"
     onkeydown={processKey}
     oninput={processInput}
     onblur={() => {

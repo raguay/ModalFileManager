@@ -380,6 +380,7 @@ let OS = {
     if (this.type === "macos") {
       this.runCommandLine(
         `osascript '${this.terminalScript}' '${prog}' '${file}'`,
+        [],
         (err, stdout) => {},
         ".",
       );

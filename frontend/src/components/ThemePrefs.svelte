@@ -4,12 +4,13 @@
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
 
-  let { scrollDOM = $bindable() } = $props();
+  let { scrollDOM = $bindable(), blur = $bindable() } = $props();
   let themeName = $state("");
   let showMsgBox = $state(false);
   let msgText = $state("");
   let msgTitle = $state("");
   let themeList = $state(null);
+  let themeNameDOM = $state(null);
 
   onMount(async () => {
     if (typeof $config.OS !== "undefined") {
@@ -23,11 +24,6 @@
     var themedir = await $config.OS.appendPath($config.configDir, "themes");
     themeList = await $config.OS.getDirList(themedir);
     themeName = "";
-  }
-
-  function changeValue(kv, e) {
-    $theme[kv[0]] = e.detail.value;
-    $theme = $theme;
   }
 
   async function createTheme() {
@@ -103,7 +99,7 @@
         name: thm.name,
         fileSystem: $config.OS,
       },
-      async (err, stdout) => {
+      async (err, _) => {
         if (!err) {
           var themedir = await $config.OS.appendPath(
             $config.configDir,
@@ -130,8 +126,13 @@
     $theme = await $config.OS.readFile(thmFile);
     $theme = JSON.parse($theme);
   }
+
+  function updateColorValue(name, val) {
+    $theme[name] = val;
+  }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div id="theme" bind:this={scrollDOM}>
   <h3>Current Theme Values</h3>
   {#if $theme !== null}
@@ -147,9 +148,8 @@
           <ThemeItem
             label={kv[0]}
             value={kv[1]}
-            on:change={(e) => {
-              changeValue(kv, e);
-            }}
+            update={updateColorValue}
+            bind:blur
           />
         {/each}
       </tbody>
@@ -164,7 +164,25 @@
              background-color: {$theme.textColor};
              font-family: {$theme.font};
              font-size: {$theme.fontSize};"
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
       bind:value={themeName}
+      bind:this={themeNameDOM}
+      onmouseover={() => {
+        blur = false;
+        if (themeNameDOM !== null) themeNameDOM.focus();
+      }}
+      onfocus={() => {
+        blur = false;
+        if (themeNameDOM !== null) themeNameDOM.focus();
+      }}
+      onblur={() => {
+        blur = true;
+      }}
+      onmouseout={() => {
+        blur = true;
+      }}
     />
     <button
       id="createThemeButton"
@@ -207,9 +225,9 @@
       <thead>
         <tr>
           <th> Theme Name </th>
-          <th />
-          <th />
-          <th />
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>

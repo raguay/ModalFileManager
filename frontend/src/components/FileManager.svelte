@@ -354,7 +354,6 @@
   }
 
   function setPane(newPane) {
-    console.log("setPane:  ", newPane);
     $currentCursor.pane = newPane;
     if (newPane === "right") {
       $currentCursor.entry = $currentRightFile;
@@ -2989,6 +2988,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   id="container"
   style="background-color: {$theme.backgroundColor};
