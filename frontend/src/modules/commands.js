@@ -2,21 +2,21 @@
 // File:      commands.js
 //
 // Description: This file contains the commands object for dealing with commands that
-//              ModalFileManager uses. 
+//              ModalFileManager uses.
 //
 
 const commands = {
   commandList: [],
-  lastError: '',
-  addCommand: function(name, altname, description, command) {
+  lastError: "",
+  addCommand: function (name, altname, description, command) {
     commands.commandList.push({
       name: name,
       altname: altname,
       description: description,
-      command: command
+      command: command,
     });
   },
-  runCommand: function(com) {
+  runCommand: function (com) {
     //
     // Get the command.
     //
@@ -26,8 +26,8 @@ const commands = {
     // Run the command.
     //
     try {
-      if(command !== null) command.command();
-    } catch(e) {
+      if (command !== null) command.command();
+    } catch (e) {
       //
       // Something happened in the command. Tell about it.
       //
@@ -35,24 +35,26 @@ const commands = {
       console.log(e);
     }
   },
-  getCommand: function(com) {
-    return commands.commandList.find(item => item.name === com )
+  getCommand: function (com) {
+    return commands.commandList.find((item) => item.name === com);
   },
-  getAltCommand: function(com) {
-    return commands.commandList.find(item => item.altname === com )
+  getAltCommand: function (com) {
+    return commands.commandList.find((item) => item.altname === com);
   },
-  listCommands: function() {
-    return commands.commandList.map(item => {
+  listCommands: function () {
+    return commands.commandList.map((item) => {
       return {
         name: item.name,
         altname: item.altname,
-        description: item.description
+        description: item.description,
       };
-    })
+    });
   },
-  removeCommand: function(com) {
-    commands.commandList = commands.commandList.filter(item => item.name !== com);
-  }
-}
+  removeCommand: function (com) {
+    commands.commandList = commands.commandList.filter(
+      (item) => item.name !== com,
+    );
+  },
+};
 
 export default commands;
