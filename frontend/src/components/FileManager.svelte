@@ -1738,6 +1738,9 @@
   }
 
   async function editEntryCommand(entry) {
+    //
+    // TODO: This needs a full revamp to make the editors more configurable.
+    //
     if (await OS.fileExists(userEditor)) {
       //
       // There is an editor defined by the user. Use it.
@@ -1759,7 +1762,17 @@
           // Open emacs.
           //
           await OS.runCommandLine(
-            'emacsclient -n -q "' + file + '"',
+            'emacsclient -nq "' + file + '"',
+            [],
+            (err, result) => {},
+            ".",
+          );
+        } else if (editor === "vim") {
+          //
+          // Open nvim using remote.
+          //
+          await OS.runCommandLine(
+            'nvr --remote "' + file + '"',
             [],
             (err, result) => {},
             ".",
