@@ -125,8 +125,8 @@
   }
 
   function pickerInputChange(e) {
-    e.preventDefault();
     if (e.ctrlKey) {
+      e.preventDefault();
       switch (e.key) {
         case "j":
           movePickerBar(1);
@@ -150,9 +150,12 @@
       //
       // Escape key. Just exit without doing anything.
       //
+      e.preventDefault();
+      e.stopPropagation();
       closeMsgBox = false;
     } else if (e.key === "Tab") {
       e.preventDefault();
+      e.stopPropagation();
       if (typeof pickerItems[pickerNum].value.name !== "undefined")
         pickerValue = pickerItems[pickerNum].value.name;
       else if (typeof pickerItems[pickerNum].name !== "undefined")
@@ -183,6 +186,7 @@
       // Enter key. Take the highlighted value and return.
       //
       e.preventDefault();
+      e.stopPropagation();
       returnPickerValue(true);
     }
   }
