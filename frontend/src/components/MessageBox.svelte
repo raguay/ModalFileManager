@@ -168,7 +168,7 @@
         it.name.toLowerCase().includes(cur),
       );
       movePickerBar(0);
-    } else if (e.which === 13) {
+    } else if (e.key === "Enter") {
       //
       // Enter key. Take the highlighted value and return.
       //
@@ -287,6 +287,9 @@
                 <input
                   id={item.id}
                   bind:value={pickerValue}
+                  autocomplete="off"
+                  spellcheck="false"
+                  autocorrect="off"
                   onkeydown={pickerInputChange}
                 />
                 <div id="{item.id}picker" class="picker" bind:this={pickerDOM}>
@@ -298,6 +301,7 @@
                                background-color: {$theme.textColor};"
                         class="pickerSelected"
                         onclick={() => {
+                          pickerNum = key;
                           pickerSelected(selection);
                         }}
                       >
@@ -309,6 +313,7 @@
                         style="background-color: {$theme.backgroundColor};
                                color: {$theme.textColor};"
                         onclick={() => {
+                          pickerNum = key;
                           pickerSelected(selection);
                         }}
                       >
