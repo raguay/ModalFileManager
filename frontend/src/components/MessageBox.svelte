@@ -112,7 +112,6 @@
   }
 
   function cancel() {
-    console.log("Cancel messagebox:  ");
     skip = false;
     $keyProcess = true;
     closeMsgBox = true;
@@ -126,7 +125,18 @@
   }
 
   function pickerInputChange(e) {
-    if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      switch (e.key) {
+        case "j":
+          movePickerBar(1);
+          break;
+
+        case "k":
+          movePickerBar(-1);
+          break;
+      }
+    } else if (e.key === "ArrowUp") {
       //
       // Go up the list. Zero is at the top.
       //
@@ -173,19 +183,7 @@
       // Enter key. Take the highlighted value and return.
       //
       e.preventDefault();
-      var pickerval = "";
-      if (pickerExtra && pickerItems.length === 0) {
-        pickerval = pickerValue;
-      } else {
-        pickerval = pickerItems[pickerNum].value;
-      }
-      msgBoxReturn = {
-        ans: {
-          type: "picker",
-          value: pickerval,
-        },
-      };
-      closeMsgBox = true;
+      returnPickerValue(true);
     }
   }
 

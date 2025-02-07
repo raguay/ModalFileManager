@@ -62,7 +62,7 @@
   let showGitHub = $state(false);
   let numberAcc = "";
   let lastCommand = "";
-  let flagFilter = 1;
+  let flagFilter = $state(1);
   let selRegExpHist = null;
   let mid = 0;
   let closeCommand = $state(false);
@@ -1933,6 +1933,9 @@
     $currentRightFile = {
       entry: current,
     };
+    $currentCursor = $currentCursor;
+    $currentRightFile = $currentRightFile;
+    $rightEntries = $rightEntries;
   }
 
   async function refreshLeftPane() {
@@ -2007,11 +2010,14 @@
     $currentLeftFile = {
       entry: current,
     };
+    $currentCursor = $currentCursor;
+    $currentLeftFile = $currentLeftFile;
+    $leftEntries = $leftEntries;
   }
 
-  function refreshPanes() {
-    refreshLeftPane();
-    refreshRightPane();
+  async function refreshPanes() {
+    await refreshLeftPane();
+    await refreshRightPane();
   }
 
   function showMessage(title, msg) {
@@ -2464,16 +2470,18 @@
     }
   }
 
-  function setShowAllFilter() {
+  async function setShowAllFilter() {
     flagFilter = 0;
-    OS.setFilter(OS.allFilter);
-    refreshPanes();
+    $leftDir.fileSystem.setFilter($leftDir.fileSystem.allFilter);
+    $rightDir.fileSystem.setFilter($rightDir.fileSystem.allFilter);
+    await refreshPanes();
   }
 
-  function setDefaultFilter() {
+  async function setDefaultFilter() {
     flagFilter = 1;
-    OS.setFilter(OS.defaultFilter);
-    refreshPanes();
+    $leftDir.fileSystem.setFilter($leftDir.fileSystem.defaultFilter);
+    $rightDir.fileSystem.setFilter($rightDir.fileSystem.defaultFilter);
+    await refreshPanes();
   }
 
   function toggleFilter() {

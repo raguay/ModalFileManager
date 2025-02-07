@@ -575,9 +575,6 @@ let OS = {
     return result;
   },
   searchdir: async function (pat, dir, numEntries, returnFunction) {
-    //
-    // TODO: Make an internal process and not a shell out.
-    //
     try {
       if (dir === "") dir = this.path;
       if (pat !== "") {
