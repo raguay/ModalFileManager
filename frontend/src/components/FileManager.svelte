@@ -1933,9 +1933,6 @@
     $currentRightFile = {
       entry: current,
     };
-    $currentCursor = $currentCursor;
-    $currentRightFile = $currentRightFile;
-    $rightEntries = $rightEntries;
   }
 
   async function refreshLeftPane() {
@@ -2010,9 +2007,6 @@
     $currentLeftFile = {
       entry: current,
     };
-    $currentCursor = $currentCursor;
-    $currentLeftFile = $currentLeftFile;
-    $leftEntries = $leftEntries;
   }
 
   async function refreshPanes() {
