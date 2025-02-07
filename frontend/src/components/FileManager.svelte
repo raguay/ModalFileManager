@@ -1650,26 +1650,32 @@
   async function deleteEntriesCommand(entries) {
     if (typeof entries !== 0) {
       for (let i = 0; i < entries.length; i++) {
-        await entries[i].fileSystem.deleteEntries(entries[i], (err, stdout) => {
-          if (err) {
-            refreshPanes();
-          }
-        });
+        await entries[i].fileSystem.deleteEntries(
+          entries[i],
+          async (err, _) => {
+            if (err) {
+              //
+              // Record the error for future viewing.
+              //
+            } else if (i === entries.length - 1) {
+              //
+              // It's the last one deleted. Refresh the side deleted from.
+              //
+              if ($currentCursor.pane === "left") {
+                await refreshLeftPane();
+              } else {
+                await refreshRightPane();
+              }
+
+              //
+              // Make sure key processing is on.
+              //
+              $keyProcess = true;
+            }
+          },
+        );
       }
     }
-    //
-    // Refresh the side deleted from.
-    //
-    if ($currentCursor.pane === "left") {
-      refreshLeftPane();
-    } else {
-      refreshRightPane();
-    }
-
-    //
-    // Make sure key processing is on.
-    //
-    $keyProcess = true;
   }
 
   function copyEntries() {
