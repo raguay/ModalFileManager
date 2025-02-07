@@ -45,35 +45,50 @@
     //
     // If the Enter key, quit the quick search.
     //
-    switch (e.key) {
-      case "Escape":
-        await exitCP();
-        break;
-      case "ArrowUp":
-        current = current - 1;
-        if (current < 0) current = 0;
-        changeViewing();
-        break;
-      case "ArrowDown":
-        current = current + 1;
-        if (current >= filtered.length) current = filtered.length - 1;
-        changeViewing();
-        break;
-      case "Tab":
-        e.preventDefault();
-        e.stopPropagation();
-        promptValue = filtered[current].name;
-        current = 0;
-        processInput();
-        break;
-      case "Enter":
-        e.stopPropagation();
-        e.preventDefault();
-        if (commands !== null) {
-          await runCommand(filtered[current].name);
-        }
-        await exitCP(true);
-        break;
+    if (e.ctrlKey) {
+      switch (e.key) {
+        case "j":
+          current = current + 1;
+          if (current >= filtered.length) current = filtered.length - 1;
+          changeViewing();
+          break;
+        case "k":
+          current = current - 1;
+          if (current < 0) current = 0;
+          changeViewing();
+          break;
+      }
+    } else {
+      switch (e.key) {
+        case "Escape":
+          await exitCP();
+          break;
+        case "ArrowUp":
+          current = current - 1;
+          if (current < 0) current = 0;
+          changeViewing();
+          break;
+        case "ArrowDown":
+          current = current + 1;
+          if (current >= filtered.length) current = filtered.length - 1;
+          changeViewing();
+          break;
+        case "Tab":
+          e.preventDefault();
+          e.stopPropagation();
+          promptValue = filtered[current].name;
+          current = 0;
+          processInput();
+          break;
+        case "Enter":
+          e.stopPropagation();
+          e.preventDefault();
+          if (commands !== null) {
+            await runCommand(filtered[current].name);
+          }
+          await exitCP(true);
+          break;
+      }
     }
   }
 
