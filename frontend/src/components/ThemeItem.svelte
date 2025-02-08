@@ -70,6 +70,7 @@
             e.preventDefault();
             switch (e.key) {
               case "Enter":
+                e.stopPropagation();
                 changeStringValue(nvalue);
                 value = nvalue;
                 break;

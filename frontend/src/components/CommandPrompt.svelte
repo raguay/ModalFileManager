@@ -4,7 +4,7 @@
   import { theme } from "../stores/theme.js";
   import { keyProcess } from "../stores/keyProcess.js";
 
-  let { close = $bindable(), skip = $bindable(), commands } = $props();
+  let { close = $bindable(), commands } = $props();
 
   let showDescription = true;
   let promptInput = null;
@@ -34,10 +34,8 @@
     if (promptInput !== null) promptInput.focus();
   });
 
-  async function exitCP(skp) {
-    if (typeof skp === "undefined") skp = false;
+  function exitCP() {
     $keyProcess = true;
-    skip = skp;
     close = true;
   }
 
@@ -61,7 +59,7 @@
     } else {
       switch (e.key) {
         case "Escape":
-          await exitCP();
+          exitCP();
           break;
         case "ArrowUp":
           current = current - 1;
@@ -86,7 +84,7 @@
           if (commands !== null) {
             await runCommand(filtered[current].name);
           }
-          await exitCP(true);
+          exitCP();
           break;
       }
     }
@@ -94,7 +92,7 @@
 
   async function runCommand(cmd) {
     if (commands !== null) await commands.runCommand(cmd);
-    await exitCP(false);
+    exitCP();
   }
 
   function processInput() {
@@ -122,8 +120,8 @@
              border-color: {util.pSBC(0.1, $theme.backgroundColor)};
              max-height: {height !== null ? height : 100}px;
              height: {height !== null ? height : 100}px;"
-  onblur={async () => {
-    await exitCP();
+  onblur={() => {
+    exitCP();
   }}
 >
   <input

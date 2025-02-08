@@ -10,7 +10,6 @@
     config,
     items,
     spinners,
-    skip = $bindable(),
     msgCallBack,
   } = $props();
 
@@ -76,8 +75,7 @@
     return items;
   }
 
-  async function returnPickerValue(skip) {
-    if (typeof skip === "undefined") skip = false;
+  async function returnPickerValue() {
     $keyProcess = true;
     var retItem = {};
     if (pickerItems.length > 0) {
@@ -93,11 +91,9 @@
     await msgCallBack();
     closeMsgBox = true;
     $keyProcess = true;
-    skip = true;
   }
 
-  async function returnInputValue(skip) {
-    if (typeof skip === "undefined") skip = false;
+  async function returnInputValue() {
     var retItem = {
       name: items[0].name,
       value: items[0].value,
@@ -108,11 +104,9 @@
     await msgCallBack();
     closeMsgBox = true;
     $keyProcess = true;
-    skip = true;
   }
 
   function cancel() {
-    skip = false;
     $keyProcess = true;
     closeMsgBox = true;
   }
@@ -187,7 +181,7 @@
       //
       e.preventDefault();
       e.stopPropagation();
-      returnPickerValue(true);
+      returnPickerValue();
     }
   }
 
@@ -272,7 +266,7 @@
                 onkeydown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    returnInputValue(true);
+                    returnInputValue();
                   }
                 }}
               />
@@ -346,9 +340,9 @@
           <button
             onclick={() => {
               if (items[0].type === "picker") {
-                returnPickerValue(false);
+                returnPickerValue();
               } else {
-                returnInputValue(false);
+                returnInputValue();
               }
             }}
           >

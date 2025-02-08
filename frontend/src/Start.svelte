@@ -7,7 +7,6 @@
   import { ctrlKey } from "./stores/ctrlKey.js";
   import { metaKey } from "./stores/metaKey.js";
   import { altKey } from "./stores/altKey.js";
-  import { skipKey } from "./stores/skipKey.js";
   import { key } from "./stores/key.js";
   import { processKey } from "./stores/processKey.js";
   import { keyProcess } from "./stores/keyProcess.js";
@@ -27,15 +26,10 @@
     $metaKey = e.metaKey;
     $altKey = e.altKey;
     $key = e.key;
-    if (($skipKey && e.key === "Enter") || currentView !== "filemanager") {
-      $keyProcess = true;
-    } else {
-      if ($keyProcess) {
-        e.preventDefault();
-        if ($processKey !== null) $processKey();
-      }
+    if ($keyProcess) {
+      e.preventDefault();
+      if ($processKey !== null) $processKey();
     }
-    $skipKey = false;
   }}
   onkeyup={(e) => {
     $ctrlKey = e.ctrlKey;

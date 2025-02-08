@@ -4,7 +4,6 @@
   import { keyProcess } from "../stores/keyProcess.js";
   import { currentCursor } from "../stores/currentCursor.js";
   import { saved } from "../stores/saved.js";
-  import { skipKey } from "../stores/skipKey.js";
 
   let { Entries = $bindable(), open = $bindable(), position } = $props();
 
@@ -25,14 +24,12 @@
     }
   });
 
-  function exitQS(skip) {
-    if (typeof skip === "undefined") skip = false;
+  function exitQS() {
     origEntries = null;
     open = false;
     $keyProcess = true;
     $currentCursor.entry = Entries[0];
     $currentCursor.index = 0;
-    $skipKey = skip;
   }
 
   function processKey(e) {
@@ -43,10 +40,11 @@
     //
     if (key === "Escape") {
       e.preventDefault();
-      exitQS(false);
+      exitQS();
     } else if (key === "Enter") {
+      e.stopPropagation();
       e.preventDefault();
-      exitQS(true);
+      exitQS();
     }
   }
 

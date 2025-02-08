@@ -70,6 +70,7 @@
         switch (e.key) {
           case "Enter": {
             e.preventDefault();
+            e.stopPropagation();
             saveInput();
             break;
           }

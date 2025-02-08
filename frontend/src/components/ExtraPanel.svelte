@@ -21,7 +21,7 @@
     // Check the new cursor for extra panel items.
     //
     if (typeof entry !== "undefined") {
-      isExtra = checkExtraPanel();
+      isExtra = await checkExtraPanel();
       await runExtraPanel();
     }
   });
@@ -38,7 +38,7 @@
           videoNode.src = fileURL;
         }
         */
-        getDimensions(fullPath);
+        await getDimensions(fullPath);
       }
     }
   });
@@ -57,21 +57,26 @@
       lookupPath = encodeURI(lookupPath);
       extension = entry.ext.toLowerCase();
     }
-    $extraPanel.forEach((item) => {
-      item.after();
-    });
+    for (let i = 0; i < $extraPanel.length; i++) {
+      await $extraPanel[i].after();
+    }
   }
 
-  function checkExtraPanel() {
+  async function checkExtraPanel() {
     extraHTML = "";
     let isxtra = false;
-    $extraPanel.forEach(async (item) => {
-      isxtra = await item.check(entry.dir, entry.name, entry.fileSystem, side);
+    for (let i = 0; i < $extraPanel.length; i++) {
+      isxtra = await $extraPanel[i].check(
+        entry.dir,
+        entry.name,
+        entry.fileSystem,
+        side,
+      );
       if (isxtra) {
-        var newContent = await item.createHTML();
+        var newContent = await $extraPanel[i].createHTML();
         extraHTML = extraHTML.concat("\n", newContent);
       }
-    });
+    }
     return isxtra;
   }
 
@@ -88,12 +93,12 @@
     return isMovieFlag;
   }
 
-  function getDimensions(fileName) {
+  async function getDimensions(fileName) {
     var com =
       'ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width "' +
       fileName +
       '"';
-    entry.fileSystem.runCommandLine(
+    await entry.fileSystem.runCommandLine(
       com,
       [],
       (err, stdout) => {

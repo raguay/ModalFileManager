@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -118,11 +117,15 @@ func (b *App) CloseLeftWatch() {
 }
 
 func (b *App) StartWatcher() {
+	//
+	// NOTE: Directory watching is currently a polling system. This needs to be
+	// changed so that it doesn't take up processor time.
+	//
 	for !b.Stopped {
 		//
 		// Create the timer.
 		//
-		b.Timer = time.NewTimer(time.Millisecond * 30000)
+		b.Timer = time.NewTimer(time.Millisecond * 10000)
 
 		//
 		// Do the Job. check for changes in the current directories.
@@ -136,18 +139,6 @@ func (b *App) StartWatcher() {
 				//
 				b.LenLeftFiles = LenLeftFiles
 				rt.EventsEmit(b.ctx, "leftSideChange", "")
-			} else {
-				//
-				// See if a file name changed. This takes longer.
-				//
-				fileNames := ""
-				for i := 0; i < LenLeftFiles; i++ {
-					fileNames += leftFiles[i].Name + strconv.FormatInt(leftFiles[i].Size, 10)
-				}
-				if b.LeftHash != fileNames {
-					b.LeftHash = fileNames
-					rt.EventsEmit(b.ctx, "leftSideChange", "")
-				}
 			}
 		}
 		if b.lastRightDir != "" {
@@ -159,18 +150,6 @@ func (b *App) StartWatcher() {
 				//
 				b.LenRightFiles = LenRightFiles
 				rt.EventsEmit(b.ctx, "rightSideChange", "")
-			} else {
-				//
-				// See if a file name changed. This takes longer.
-				//
-				fileNames := ""
-				for i := 0; i < LenRightFiles; i++ {
-					fileNames += rightFiles[i].Name + strconv.FormatInt(rightFiles[i].Size, 10)
-				}
-				if b.RightHash != fileNames {
-					b.RightHash = fileNames
-					rt.EventsEmit(b.ctx, "rightSideChange", "")
-				}
 			}
 		}
 

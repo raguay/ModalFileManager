@@ -211,9 +211,6 @@
   async function processKey(e) {
     const key = e.key;
 
-    //
-    // If the Enter key, quit the edit mode.
-    //
     switch (key) {
       case "Escape":
         //
@@ -236,6 +233,9 @@
         }
         break;
       case "Tab":
+        //
+        // But the current highlighted to the inputPath.
+        //
         e.preventDefault();
         e.stopPropagation();
         if (dirlist.length > 0) {

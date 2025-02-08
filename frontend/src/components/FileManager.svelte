@@ -32,7 +32,6 @@
   import { altKey } from "../stores/altKey.js";
   import { ctrlKey } from "../stores/ctrlKey.js";
   import { metaKey } from "../stores/metaKey.js";
-  import { skipKey } from "../stores/skipKey.js";
   import { shiftKey } from "../stores/shiftKey.js";
   import { key } from "../stores/key.js";
   import { processKey } from "../stores/processKey.js";
@@ -3026,7 +3025,7 @@
   }}
 >
   {#if showGitHub}
-    <GitHub bind:toggle={showGitHub} bind:skip={$skipKey} />
+    <GitHub bind:toggle={showGitHub} />
   {/if}
 
   {#if showCommandPrompt}
@@ -3039,7 +3038,6 @@
       spinners={msgBoxSpinners}
       items={msgBoxItems}
       {msgCallBack}
-      bind:skip={$skipKey}
       bind:msgBoxReturn
       bind:closeMsgBox
     />
