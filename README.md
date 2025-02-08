@@ -16,8 +16,6 @@ A small gif showing Modal File Manager in action.
 
 ![Using Modal File Manager Some](https://github.com/raguay/ModalFileManager/blob/main/frontend/Pictures/UsingMFMSome.gif)
 
-# NOTE: I am currently upgrading the UI to Svelte 5. Therefore, the files that are current are in flux and does have bugs. I'm working to fix the bugs and get to the next release as soon as possible
-
 # Disclamer: This program can permanently delete directories and files. Use at your own risk! I accept no liability for lost information from the use of this software. User beware! But, if you have a major problem, please let me know so that I can look for solutions. Deletions currently default to moving to the trashcan on new installations
 
 ## Table of Contents
