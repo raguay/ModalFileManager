@@ -1,7 +1,7 @@
 {
   "name": "ModalFileManager",
-  "frontend:build": "yarn run build",
-  "frontend:install": "yarn install",
+  "frontend:build": "bun run build",
+  "frontend:install": "bun install",
   "frontend:dev": "",
   "wailsjsdir": "./frontend/dist/",
   "version": "2",
