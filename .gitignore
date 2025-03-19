@@ -1,5 +1,6 @@
 # Wails bin directory
-build
+build/bin
+build/darwin
 
 # Don't save the public folder. It shoud be compiled each time.
 frontend/dist
