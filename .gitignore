@@ -11,6 +11,7 @@ frontend/dist
 
 # The black hole that is...
 node_modules
+*.lock
 
 # Binaries zipped
 *.zip
