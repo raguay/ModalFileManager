@@ -1847,6 +1847,7 @@
               // Refresh both sides.
               //
               refreshPanes();
+              console.log("Move Error: ", stdout);
             } else if (i === entries.length - 1) {
               //
               // Refresh both sides.
