@@ -40,6 +40,7 @@
   function setValue() {
     update(label, hex);
     showPicker = false;
+    changeColor = false;
     setFocus(true);
   }
 
@@ -115,25 +116,22 @@
   </td>
 </tr>
 {#if showPicker}
-  <div class="cpicker">
-    <ColorPicker
-      bind:hex
-      {label}
-      isOpen="true"
-      isPopup="false"
-      on:input={(e) => {
-        hex = e.details.hex;
-      }}
-    />
-    <button onclick={setValue}> Set Value </button>
-  </div>
+  <ColorPicker
+    bind:hex
+    {label}
+    isOpen="true"
+    isPopup="false"
+    on:input={(e) => {
+      hex = e.details.hex;
+      setValue();
+    }}
+  />
 {/if}
 
 <style>
   .cpicker {
     display: flex;
     flex-direction: row;
-    color: black;
   }
 
   .rowCell {
