@@ -8,6 +8,6 @@ cd frontend
 yarn run build
 cd ..
 
-## wails build --platform "darwin/universal"
-wails build -s
+wails build --platform "darwin/universal"
+## wails build -s
 ```
