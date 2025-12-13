@@ -41,19 +41,19 @@
   let mdown = $state(false);
   let showMessageBox = $state(false);
   let showQuickSearch = $state(false);
-  let msgBoxConfig = {};
-  let msgBoxSpinners = [];
-  let msgBoxItems = null;
+  let msgBoxConfig = $state({});
+  let msgBoxSpinners = $state([]);
+  let msgBoxItems = $state(null);
   let msgBoxReturn = {};
   let msgCallBack = () => {};
-  let configDir = "";
+  let configDir = $state("");
   let setEditDirFlagLeft = $state(false);
   let setEditDirFlagRight = $state(false);
   let showExtra = $state(false);
   let showCommandPrompt = $state(false);
-  let rightDOM = null;
-  let leftDOM = null;
-  let containerDOM = null;
+  let rightDOM = $state(null);
+  let leftDOM = $state(null);
+  let containerDOM = $state(null);
   let lastError = null;
   let userEditor = ".myeditorchoice";
   let OStype = "macOS";
@@ -63,7 +63,7 @@
   let lastCommand = "";
   let flagFilter = $state(1);
   let selRegExpHist = null;
-  let mid = 0;
+  let mid = $state(0);
   let closeCommand = $state(false);
   let closeMsgBox = $state(false);
 
