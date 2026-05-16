@@ -48,14 +48,14 @@
 <div id="bodyContainer">
   <TitleBar />
 
-  <FileManager bind:view={currentView} mid={midSize} />
+  {#if currentView === "preferences"}
+    <Preferences bind:view={currentView} />
+  {:else}
+    <FileManager bind:view={currentView} mid={midSize} />
+  {/if}
 
   <StatusLine />
 </div>
-
-{#if currentView === "preferences"}
-  <Preferences bind:view={currentView} />
-{/if}
 
 <style>
   :global(body) {
